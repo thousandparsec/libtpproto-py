@@ -14,7 +14,7 @@ class Order_Get(Processed):
 	no = 10
 	struct = "I[I]"
 
-	def __init__(self, sequence, oid, slots):
+	def __init__(self, sequence, id, slots):
 		Processed.__init__(self, sequence)
 
 		# Length is:
@@ -22,11 +22,11 @@ class Order_Get(Processed):
 		#
 		self.length = 4 + 4 + 4 * len(slots)
 	
-		self.oid = oid
+		self.id = id
 		self.slots = slots
 	
 	def __repr__(self):
 		output = Processed.__repr__(self)
-		output += pack(self.struct, self.oid, self.slots)
+		output += pack(self.struct, self.id, self.slots)
 
 		return output

@@ -24,7 +24,7 @@ class Object(Describable):
 	struct = "IIS Q 3q 3q [I] [I] I 16x"
 
 	def __init__(self, sequence, \
-			id, type, name, \
+			id, otype, name, \
 			size, \
 			posx, posy, posz, \
 			velx, vely, velz, \
@@ -41,8 +41,8 @@ class Object(Describable):
 
 		# Upgrade the class to the real type
 		if self.__class__ == Object:
-			if descriptions().has_key(type):
-				self.__class__ = descriptions()[type]
+			if descriptions().has_key(otype):
+				self.__class__ = descriptions()[otype]
 
 				if extra != None or len(args) > 0:
 					if extra != None:
@@ -51,7 +51,7 @@ class Object(Describable):
 						else:
 							args = ()
 
-					args = (self, sequence, id, type, name, size, posx, posy, posz, 
+					args = (self, sequence, id, otype, name, size, posx, posy, posz, 
 							velx, vely, velz, contains, order_types, order_number) + args
 
 					apply(self.__class__.__init__, args)
@@ -81,7 +81,7 @@ class Object(Describable):
 			4 + 16
 
 		self.id = id
-		self.otype = type
+		self.otype = otype
 		self.name = name
 		self.size = size
 		self.pos = (posx, posy, posz)

@@ -6,8 +6,10 @@ from os import path
 sys.path.insert(0, path.dirname(__file__))
 
 from client import ClientConnection
-from server import ServerConnection
+from server import Server, ServerConnection
 Connection = ClientConnection
+
+Server = Server
 ServerConnection = ServerConnection
 
 import types

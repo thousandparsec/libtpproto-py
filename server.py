@@ -1,49 +1,14 @@
 # Python Imports
 import select
 import socket
-import string
 import sys
+import traceback
 
 # Local imports
-import xstruct
 import objects
 constants = objects.constants
 
 from common import Connection
-
-class Server:
-	address_family = socket.AF_INET
-	socket_type = socket.SOCK_STREAM
-
-	def __init__(self, address, port):
-		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-		self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		self.s.bind((address, port))
-		self.s.listen(5)
-
-		# We are non blocking
-		self.s.setblocking(False)
-
-		self.connections = []
-		
-	def serve_forever(self):
-		while True:
-			# Check if there is any socket to accept or with data
-			ready, trash, errors = select.select([self.s] + self.connections,[],self.connections,1)
-
-			for socket in ready:
-				if socket is self.s:
-					# Accept a new connection
-					socket, address = self.s.accept()
-					self.connections.append(ServerConnection(socket, address, debug=True))
-				else:
-					socket.poll()
-			
-			# Cleanup any old socket
-			for socket in errors:
-				self.connections.remove(socket)
-				del socket
 
 class ServerConnection(Connection):
 	def __init__(self, socket, address, debug=False):
@@ -75,9 +40,14 @@ class ServerConnection(Connection):
 			success = False
 			for c in [packet.__class__] + list(packet.__class__.__bases__):
 				function = "On" + c.__name__
+				print function
 	
 				if hasattr(self, function):
-					success = getattr(self, function)(packet)
+					try:
+						success = getattr(self, function)(packet)
+					except:
+						type, val, tb = sys.exc_info()
+						print ''.join(traceback.format_exception(type, val, tb))
 					break
 				
 			if not success:
@@ -92,6 +62,42 @@ class ServerConnection(Connection):
 	def OnConnect(self, packet):
 		self._send(objects.OK(packet.sequence, "Welcome to py-server!"))
 		return True
+
+class Server:
+	"""\
+	Select based, single threaded, polling server.
+	"""
+	handler = ServerConnection
+
+	def __init__(self, address, port):
+		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+		self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+		self.s.bind((address, port))
+		self.s.listen(5)
+
+		# We are non blocking
+		self.s.setblocking(False)
+
+		self.connections = []
+		
+	def serve_forever(self):
+		while True:
+			# Check if there is any socket to accept or with data
+			ready, trash, errors = select.select([self.s] + self.connections,[],self.connections,1)
+
+			for socket in ready:
+				if socket is self.s:
+					# Accept a new connection
+					socket, address = self.s.accept()
+					self.connections.append(self.handler(socket, address, debug=True))
+				else:
+					socket.poll()
+			
+			# Cleanup any old sockets
+			for socket in errors:
+				self.connections.remove(socket)
+				del socket
 
 if __name__ == "__main__":
 	port = 6924
