@@ -25,7 +25,7 @@ def descriptions(added=None):
 	
 	if added != None:
 		_descriptions[ added.subtype ] = added
-        return _descriptions
+		return _descriptions
 
 struct_map = {
 	ARG_ABS_COORD:	("qqq",			3),
@@ -108,13 +108,14 @@ class DynamicBaseOrder(Order):
 class OrderDesc(Description):
 	"""\
 	The OrderDesc packet consists of:
-	    * a UInt32, order type
-	    * a String, name
-	    * a String, description
-	    * a list of
-		  * a String, argument name
-		  * a UInt32, argument type
-		  * a String, description
+		* a UInt32, order type
+		* a String, name
+		* a String, description
+		* a list of
+			* a String, argument name
+			* a UInt32, argument type
+			* a String, description
+		* a UInt64, the last time the description was modified
 
 	IE
 	ID: 1001
@@ -138,21 +139,22 @@ class OrderDesc(Description):
 		Description: How much beer to drink.
 	"""
 	no = 9
-	struct="I SS [SIS]"
+	struct="I SS [SIS] Q"
 
 	def __init__(self, sequence, \
 			id, name, description, \
-			arguments):
+			arguments, modify_time):
 		Description.__init__(self, sequence, id)
 
 		self.name = name
 		self.description = description
 		self.arguments = arguments
+		self.modify_time = modify_time
 
 		self.length = 4 + \
 			4 + len(name) + 1 + \
 			4 + len(description) + 1 + \
-			4 
+			4 + 8 
 
 		for argument in arguments:
 			self.length += \
@@ -160,14 +162,14 @@ class OrderDesc(Description):
 				4 + \
 				4 + len(argument[2]) + 1
 
-
 	def __repr__(self):
 		output = Description.__repr__(self)
 		output += pack(self.struct, \
 				self.id, \
 				self.name, \
 				self.description, \
-				self.arguments)
+				self.arguments, \
+				self.modify_time)
 
 		return output
 
@@ -193,6 +195,8 @@ class OrderDesc(Description):
  			DynamicOrder.names.append((name, type))
 			DynamicOrder.substruct += struct
 			setattr(DynamicOrder, name + "__doc__", desc)
+
+		DynamicOrder.modify_time = self.modify_time
 
 		return DynamicOrder
 

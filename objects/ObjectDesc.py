@@ -83,7 +83,7 @@ def descriptions():
 				import carchive
 				this = carchive.CArchive(sys.executable).openEmbeddedZlib("out1.pyz")
 				_descriptions = import_subtype("tp.netlib.objects.ObjectExtra", installer=this.contents())
-			except NameError, e:
+			except AttributeError, e:
 				_descriptions = import_subtype(edir(__file__))
 	
 	return _descriptions

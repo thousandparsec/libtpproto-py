@@ -18,7 +18,8 @@ class StarSystem(Object):
 			velx, vely, velz, \
 			contains, \
 			order_types, \
-			order_number):
+			order_number,
+			modify_time):
 		Object.__init__(self, sequence, \
 			id, type, name, \
 			size, \
@@ -26,4 +27,5 @@ class StarSystem(Object):
 			velx, vely, velz, \
 			contains, \
 			order_types, \
-			order_number)
+			order_number, \
+			modify_time)

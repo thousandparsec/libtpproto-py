@@ -19,6 +19,7 @@ class Planet(Object):
 			contains, \
 			order_types, \
 			order_number, \
+			modify_time, \
 			owner):
 		Object.__init__(self, sequence, \
 			id, type, name, \
@@ -27,7 +28,8 @@ class Planet(Object):
 			velx, vely, velz, \
 			contains, \
 			order_types, \
-			order_number)
+			order_number, \
+			modify_time)
 
 		self.length += 4
 		self.owner = owner

@@ -1,9 +1,9 @@
 
 from xstruct import pack
 
-from Get import GetSlot
+from Base import GetWithIDandSlot
 
-class Message_Remove(GetSlot):
+class Message_Remove(GetWithIDandSlot):
 	"""\
 	The Message_Remove packet consists of:
 		* A UInt32, board to get the messages from.

@@ -11,7 +11,16 @@ class Fail(Processed):
 	"""
 	no = 1
 	struct = "IS"
-
+	
+	reasons = {
+		0 : "Protocol Error",
+		1 : "Frame Error",
+		2 : "Unavailable Permanently",
+		3 : "Unavailable Temporarily",
+		4 : "No such thing",
+		5 : "Permission Denied",
+	}
+	
 	def __init__(self, sequence, errno, s=""):
 		if errno != 0 and sequence < 1:
 			raise ValueError("Fail is a reply packet so needs a valid sequence number (%i)" % sequence)
@@ -33,4 +42,10 @@ class Fail(Processed):
 		output += pack(self.struct, self.errno, self.s)
 
 		return output
+
+	def reason(self):
+		if self.reasons.has_key(self.errno):
+			return self.reasons[self.errno]
+		return "Unknown"
+	reason = property(reason, doc="A text string representation of the errno")
 

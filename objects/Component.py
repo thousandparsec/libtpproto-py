@@ -20,7 +20,7 @@ class Component(Processed):
 		    * a UInt32, the number of components
 		    * a UInt32, the component category or ID
 	"""
-	no = 32
+	no = 1046
 	struct = "III[I]SS[II][BII]"
 
 	def __init__(self, sequence, id, base, used, types, name, description, contains, language):

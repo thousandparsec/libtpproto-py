@@ -51,13 +51,22 @@ from objects.Object_GetById import Object_GetById
 Object_GetById = Object_GetById
 mapping[Object_GetById.no] = Object_GetById
 
-from objects.Object_GetByPos import Object_GetByPos
-Object_GetByPos = Object_GetByPos
-mapping[Object_GetByPos.no] = Object_GetByPos
 
 from objects.Object import Object
 Object = Object
 mapping[Object.no] = Object
+
+from objects.Object_GetID import Object_GetID
+Object_GetID = Object_GetID
+mapping[Object_GetID.no] = Object_GetID
+
+from objects.Object_GetID_ByPos import Object_GetID_ByPos
+Object_GetID_ByPos = Object_GetID_ByPos
+mapping[Object_GetID_ByPos.no] = Object_GetID_ByPos
+
+from objects.Object_GetID_ByContainer import Object_GetID_ByContainer
+Object_GetID_ByContainer = Object_GetID_ByContainer
+mapping[Object_GetID_ByContainer.no] = Object_GetID_ByContainer
 
 from objects.ObjectDesc import descriptions
 ObjectDescs = descriptions

@@ -16,12 +16,13 @@ class Object(Describable):
 		   * a list of UInt32, object IDs of objects contained in the current object
 		   * a list of UInt32, order types that the player can send to this object
 		 4 * a UInt32, number of orders currently on this object
-		16 * 4 by UInt32 of padding, for future expansion of common attributes
+		   * a UInt64, the last modified time
+		16 * 2 by UInt32 of padding, for future expansion of common attributes
 		   * extra data, as defined by each object type
 	"""
 
 	no = 7
-	struct = "IIS Q 3q 3q [I] [I] I 16x"
+	struct = "IIS Q 3q 3q [I] [I] I Q 8x"
 
 	def __init__(self, sequence, \
 			id, otype, name, \
@@ -31,6 +32,7 @@ class Object(Describable):
 			contains, \
 			order_types, \
 			order_number, \
+			modify_time, \
 			*args, **kw):
 		Describable.__init__(self, sequence)
 
@@ -52,7 +54,7 @@ class Object(Describable):
 							args = ()
 
 				args = (self, sequence, id, otype, name, size, posx, posy, posz, 
-						velx, vely, velz, contains, order_types, order_number) + args
+						velx, vely, velz, contains, order_types, order_number, modify_time) + args
 
 				apply(self.__class__.__init__, args)
 				return
@@ -78,7 +80,7 @@ class Object(Describable):
 			8 + 24 + 24 + \
 			4 + len(contains)*4 + \
 			4 + len(order_types)*4 + \
-			4 + 16
+			4 + 8 + 8
 
 		self.id = id
 		self.otype = otype
@@ -89,6 +91,7 @@ class Object(Describable):
 		self.contains = contains
 		self.order_types = order_types
 		self.order_number = order_number
+		self.modify_time = modify_time
 
 	def __repr__(self):
 		output = Describable.__repr__(self)
@@ -106,7 +109,8 @@ class Object(Describable):
 				self.vel[2], \
 				self.contains, \
 				self.order_types, \
-				self.order_number)
+				self.order_number, \
+				self.modify_time)
 		return output
 
 	def process_extra(self, extra):

@@ -1,6 +1,6 @@
-from Get import Get
+from Base import GetWithID
 
-class Object_DescGet(Get):
+class Object_DescGet(GetWithID):
 	"""\
 	"""
 	no = -1

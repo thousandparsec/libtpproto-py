@@ -19,6 +19,7 @@ class Universe(Object):
 			contains, \
 			order_types, \
 			order_number, \
+			modify_time, \
 			turn):
 		Object.__init__(self, sequence, \
 			id, type, name, \
@@ -27,6 +28,7 @@ class Universe(Object):
 			velx, vely, velz, \
 			contains, \
 			order_types, \
+			modify_time, \
 			order_number)
 
 		self.length += 4

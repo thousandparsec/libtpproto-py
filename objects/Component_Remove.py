@@ -9,7 +9,7 @@ class Component_Remove(Processed):
 		* a list of,
 			* A UInt32, category ids
 	"""
-	no = 34
+	no = 1048
 	struct = "[I]"
 
 	def __init__(self, sequence, ids):

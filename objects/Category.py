@@ -10,7 +10,7 @@ class Category(Processed):
 	    * a String, name of the category
     	* a String, description of the category
 	"""
-	no = 30
+	no = 42
 	struct = "ISS"
 
 	def __init__(self, sequence, id, name, desc):

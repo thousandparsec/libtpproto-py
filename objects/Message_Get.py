@@ -1,9 +1,9 @@
 
 from xstruct import pack
 
-from Get import GetSlot
+from Base import GetWithIDandSlot
 
-class Message_Get(GetSlot):
+class Message_Get(GetWithIDandSlot):
 	"""\
 	The Message_Get packet consists of:
 		* A UInt32, board to get the message from.

@@ -19,6 +19,7 @@ class Fleet(Object):
 			contains, \
 			order_types, \
 			order_number, \
+			modify_time, \
 			owner, ships, damage):
 		Object.__init__(self, sequence, \
 			id, type, name, \
@@ -27,7 +28,8 @@ class Fleet(Object):
 			velx, vely, velz, \
 			contains, \
 			order_types, \
-			order_number)
+			order_number, \
+			modify_time)
 
 		self.length += 4 + 4 + len(ships) * 8 + 4
 

@@ -1,9 +1,9 @@
 
 from xstruct import pack
 
-from Get import GetSlot
+from Base import GetWithIDandSlot
 
-class Order_Remove(GetSlot):
+class Order_Remove(GetWithIDandSlot):
 	"""\
 	The Order_Remove packet consists of:
 		* A UInt32, object to remove the orders from.

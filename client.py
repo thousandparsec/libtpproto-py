@@ -46,15 +46,25 @@ Non-Blocking Example Usage:
 """
 
 # Python Imports
-import socket
 import encodings.idna
+import socket
+import types
 
 # Local imports
 import xstruct
 import objects
 constants = objects.constants
 
+from version import version
 from common import Connection, l
+
+def failed(object):
+	if type(object) == types.TupleType:
+		return not object[0]
+	else:
+		if isinstance(object, objects.Fail):
+			return True
+	return False
 
 sequence_max = 4294967296
 
@@ -206,6 +216,195 @@ class ClientConnection(Connection):
 			# We got a bad packet
 			raise IOError("Bad Packet was received")
 
+	def _get_header(self, type, no):
+		"""\
+		*Internal*
+
+		Completes the get_* function.
+		"""
+		p = self._recv(no)
+		if not p:
+			return None
+
+		if isinstance(p, objects.Fail):
+			# The whole command failed :(
+			return [(False, p.s)]
+		elif isinstance(p, type):
+			# Must only be one, so return
+			return [p]
+		elif not isinstance(p, objects.Sequence):
+			# We got a bad packet
+			raise IOError("Bad Packet was received %s" % p)
+
+		# We have to wait on multiple packets
+		self.buffers['store'][no] = []
+	
+		if self._noblock():
+			# Do the commands in non-blocking mode
+			self._next(self._get_finish, no)
+			for i in range(0, p.number):
+				self._next(self._get_data, (type, no))
+
+			# Keep the polling going
+			return _continue
+
+		else:
+			# Do the commands in blocking mode
+			for i in range(0, p.number):
+				self._get_data(type, no)
+			
+			return self._get_finish(no)
+
+	def _get_data(self, type, no):
+		"""\
+		*Internal*
+
+		Completes the get_* function.
+		"""
+		p = self._recv(no)
+
+		if p != None:
+			if isinstance(p, objects.Fail):
+				p = (False, p.s)
+			elif not isinstance(p, type):
+				raise IOError("Bad Packet was received %s" % p)
+
+			self.buffers['store'][no].append(p)
+
+			if self._noblock():
+				return _continue
+
+	def _get_finish(self, no):
+		"""\
+		*Internal*
+
+		Completes the get_* functions.
+		"""
+		store = self.buffers['store'][no]
+		del self.buffers['store'][no]
+
+		return l(store)
+
+	def _get_ids(self, type, key, position, amount=-1, raw=False):
+		"""\
+		*Internal*
+
+		Send a GetID packet and setup for a IDSequence result.
+		"""
+		self._common()
+
+		p = object.mapping[type](self.no, key, position, amount)
+		self._send(p)
+
+		if self._noblock():
+			self._append(self._get_idsequence, (self.no, False, raw))
+			return None
+		else:
+			return self._get_idsequence(self.no, False, raw)
+	
+	def _get_idsequence(self, no, iter=False, raw=False):
+		"""\
+		*Internal*
+
+		Finishes any function which gets an IDSequence.
+		"""
+		p = self._recv(no)
+		if not p:
+			return None
+
+		# Check it's the reply we are after
+		if isinstance(p, objects.Fail):
+			return False, p.s
+		elif isinstance(p, objects.IDSequence):
+			if iter:
+				return p.iter()
+			elif raw:
+				return p
+			else:
+				return p.ids
+		else:
+			# We got a bad packet
+			raise IOError("Bad Packet was received")
+
+	class IDIter(object):
+		"""\
+		*Internal*
+
+		Class used to iterate over an ID list. It will get more IDs as needed.
+		
+		On a non-blocking connection the IDIter will return (None, None) while
+		no data is ready. This makes it good to use in an event loop.
+
+		On a blocking connection the IDIter will wait till the information is
+		ready.
+		"""	
+		def __init__(self, connection, type, amount=10):
+			"""\
+			IDIter(connection, type, amount=10)
+
+			connection
+				Is a ClientConnection
+			type
+				Is the ID of the GetID packet to send
+			amount
+				Is the amount of IDs to get at one time
+			"""
+			self.connection = connection
+			self.type = type
+			self.amount = amount
+
+			self.ids = None
+			self.remaining = None
+			self.key = None
+
+			# Send out a packet if we are non-blocking
+			if self.connection._noblock():
+				self.next()
+
+		def next(self):
+			"""\
+			Get the next (ids, modified time) pair.
+			"""
+			# Get the first bit of information
+			if self.key is None and self.remaining is None:
+				if self.ids is None:
+					self.ids = []
+					p = self.connection._get_ids(self.type, -1, 0, 0, raw=true)
+				else:
+					p = self.connect.poll()
+				
+				# Check for Non-blocking mode
+				if p is None:
+					return (None, None)
+				# Check for an error
+				elif failed(p):
+					raise IOError("Failed to get remaining IDs")
+
+				self.remaining = p.left
+				self.key = p.key
+			
+			# Get more IDs
+			if len(self.ids) <= 0:
+				no = self.remaining
+				if no <= 0:
+					raise StopIteration()
+				elif no > self.amount:
+					no = self.amount
+				
+				p = self.connection._get_ids(self.type, self.key, self.position, no, raw=true)
+				# Check for Non-blocking mode
+				if p is None:
+					return (None, None)
+				# Check for an error
+				elif failed(p):
+					raise IOError("Failed to get remaining IDs")
+				
+				self.ids = p.ids
+				self.remaining = p.left
+			
+			self.position += 1	
+			return self.ids.pop()
+
 	def connect(self, str=""):
 		"""\
 		Connects to a Thousand Parsec Server.
@@ -213,7 +412,8 @@ class ClientConnection(Connection):
 		self._common()
 		
 		# Send a connect packet
-		p = objects.Connect(self.no, "py-netlib/0.0.2" + str)
+		from version import version
+		p = objects.Connect(self.no, "libtpproto-py/%i.%i.%i " % version + str)
 		self._send(p)
 		
 		if self._noblock():
@@ -283,74 +483,57 @@ class ClientConnection(Connection):
 		# and wait for a response
 		return self._okfail(self.no)
 	
-	def _get_header(self, type, no):
+	def get_object_ids(self, a=None, y=None, z=None, r=None, x=None, id=None, iter=False):
 		"""\
-		*Internal*
+		Get objects ids from the server,
+		
+		# Get all object ids (plus modification times)
+		[(25, 10029436), ...] = get_object_ids()
 
-		Completes the get_* function.
+		# Get all object ids (plus modification times) via an Iterator
+		<Iter> = get_object_ids(iter=True)
+
+		# Get all object ids (plus modification times) at a location
+		[(25, 10029436), ..] = get_objects_ids(x, y, z, radius)
+		[(25, 10029436), ..] = get_objects_ids(x=x, y=y, z=z, r=radius)
+
+		# Get all object ids (plus modification times) at a location via an Iterator
+		<Iter> = get_objects_ids(x, y, z, radius, iter=True)
+		<Iter> = get_objects_ids(x=x, y=y, z=z, r=radius, iter=True)
+
+		# Get all object ids (plus modification times) contain by an object
+		[(25, 10029436), ..] = get_objects_ids(id)
+		[(25, 10029436), ..] = get_objects_ids(id=id)
+
+		# Get all object ids (plus modification times) contain by an object via an Iterator
+		<Iter> = get_object_ids(id, iter=true)
+		<Iter> = get_object_ids(id=id, iter=true)
 		"""
-		p = self._recv(no)
-		if not p:
-			return None
+		self._common()
 
-		if isinstance(p, objects.Fail):
-			# The whole command failed :(
-			return [(False, p.s)]
-		elif isinstance(p, type):
-			# Must only be one, so return
-			return [p]
-		elif not isinstance(p, objects.Sequence):
-			# We got a bad packet
-			raise IOError("Bad Packet was received %s" % p)
-
-		# We have to wait on multiple packets
-		self.buffers['store'][no] = []
+		if a != None and y != None and z != None and r != None:
+			x = a
+		elif a != None:
+			id = a	
 	
-		if self._noblock():
-			# Do the commands in non-blocking mode
-			self._next(self._get_finish, no)
-			for i in range(0, p.number):
-				self._next(self._get_data, (type, no))
+		p = None
 
-			# Keep the polling going
-			return _continue
-
+		if x != None:
+			p = objects.Object_GetID_ByPos(self.no, x, y, z, r)
+		elif id != None:
+			p = objects.Object_GetID_ByContainer(self.no, id)
 		else:
-			# Do the commands in blocking mode
-			for i in range(0, p.number):
-				self._get_data(type, no)
+			if iter:
+				return self.IDIter(self, objects.Object_GetID)
 			
-			return self._get_finish(no)
-
-	def _get_data(self, type, no):
-		"""\
-		*Internal*
-
-		Completes the get_* function.
-		"""
-		p = self._recv(no)
-
-		if p != None:
-			if isinstance(p, objects.Fail):
-				p = (False, p.s)
-			elif not isinstance(p, type):
-				raise IOError("Bad Packet was received %s" % p)
-
-			self.buffers['store'][no].append(p)
-
-			if self._noblock():
-				return _continue
-
-	def _get_finish(self, no):
-		"""\
-		*Internal*
-
-		Completes the get_* functions.
-		"""
-		store = self.buffers['store'][no]
-		del self.buffers['store'][no]
-
-		return l(store)
+			p = objects.Object_GetID(self.no, -1, 0, -1)
+		
+		self._send(p)
+		if self._noblock():
+			self._append(self._get_idsequence, (self.no, iter))
+			return None
+		else:
+			return self._get_idsequence(self.no, iter)
 
 	def get_objects(self, a=None, y=None, z=None, r=None, x=None, id=None, ids=None):
 		"""\
