@@ -1,11 +1,9 @@
 import socket
+
 import objects
 import xstruct
 
-from objects.Description import *
-
 from support.output import *
-
 
 _continue = []
 
@@ -152,7 +150,7 @@ class Connection:
 
 			try:
 				p.process(d[s:])
-			except DescriptionError:
+			except objects.DescriptionError:
 				# The packet doesn't have a description yet!?
 
 				# Store the packet and wait for the description
@@ -166,7 +164,7 @@ class Connection:
 				continue
 
 			# Check if this packet is a description for an undescribed object
-			if isinstance(p, Description) and d.has_key(p.type):
+			if isinstance(p, objects.Description) and d.has_key(p.type):
 				q = d[p.type].pop(0)
 
 				if len(d[p.type]) == 0:
@@ -240,7 +238,9 @@ class Connection:
 		Login to the server using this username/password.
 		"""
 		self._common()
-		
+
+		self.username = username
+
 		p = objects.Login(self.no, username, password)
 		self._send(p)
 		
@@ -363,6 +363,7 @@ class Connection:
 		Completes the get_objects function.
 		"""
 		p = self._recv(no)
+
 		if p and isinstance(p, objects.Object):
 			self.store.append(p)
 

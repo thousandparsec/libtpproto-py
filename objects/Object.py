@@ -1,10 +1,10 @@
 
-from xstruct import pack
+from xstruct import pack, unpack
 
-from Header import Processed
+from Description import Describable
 from ObjectDesc import descriptions
 
-class Object(Processed):
+class Object(Describable):
 	"""\
 	The Login packet consists of:
 		 4 * a uint32, object ID
@@ -22,7 +22,6 @@ class Object(Processed):
 
 	no = 7
 	struct = "IIS Q 3Q 3Q [I] [I] I 16x"
-
 	def __init__(self, sequence, \
 			id, type, name, \
 			size, \
@@ -31,8 +30,28 @@ class Object(Processed):
 			contains, \
 			order_types, \
 			order_number, \
-			*extra):
-		Processed.__init__(self, sequence)
+			extra=None, *args):
+		Describable.__init__(self, sequence)
+		
+		# Upgrade the class to the real type
+		if self.__class__ == Object:
+			if descriptions().has_key(type):
+				self.__class__ = descriptions()[type]
+
+				if extra != None or len(args) > 0:
+					args = (extra,)+args
+					if extra != None:
+						args, leftover = unpack(self.substruct, extra)
+
+					args = (self, sequence, id, type, name, size, posx, posy, posz, 
+						velx, vely, velz, contains, order_types, order_number) + args
+
+					apply(self.__class__.__init__, args)
+				return
+			else:
+				# FIXME: Should throw a description error
+				if extra != None:
+					self.extra = extra
 
 		# Length is:
 		#  *  8 bytes
@@ -45,14 +64,13 @@ class Object(Processed):
 		#  *  4 bytes
 		#  * 16 bytes
 		#  * len(extra)
-		if not hasattr(self, 'length'):
-			self.length = \
-				4 + 4 + \
-				4 + len(name) + 1 + \
-				8 + 24 + 24 + \
-				4 + len(contains)*4 + \
-				4 + len(order_types)*4 + \
-				4 + 16
+		self.length = \
+			4 + 4 + \
+			4 + len(name) + 1 + \
+			8 + 24 + 24 + \
+			4 + len(contains)*4 + \
+			4 + len(order_types)*4 + \
+			4 + 16
 
 		self.id = id
 		self.otype = type
@@ -64,10 +82,8 @@ class Object(Processed):
 		self.order_types = order_types
 		self.order_number = order_number
 
-		self.extra = extra
-
 	def __repr__(self):
-		output = Processed.__repr__(self)
+		output = Describable.__repr__(self)
 		# struct = "IIS Q 3Q 3Q [I] [I] I 16x"
 		output += pack(self.struct, \
 				self.id, \

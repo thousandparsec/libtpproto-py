@@ -111,15 +111,14 @@ class Header:
 		args, extra = unpack(self.struct, data)
 
 		# Do the class specific function
-		apply(self.__init__, (self.sequence,) + args)
-
 		if hasattr(self, "process_extra"):
-			self.process_extra(extra)
+			apply(self.__init__, (self.sequence,) + args + (extra,))
 		else:
+			apply(self.__init__, (self.sequence,) + args)
+
 			if len(extra) != 0:
 				raise ValueError("Extra Data found;" + extra)
 
-		
 	def data_set(self, data=None):
 		"""\
 		Processes the data of the packet.

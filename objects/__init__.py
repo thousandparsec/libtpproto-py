@@ -1,44 +1,51 @@
 # Mapping to store between type numbers and classes
 mapping = {}
 
-from Header import Header, Processed
+# Header
+from objects.Header import Header, Processed
 Header = Header
 Header.mapping = mapping
 
 Processed = Processed
 
+# Special Description Stuff
+from objects.Description import DescriptionError, Describable, Description
+DescriptionError = DescriptionError
+Describable = Describable
+Description = Description
+
 # Generic Responses
-from OK import OK
+from objects.OK import OK
 OK = OK
 mapping[OK.no] = OK
 
-from Fail import Fail
+from objects.Fail import Fail
 Fail = Fail
 mapping[Fail.no] = Fail
 
-from Sequence import Sequence
+from objects.Sequence import Sequence
 Sequence = Sequence
 mapping[Sequence.no] = Sequence
 
 # Connecting
-from Connect import Connect
+from objects.Connect import Connect
 Connect = Connect
 mapping[Connect.no] = Connect
 
-from Login import Login
+from objects.Login import Login
 Login = Login
 mapping[Login.no] = Login
 
 # Objects
-from Object_GetById import Object_GetById
+from objects.Object_GetById import Object_GetById
 Object_GetById = Object_GetById
 mapping[Object_GetById.no] = Object_GetById
 
-from Object_GetByPos import Object_GetByPos
+from objects.Object_GetByPos import Object_GetByPos
 Object_GetByPos = Object_GetByPos
 mapping[Object_GetByPos.no] = Object_GetByPos
 
-from Object import Object
+from objects.Object import Object
 Object = Object
 mapping[Object.no] = Object
 
@@ -51,7 +58,7 @@ mapping[Object.no] = Object
 #OrderDesc = OrderDesc
 #mapping[OrderDesc.no] = OrderDesc
 
-from Order_Get import Order_Get
+from objects.Order_Get import Order_Get
 Order_Get = Order_Get
 mapping[Order_Get.no] = Order_Get
 
@@ -63,7 +70,7 @@ mapping[Order_Get.no] = Order_Get
 #Order_Add = Order_Add
 #mapping[Order_Add.no] = Order_Add
 
-from Order_Remove import Order_Remove
+from objects.Order_Remove import Order_Remove
 Order_Remove = Order_Remove
 mapping[Order_Remove.no] = Order_Remove
 
