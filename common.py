@@ -174,7 +174,7 @@ class Connection:
 		raise objects.DescriptionError("Can not deal with an undescribed packet.")
 
 	def _error(self, packet):
-		raise NotImplimented("Error handling of bad packets not implimented...")
+		raise
 
 	############################################
 	# Non-blocking helpers

@@ -22,19 +22,13 @@ def edir(p):
 def import_subtype(p, loader=None):
 	subtypes = {}
 
-	if not loader:
+	if loader == None:
 		paths = splitall(p)
 	else:
 		paths = splitall(p, loader.archive)
 	import_base = string.join(paths, ".")
 
-	print import_base
-
-	print "Loader", loader
-	print loader.archive
-	print "Path to base", p
-
-	if not loader:
+	if loader == None:
 		files = os.listdir(p)
 	else:
 		files = []
@@ -42,8 +36,6 @@ def import_subtype(p, loader=None):
 			file = thing[0]
 			if p in file:
 				files.append(file)
-
-	print "Files to do", files
 
 	for file in files:
 		name, ext = path.splitext(path.basename(file))
@@ -77,7 +69,6 @@ def descriptions():
 
 	if _descriptions == None:
 		try:
-			__loader__
 			_descriptions = import_subtype(edir(__file__), __loader__)
 		except NameError:
 			_descriptions = import_subtype(edir(__file__))
