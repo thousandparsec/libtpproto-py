@@ -40,7 +40,7 @@ class DynamicBaseOrder(Order):
 	subtype = -1
 	name = "Base"
 
-#	__metaclass__ = ClassNicePrint
+	__metaclass__ = ClassNicePrint
 
 	def __init__(self, sequence, \
 			id, type, slot, turns, resources, \
@@ -48,10 +48,22 @@ class DynamicBaseOrder(Order):
 		Order.__init__(self, sequence, \
 			id, type, slot, turns, resources)
 
+		# Figure out if we are in single or multiple mode
+		short = len(args) == len(self.names)
+
 		for name, type in self.names:
 			struct, size = struct_map[type]
 
-			setattr(self, name, args[0:size])
+			if short:
+				size = 1
+
+			if size == 1:
+				setattr(self, name, args[0])
+			else:
+				if len(args) < size:
+					raise ValueError("Incorrect number of arguments")
+				setattr(self, name, args[0:size])
+
 			args = args[size:]
 
 		# FIXME: Need to figure out the length a better way
@@ -60,12 +72,14 @@ class DynamicBaseOrder(Order):
 	def __repr__(self):
 		args = []
 		for name, type in self.names:
-			for attr in getattr(self, name):
-				try:
-					args += attr
-				except:
-					args.append(attr)
-	
+			struct, size = struct_map[type]
+			
+			attr = getattr(self, name)
+			if size == 1:
+				args.append(attr)
+			else:
+				args = args + list(attr)
+
 		output = Order.__repr__(self)
 		output += apply(pack, [self.substruct,] + args)
 		return output
