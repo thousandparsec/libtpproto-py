@@ -38,18 +38,15 @@ class DynamicBaseOrder(Order):
 	"""
 	substruct = ""
 	subtype = -1
+	name = "Base"
 
-	__metaclass__ = ClassNicePrint
+#	__metaclass__ = ClassNicePrint
 
 	def __init__(self, sequence, \
 			id, type, slot, turns, resources, \
 			*args):
 		Order.__init__(self, sequence, \
 			id, type, slot, turns, resources)
-
-#		if len(self.names) != len(args):
-#			# FIXME: Must throw error here
-#			raise ValueError("Not correct number arguments.")
 
 		for name, type in self.names:
 			struct, size = struct_map[type]
@@ -149,7 +146,7 @@ class OrderDesc(Description):
 			pass
 
 		DynamicOrder.name = self.name
-		DynamicOrder.__doc__ = self.description
+#		DynamicOrder.__doc__ = self.description
 
 		# Arguments
 		DynamicOrder.names = []

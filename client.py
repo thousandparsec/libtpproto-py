@@ -395,13 +395,13 @@ class ClientConnection(Connection):
 		self._common()
 
 		if kw.has_key('types'):
-			slots = kw['types']
+			types = kw['types']
 		elif kw.has_key('type'):
-			slots = [kw['type']]
+			types = [kw['type']]
 		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
-			slots = args[0]
+			types = args[0]
 		else:
-			slots = args
+			types = args
 
 		p = objects.OrderDesc_Get(self.no, types)
 

@@ -39,7 +39,12 @@ class ServerConnection(Connection):
 				continue
 
 			success = False
-			for c in [packet.__class__] + list(packet.__class__.__bases__):
+
+			bases = [packet.__class__]
+			while len(bases) > 0:
+				print bases
+
+				c = bases.pop(0)
 				function = "On" + c.__name__
 				print function
 	
@@ -51,6 +56,8 @@ class ServerConnection(Connection):
 						print ''.join(traceback.format_exception(type, val, tb))
 					break
 				
+				bases += list(c.__bases__)
+
 			if not success:
 				self._send(objects.Fail(packet.sequence, constants.FAIL_PERM, "Service unavalible."))
 
