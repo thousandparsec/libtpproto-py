@@ -1,16 +1,18 @@
+# Python Imports
 import socket
 
-import objects
+# Local imports
 import xstruct
-
-from support.output import *
+import objects
+constants = objects.constants
 
 from common import Connection
+
 class ClientConnection(Connection):
 	"""\
 	Class for a connection from the client side.
 	"""
-	
+
 	def __init__(self, host=None, port=6923, nb=0, debug=0):
 		"""\
 		"""
@@ -26,38 +28,32 @@ class ClientConnection(Connection):
 		self.host = host
 		self.port = port
 
+		s = None
 		for af, socktype, proto, cannoname, sa in \
 				socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM):
 
 			try:
-				self.s = socket.socket(af, socktype, proto)
+				s = socket.socket(af, socktype, proto)
 				if debug:
 					print "Trying to connect to connect: (%s, %s)" % (host, port)
 
-				self.s.connect(sa)
+				s.connect(sa)
 				break
 			except socket.error, msg:
 				if debug:
 					print "Connect fail: (%s, %s)" % (host, port)
-				if self.s:
-					self.sock.close()
+				if s:
+					s.close()
 					
-				self.s = None
+				s = None
 				continue
 		
-		if not self.s:
+		if not s:
 			raise socket.error, msg
 
+		Connection.setup(self, s, nb=nb, debug=debug)
+
 		self.no = 1
-		self.setblocking(nb)
-
-		self.debug = debug
-
-		# This is a storage for out of sequence packets
-		self.rbuffer = {}
-		# Storage for frames which havn't got a description yet
-		self.ubuffer = {}
-
 		self.store = {}
 
 	def _description_error(self, packet):
@@ -71,7 +67,6 @@ class ClientConnection(Connection):
 		d[p.type].append(p)
 
 		# FIXME: Send a request for the description
-
 
 	def _common(self):
 		"""\

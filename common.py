@@ -1,7 +1,10 @@
+
+# Python imports
 import socket
 
-import objects
+# Local imports
 import xstruct
+import objects
 
 from support.output import *
 
@@ -14,7 +17,7 @@ class Connection:
 	go here.
 	"""
 
-	def setup(self, s):
+	def setup(self, s, nb=False, debug=False):
 		"""\
 		*Internal*
 
@@ -22,9 +25,7 @@ class Connection:
 		"""
 		self.s = s
 	
-		self.no = 0
 		self.setblocking(nb)
-
 		self.debug = debug
 
 		# This is a storage for out of sequence packets
@@ -36,7 +37,7 @@ class Connection:
 		"""\
 		Sets the connection to either blocking or non-blocking.
 		"""
-		if nb == 0 and self._noblock():
+		if not nb and self._noblock():
 			# Check we arn't waiting on anything
 			if len(self.nb) > 0:
 				raise IOError("Still waiting on non-blocking commands!")
@@ -44,7 +45,7 @@ class Connection:
 			self.s.setblocking(1)
 			del self.nb
 
-		elif nb == 1 and not self._noblock():
+		elif nb and not self._noblock():
 			self.s.setblocking(0)
 			self.nb = []
 
