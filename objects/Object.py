@@ -7,21 +7,21 @@ from ObjectDesc import descriptions
 class Object(Describable):
 	"""\
 	The Object packet consists of:
-		 4 * a uint32, object ID
-		 4 * a uint32, object type
-		   * a text string, name of object
-		 8 * a uint64, size of object (diameter)
-		24 * 3 by int64, position of object
-		24 * 3 by int64, velocity of object
-		   * a list of uint32, object IDs of objects contained in the current object
-		   * a list of uint32, order types that the player can send to this object
-		 4 * a uint32, number of orders currently on this object
-		16 * 4 by uint32 of padding, for future expansion of common attributes
+		 4 * a UInt32, object ID
+		 4 * a UInt32, object type
+		   * a String, name of object
+		 8 * a UInt64, size of object (diameter)
+		24 * 3 by Int64, position of object
+		24 * 3 by Int64, velocity of object
+		   * a list of UInt32, object IDs of objects contained in the current object
+		   * a list of UInt32, order types that the player can send to this object
+		 4 * a UInt32, number of orders currently on this object
+		16 * 4 by UInt32 of padding, for future expansion of common attributes
 		   * extra data, as defined by each object type
 	"""
 
 	no = 7
-	struct = "IIS Q 3Q 3Q [I] [I] I 16x"
+	struct = "IIS Q 3q 3q [I] [I] I 16x"
 	def __init__(self, sequence, \
 			id, type, name, \
 			size, \

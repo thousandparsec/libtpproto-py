@@ -6,9 +6,7 @@ from Header import Processed
 class Connect(Processed):
 	"""\
 	The Connect packet consists of:
-		* A string 
-		(the string can be safely ignored - however it may 
-		contain useful information for stat purposes)
+		* A String, may	contain useful information for stat purposes
 	"""
 
 	no = 3

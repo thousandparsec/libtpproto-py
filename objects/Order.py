@@ -7,18 +7,22 @@ from ObjectDesc import descriptions
 
 class Order(Describable):
 	"""\
-	The Order packet consists of:
+ 	An Order Packet or Insert Order packet.
+	A Order packet consist of:
 
- The Order Description packet contains: int32 order type, string name, string description, int32 number of parameters and then of each parameter: string name, int32 type ID, string desc. The Parameter Types are given below:
-
-	The OK packet consists of:
-		* A string 
-		(the string can be safely ignored - however it may 
-		contain useful information for debugging purposes)
+	* a UInt32, Object ID of the order is on/to be placed on
+	* a UInt32, Slot number of the order/to be put in, 
+		-1 will insert at the last position,
+		otherwise it is inserted before the number
+	* a UInt32, (Read Only) The number of turns the order will take
+	* a list of
+		* a UInt32, The resource ID
+		* a UInt32, The units of that resource required
+		
+	* Extra data required by the order is appended to the end and is defined on a descriptions
 	"""
-
-	no = 0
-	struct = "S"
+	no = 11
+	struct = "III [II]"
 
 	def __init__(self, sequence, s=""):
 		if 1 > sequence:

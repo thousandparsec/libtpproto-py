@@ -1,9 +1,7 @@
 from Get import Get
 
-class Object_GetById(Get):
+class Object_DescGet(Get):
 	"""\
-	The Object_Get packet consists of:
-		* A uint32, ID of object to get.
 	"""
-	no = 5
+	no = -1
 

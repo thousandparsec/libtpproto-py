@@ -6,12 +6,9 @@ from Header import Processed
 class Fail(Processed):
 	"""\
 	The Fail packet consists of:
-		* A uint32 error code
-		* A string 
-		(the string can be safely ignored - however it may 
-		contain useful information for debugging purposes)
+		* A UInt32, error code
+		* A String, may contain useful information for debugging purposes
 	"""
-
 	no = 1
 	struct = "IS"
 

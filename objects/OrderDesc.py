@@ -40,39 +40,37 @@ def buildstruct(parameters):
 class OrderDesc(Processed):
 	"""\
 	The OrderDesc packet consists of:
-		* int32 order type
-		* string name
-		* string description
-		* int32 number of parameters
-		* A list of,
-			* Argument Name
-			* Argument Type
-			* Argument Description
+	    * a UInt32, order type
+	    * a String, name
+	    * a String, description
+	    * a list of
+		  * a String, argument name
+		  * a UInt32, argument type
+		  * a String, description
 
-		IE
-		Name: Drink With Friends
-		Description: Go to the pub and drink with friends
-		Arguments:
-			Name: How Long
-			Type: ARG_TIME
-			Description: How many turns to drink for.
+	IE
+	ID: 1001
+	Name: Drink With Friends
+	Description: Go to the pub and drink with friends.
+	Arguments:
+		Name: How Long
+		Type: ARG_TIME
+		Description: How many turns to drink for.
 
-			Name: Who With
-			Type: ARG_PLAYER
-			Description: Which player to drink with.
+		Name: Who With
+		Type: ARG_PLAYER
+		Description: Which player to drink with.
 
-			Name: Where
-			Type: ARG_COORD
-			Description: Where to go drinking.
+		Name: Where
+		Type: ARG_COORD
+		Description: Where to go drinking.
 
-			Name: Cargo
-			Type: ARG_INT
-			Description: How much beer to drink.
-
+		Name: Cargo
+		Type: ARG_INT
+		Description: How much beer to drink.
 	"""
-
-	no = 0
-	struct="L SS [SSI]"
+	no = 9
+	struct="I SS [SIS]"
 
 	def __init__(self, sequence, s=""):
 		Processed.__init__(self, sequence)
