@@ -684,7 +684,6 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.OK, self.no)
 
-
 	def get_categories(self, *args, **kw):
 		"""\
 		Get category descriptions,
@@ -719,6 +718,41 @@ class ClientConnection(Connection):
 			return None
 		else:
 			return self._get_header(objects.Category, self.no)
+
+	def get_components(self, *args, **kw):
+		"""\
+		Get components descriptions,
+
+		# Get the description for components 5
+		[<cat id=5>] = get_components(5)
+		[<cat id=5>] = get_components(id=5)
+		[<cat id=5>] = get_components(ids=[5])
+		[(False, "No such 5")] = get_components([5])
+		
+		# Get the descriptions for components 5 and 10
+		[<msg id=5>, (False, "No such 10")] = get_components([5, 10])
+		[<msg id=5>, (False, "No such 10")] = get_components(ids=[5, 10])
+		"""
+		self._common()
+
+		if kw.has_key('ids'):
+			ids = kw['ids']
+		elif kw.has_key('id'):
+			ids = [kw['id']]
+		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
+			ids = args[0]
+		else:
+			ids = args
+
+		p = objects.Component_Get(self.no, ids)
+
+		self._send(p)
+
+		if self._noblock():
+			self._append(self._get_header, (objects.Component, self.no))
+			return None
+		else:
+			return self._get_header(objects.Component, self.no)
 
 	def disconnect(self):
 		"""\
