@@ -22,4 +22,6 @@ def failed(object):
 			return True
 	return False
 
+import clang
+
 sys.path.pop(0)

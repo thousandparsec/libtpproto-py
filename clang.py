@@ -1,23 +1,32 @@
 
 
 class AND:
-	pass
+	def __repr__(self):
+		return "<AND>"
 	
 class OR:
-	pass
+	def __repr__(self):
+		return "<OR>"
 
 class NOT:
-	pass
+	def __repr__(self):
+		return "<NOT>"
 
 class Category:
 	def __init__(self, id, number):
 		self.id = id
 		self.number = number
+	
+	def __repr__(self):
+		return "<Category %s #%s>" % (self.id, self.number)
 
 class Component:
 	def __init__(self, id, number):
 		self.id = id
 		self.number = number
+	
+	def __repr__(self):
+		return "<Component %s #%s>" % (self.id, self.number)
 
 def decode(list):
 	r = []
