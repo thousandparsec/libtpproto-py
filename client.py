@@ -361,6 +361,10 @@ class ClientConnection(Connection):
 		if isinstance(type, objects.Order) or isinstance(type, objects.Order_Insert):
 			o = type
 			o._type = objects.Order_Insert.no
+
+			o.id = oid
+			o.slot = slot
+			
 			o.sequence = self.no
 		else:	
 			o = apply(objects.Order_Insert, (self.no, oid, slot, type,)+args, kw)
