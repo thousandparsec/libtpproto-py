@@ -148,6 +148,7 @@ class Connection:
 		"""
 		s = self.s.send
 		if self.debug:
+			green("Sending: %s \n" % str(p))
 			green("Sending: %s \n" % xstruct.hexbyte(repr(p)))
 		s(repr(p))
 
@@ -209,6 +210,9 @@ class Connection:
 				
 				continue
 
+			if self.debug:
+				red("Receiving: %s \n" % str(str(p)))
+			
 			# Check if this packet is a description for an undescribed object
 			if isinstance(p, objects.Description) and u.has_key(p.id):
 				q = u[p.type].pop(0)
@@ -471,13 +475,18 @@ class Connection:
 	def insert_order(self, oid, slot, type, *args, **kw):
 		"""\
 		Add a new order to an object.
+
+		Forms are
+		insert_order(oid, slot, type, [arguments for order])
+		insert_order(oid, slot, [Order Object])
 		"""
 		self._common()
 		
 		o = None
 		if isinstance(type, objects.Order) or isinstance(type, objects.Order_Insert):
 			o = type
-			o.no = 12
+			o._type = objects.Order_Insert.no
+			o.sequence = self.no
 		else:	
 			o = apply(objects.Order_Insert, (self.no, oid, slot, type,)+args, kw)
 			

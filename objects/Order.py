@@ -47,7 +47,7 @@ class Order(Describable):
 						else:
 							args = None
 
-					args = (self, sequence, id, type, slot, turns, resources,) + args
+					args = (self, sequence, id, slot, type, turns, resources,) + args
 					apply(self.__class__.__init__, args)
 
 				return

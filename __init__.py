@@ -8,3 +8,16 @@ sys.path.insert(0, path.dirname(__file__))
 from connection import Connection
 Connection = Connection
 
+import utils
+utils = utils
+
+import types
+import objects
+def failed(object):
+	if type(object) == types.TupleType:
+		return not object[0]
+	else:
+		if isinstance(object, objects.Fail):
+			return True
+	return False
+
