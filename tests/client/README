@@ -1,0 +1,11 @@
+A simple server which reponds correctly to all
+requests. Can be used to verify a client talks
+the protocol correctly.
+
+If started with no arguments it server will
+cycle through different possible return
+possibilities.
+
+If started with "--bad" it will cycle through
+common bad (invalid) responses.
+

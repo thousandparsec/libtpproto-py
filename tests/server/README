@@ -1,0 +1,4 @@
+This directory tests a server for compliance
+to the specification. It will progressivly
+test the server and report any problems it
+finds. 

@@ -1,0 +1,103 @@
+Intro
+==============================================
+This provides all the neccessary objects to
+talk to a Thousand Parsec server.
+
+Directory Structure
+==============================================
+./tests
+	Contains tests for the library and to test
+	clients and servers.
+./tests/python
+	Tests for the library.
+./tests/client
+	A server which can be used to test clients
+	against.
+./tests/server
+	A client which can be used to test servers
+	against.
+./support
+	Support classes for library.
+./objects
+	Frame object classes.
+
+Library
+==============================================
+The library can run in either non-blocking or
+blocking mode.
+
+In blocking mode operations preformed on the
+connection will wait for the results to
+become avalible before returning. It will
+never return None.
+
+In non-blocking mode operations preformed on
+the connection will return nothing. The
+connection must be until the result is obtained.
+It is safe to preform more operations on the
+connection before the connection has returned
+the result, no answer will be lost.
+
+Poll will return None until the complete
+response is avalible. Poll will return the
+answers in the same order that the actions
+where preformed. 
+
+If you want to wait for an action to complete
+you can use wait which will wait untill the
+result if ready and return it. Wait will
+never return None.
+
+Blocking Example Usage:
+
+>>>
+>>> import sys
+>>>
+>>> from tp import netlib
+>>>
+>>> # Create the object and connect to the server
+>>> c = netlib.Connection("127.0.0.1", 6329)
+>>> if not c.connect():
+>>>    print "Could not connect to the server"
+>>>    sys.exit(1)
+>>>
+>>> if not c.login("username", "password"):
+>>> 	print "Could not login"
+>>> 	sys.exit(1)
+>>>
+
+Non-Blocking Example Usage:
+
+>>>
+>>> import sys
+>>>
+>>> from tp import netlib
+>>>
+>>> # Create the object and connect to the server
+>>> c = netlib.Connection("127.0.0.1", 6329)
+>>>
+>>> c.connect()
+>>> c.login("username", "password")
+>>>
+>>> # Wait for the connection to be complete
+>>> if not c.wait():
+>>>    print "Could not connect to the server"
+>>>    sys.exit(1)
+>>>
+>>> r = c.poll()
+>>> while r == None:
+>>> 	r = c.poll()
+>>>
+>>> 	# Do some other stuff!
+>>> 	pass
+>>>
+>>> if not r:
+>>> 	print "Could not login"
+>>> 	sys.exit(1)
+>>>
+>>> # Disconnect and cleanup
+>>> c.disconnect()
+>>>
+
+
+
