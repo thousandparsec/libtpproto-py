@@ -125,3 +125,31 @@ from objects.Message_Remove import Message_Remove
 Message_Remove = Message_Remove
 mapping[Message_Remove.no] = Message_Remove
 
+# Design Stuff
+from objects.Category_Get import Category_Get
+Category_Get = Category_Get
+mapping[Category_Get.no] = Category_Get
+
+from objects.Category import Category
+Category = Category
+mapping[Category.no] = Category
+
+from objects.Component_Get import Component_Get
+Component_Get = Component_Get
+mapping[Component_Get.no] = Component_Get
+
+from objects.Component import Component
+Component = Component
+mapping[Component.no] = Component
+
+from objects.Component import Component
+Component = Component
+mapping[Component.no] = Component
+
+from objects.Component_Insert import Component_Insert
+Component_Insert = Component_Insert
+mapping[Component_Insert.no] = Component_Insert
+
+from objects.Component_Remove import Component_Remove
+Component_Remove = Component_Remove
+mapping[Component_Remove.no] = Component_Remove
