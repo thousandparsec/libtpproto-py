@@ -10,8 +10,13 @@ class Move(Order):
 	substruct = "qqq"
 
 	name = "Move"
+
+	# Arguments
 	names = [("pos", constants.ARG_ABS_COORD)]
 
+	# Argument descriptions
+	pos__doc__ = "Position to move to."
+	
 	def __init__(self, sequence, \
 					id,	type, slot, turns, resources, \
 					x, y, z):

@@ -9,8 +9,13 @@ class NOp(Order):
 	subtype = 0
 	substruct = "I"
 	
-	name = "Wait"
+	name = "NOp"
+
+	# Arguments
 	names = [("wait", constants.ARG_TIME)]
+
+	# Argument descriptions
+	wait__doc__ = "Number of turns to wait for."
 
 	def __init__(self, sequence, \
 					id,	type, slot, turns, resources, \
@@ -20,7 +25,7 @@ class NOp(Order):
 
 		self.length += 4
 		self.wait = wait
-
+		
 	def __repr__(self):
 		output = Order.__repr__(self)
 		output += pack(self.substruct, self.wait)

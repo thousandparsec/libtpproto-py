@@ -10,10 +10,10 @@ class Order(Describable):
 	A Order packet consist of:
 
 	* a UInt32, Object ID of the order is on/to be placed on
-	* a UInt32, Order type ID
 	* a UInt32, Slot number of the order/to be put in, 
 		-1 will insert at the last position,
 		otherwise it is inserted before the number
+	* a UInt32, Order type ID
 	* a UInt32, (Read Only) The number of turns the order will take
 	* a list of
 		* a UInt32, The resource ID
@@ -25,7 +25,7 @@ class Order(Describable):
 	struct = "IIII [II]"
 
 	def __init__(self, sequence, \
-			id,	type, slot, turns, resources, \
+			id,	slot, type, turns, resources, \
 			*args, **kw):
 		Describable.__init__(self, sequence)
 
@@ -68,7 +68,7 @@ class Order(Describable):
 
 	def __repr__(self):
 		output = Describable.__repr__(self)
-		output += pack(self.struct, self.id, self.type, self.slot, self.turns, self.resources)
+		output += pack(self.struct, self.id, self.slot, self.type, self.turns, self.resources)
 
 		return output
 	

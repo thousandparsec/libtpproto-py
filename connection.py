@@ -468,13 +468,19 @@ class Connection:
 		else:
 			return self._get_header(objects.Order, self.no)
 
-	def insert_order(self, oid, type, slot, *args, **kw):
+	def insert_order(self, oid, slot, type, *args, **kw):
 		"""\
 		Add a new order to an object.
 		"""
 		self._common()
 		
-		o = apply(objects.Order_Insert, (self.no, oid, type, slot,)+args, kw)
+		o = None
+		if isinstance(type, objects.Order) or isinstance(type, objects.Order_Insert):
+			o = type
+			o.no = 12
+		else:	
+			o = apply(objects.Order_Insert, (self.no, oid, slot, type,)+args, kw)
+			
 		self._send(o)
 
 		if self._noblock():
@@ -502,6 +508,41 @@ class Connection:
 		else:
 			# We got a bad packet
 			raise IOError("Bad Packet was received")
+
+	def remove_orders(self, oid, *args, **kw):
+		"""\
+		Removes orders from an object,
+
+		# Remove the order in slot 5 from object 2
+		obj = remove_orders(2, 5)
+		obj = remove_objects(2, slot=5)
+		obj = remove_objects(2, slots=[5])
+		obj = remove_objects(2, [5])
+		
+		# Remove the orders in slots 5 and 10 from object 2
+		obj = remove_objects(2, [5, 10])
+		obj = remove_objects(2, slots=[5, 10])
+		"""
+		self._common()
+
+		if kw.has_key('slots'):
+			slots = kw['slots']
+		elif kw.has_key('slot'):
+			slots = [kw['slots']]
+		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
+			slots = args[0]
+		else:
+			slots = args
+
+		p = objects.Order_Remove(self.no, oid, slots)
+
+		self._send(p)
+
+		if self._noblock():
+			self._append(self._get_header, (objects.OK, self.no))
+			return None
+		else:
+			return self._get_header(objects.OK, self.no)
 
 	def time(self):
 		"""\
@@ -548,7 +589,6 @@ class Connection:
 
 		self.s.close()
 		del self
-
 
 
 """\
