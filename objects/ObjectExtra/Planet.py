@@ -6,10 +6,15 @@ class Planet(Object):
 	"""\
 	A planet is any body in space which is very large and naturally occuring.
 
-	Planet objects have Int32 Player id, which is the owner of the planet.
+	*  a SInt32, the id of the player who "owns" this planet or -1 if not owned or unknown
+	* a list of,
+		* a UInt32, the resource id
+		* a UInt32, the units of this resource on the "surface"
+		* a UInt32, the maximum units of this resource remaining which are minable
+		* a UInt32, the maximum units of this resource remaining which are inaccessable
 	"""
 	subtype = 3
-	substruct = "I"
+	substruct = "j[jjj]"
 
 	def __init__(self, sequence, \
 			id, type, name, \
@@ -20,7 +25,7 @@ class Planet(Object):
 			order_types, \
 			order_number, \
 			modify_time, \
-			owner):
+			owner, resources):
 		Object.__init__(self, sequence, \
 			id, type, name, \
 			size, \
@@ -31,14 +36,12 @@ class Planet(Object):
 			order_number, \
 			modify_time)
 
-		self.length += 4
+		self.length += 4 + 12 * len(resources)
 		self.owner = owner
-		# FIXME: Hack
-		if self.owner == 4294967295:
-			self.owner = -1
+		self.resources = self.resources
 	
 	def __repr__(self):
 		output = Object.__repr__(self)
-		output += pack(self.substruct, self.owner)
+		output += pack(self.substruct, self.owner, self.resources)
 
 		return output

@@ -59,11 +59,19 @@ from objects.Ping import Ping
 Ping = Ping
 mapping[Ping.no] = Ping
 
+# Features
+from objects.Feature_Get import Feature_Get
+Feature_Get = Feature_Get
+mapping[Feature_Get.no] = Feature_Get
+
+from objects.Feature import Feature
+Feature = Feature
+mapping[Feature.no] = Feature
+
 # Objects
 from objects.Object_GetById import Object_GetById
 Object_GetById = Object_GetById
 mapping[Object_GetById.no] = Object_GetById
-
 
 from objects.Object import Object
 Object = Object
@@ -97,6 +105,14 @@ from objects.OrderDesc import OrderDesc, descriptions
 OrderDesc = OrderDesc
 OrderDescs = descriptions
 mapping[OrderDesc.no] = OrderDesc
+
+from objects.OrderDesc_GetID import OrderDesc_GetID
+OrderDesc_GetID = OrderDesc_GetID
+mapping[OrderDesc_GetID] = OrderDesc_GetID
+
+from objects.OrderDesc_IDSequence import OrderDesc_IDSequence
+OrderDesc_IDSequence = OrderDesc_IDSequence
+mapping[OrderDesc_IDSequence] = OrderDesc_IDSequence
 
 from objects.Order_Get import Order_Get
 Order_Get = Order_Get
@@ -136,6 +152,14 @@ mapping[Board_Get.no] = Board_Get
 from objects.Board import Board
 Board = Board
 mapping[Board.no] = Board
+
+from objects.Board_GetID import Board_GetID
+Board_GetID = Board_GetID
+mapping[Board_GetID.no] = Board_GetID
+
+from objects.Board_IDSequence import Board_IDSequence
+Board_IDSequence = Board_IDSequence
+mapping[Board_IDSequence.no] = Board_IDSequence
 
 from objects.Message_Get import Message_Get
 Message_Get = Message_Get
