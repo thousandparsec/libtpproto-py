@@ -93,6 +93,7 @@ class Server:
 				if socket is self.s:
 					# Accept a new connection
 					socket, address = self.s.accept()
+					print "Accepting connection from", address
 					self.connections.append(self.handler(socket, address, debug=True))
 				else:
 					try:

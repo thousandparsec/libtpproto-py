@@ -22,3 +22,4 @@ def failed(object):
 			return True
 	return False
 
+sys.path.pop(0)
