@@ -11,7 +11,7 @@ def descriptions(added=None):
 	global _descriptions
  
 	if _descriptions == None:
-		_descriptions = import_subtype(edir(__file__))
+		_descriptions = {} # import_subtype(edir(__file__))
 	
 	if added != None:
 		_descriptions[ added.subtype ] = added

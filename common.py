@@ -10,6 +10,9 @@ from support.output import *
 
 _continue = []
 
+class NotImplimented(Exception):
+	pass
+
 class Connection:
 	"""\
 	Base class for Thousand Parsec protocol connections.

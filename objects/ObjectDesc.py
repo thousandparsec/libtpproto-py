@@ -4,9 +4,10 @@ import string
 import os
 from os import path
 
-def splitall(p):
+def splitall(p, extra = []):
 	bits = []
-	while not p in ['', '..', '.'] and not p in site.sitedirs:
+	print "Sitedirs", site.sitedirs
+	while not p in ['', '..', '.'] and not p in site.sitedirs and not p in extra:
 		p, c = os.path.split(p)
 		bits.append(c)
 	bits.reverse()
@@ -18,13 +19,35 @@ def edir(p):
 
 	return d
 
-def import_subtype(p):
+def import_subtype(p, loader=None):
 	subtypes = {}
-	import_base = string.join(splitall(p), ".")
-	
-	for file in os.listdir(p):
+
+	if not loader:
+		paths = splitall(p)
+	else:
+		paths = splitall(p, loader.archive)
+	import_base = string.join(paths, ".")
+
+	print import_base
+
+	print "Loader", loader
+	print loader.archive
+	print "Path to base", p
+
+	if not loader:
+		files = os.listdir(p)
+	else:
+		files = []
+		for thing in loader._files.values():
+			file = thing[0]
+			if p in file:
+				files.append(file)
+
+	print "Files to do", files
+
+	for file in files:
 		name, ext = path.splitext(path.basename(file))
-		if ext != ".py" or name == "__init__":
+		if not ext in [".py", ".pyc", ".pyo"] or name == "__init__":
 			continue
 			
 		try:
@@ -53,5 +76,10 @@ def descriptions():
 	global _descriptions
 
 	if _descriptions == None:
-		_descriptions = import_subtype(edir(__file__))
+		try:
+			__loader__
+			_descriptions = import_subtype(edir(__file__), __loader__)
+		except NameError:
+			_descriptions = import_subtype(edir(__file__))
+		
 	return _descriptions

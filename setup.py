@@ -8,6 +8,10 @@ version = "%s.%s.%s" % version
 import os.path
 import os
 
+if not hasattr(os, "link"):
+	import shutil
+	os.link = shutil.copyfile
+
 if os.path.exists('CVS'):
 	base = ['LICENSE', 'COPYING']
 	for file in base:
@@ -33,4 +37,5 @@ setup(name="py-netlib",
 		],
 	package_dir = {'tp.netlib': '', 'tp': 'empty'}
 )
+
 
