@@ -84,7 +84,11 @@ class Server:
 	def serve_forever(self):
 		while True:
 			# Check if there is any socket to accept or with data
-			ready, trash, errors = select.select([self.s] + self.connections,[],self.connections,1)
+			try:
+				ready, trash, errors = select.select([self.s] + self.connections,[],self.connections,1)
+			except select.error:
+				continue
+
 			for socket in ready:
 				if socket is self.s:
 					# Accept a new connection
