@@ -5,3 +5,7 @@ release:
 	python setup.py bdist --formats=rpm,wininst
 	cp dist/* ../web/downloads/py-netlib
 	cd ../web/downloads/py-netlib ; cvs add *.* ; cvs commit
+
+clean:
+	rm -rf dist
+	rm -rf build
