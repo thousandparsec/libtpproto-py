@@ -1,11 +1,12 @@
 
+from xstruct import pack
 from objects import Object
 
 class Fleet(Object):
 	"""\
 	A fleet is a collection of ships. Many different ships can make up a fleet.
 
-	A fleet has an owner, int32 Player ID.
+	A fleet has an owner, Int32 Player ID.
 	"""
 	subtype = 4
 	substruct = "I"
@@ -29,3 +30,9 @@ class Fleet(Object):
 			order_number)
 
 		self.owner = owner
+
+	def __repr__(self):
+		output = Object.__repr__(self)
+		output += pack(self.substruct, self.owner)
+
+		return output

@@ -1,11 +1,12 @@
 
+from xstruct import pack
 from objects import Object
 
 class Planet(Object):
 	"""\
 	A planet is any body in space which is very large and naturally occuring.
 
-	Planet objects have int32 Player id, which is the owner of the planet.
+	Planet objects have Int32 Player id, which is the owner of the planet.
 	"""
 	subtype = 3
 	substruct = "I"
@@ -29,3 +30,9 @@ class Planet(Object):
 			order_number)
 
 		self.owner = owner
+	
+	def __repr__(self):
+		output = Object.__repr__(self)
+		output += pack(self.substruct, self.owner)
+
+		return output

@@ -1,4 +1,5 @@
 
+from xstruct import pack
 from objects import Object
 
 class Universe(Object):
@@ -29,3 +30,9 @@ class Universe(Object):
 			order_number)
 
 		self.turn = turn
+	
+	def __repr__(self):
+		output = Object.__repr__(self)
+		output += pack(self.substruct, self.turn)
+
+		return output

@@ -1,4 +1,5 @@
 
+from xstruct import pack
 from objects import Object
 
 class StarSystem(Object):
