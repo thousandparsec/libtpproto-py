@@ -79,29 +79,6 @@ Order_Remove = Order_Remove
 mapping[Order_Remove.no] = Order_Remove
 
 ## Time
-#
-## Message
-#from objects.Board_Get import Board_Get
-#Board_Get = Board_Get
-#mapping[Board_Get.no] = Board_Get
-#
-#from objects.Board import Board
-#Board = Board
-#mapping[Board.no] = Board
-#
-#from objects.Message_Get import Message_Get
-#Message_Get = Message_Get
-#mapping[Message_Get.no] = Message_Get
-#
-#from objects.Message import Message
-#Message = Message
-#mapping[Message.no] = Message
-#
-#from objects.Message_Post import Message_Post
-#Message_Post = Message_Post
-#mapping[Message_Post.no] = Message_Post
-#
-
 from objects.TimeRemaining_Get import TimeRemaining_Get
 TimeRemaining_Get = TimeRemaining_Get
 mapping[TimeRemaining_Get.no] = TimeRemaining_Get
@@ -109,4 +86,30 @@ mapping[TimeRemaining_Get.no] = TimeRemaining_Get
 from objects.TimeRemaining import TimeRemaining
 TimeRemaining = TimeRemaining
 mapping[TimeRemaining.no] = TimeRemaining
+
+## Message
+
+from objects.Board_Get import Board_Get
+Board_Get = Board_Get
+mapping[Board_Get.no] = Board_Get
+
+from objects.Board import Board
+Board = Board
+mapping[Board.no] = Board
+
+from objects.Message_Get import Message_Get
+Message_Get = Message_Get
+mapping[Message_Get.no] = Message_Get
+
+from objects.Message import Message
+Message = Message
+mapping[Message.no] = Message
+
+from objects.Message_Insert import Message_Insert
+Message_Insert = Message_Insert
+mapping[Message_Insert.no] = Message_Insert
+
+from objects.Message_Remove import Message_Remove
+Message_Remove = Message_Remove
+mapping[Message_Remove.no] = Message_Remove
 

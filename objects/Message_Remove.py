@@ -3,15 +3,14 @@ from xstruct import pack
 
 from Header import Processed
 
-class Message_Get(Processed):
+class Message_Remove(Processed):
 	"""\
-	The Message_Get packet consists of:
-		* A UInt32, board to get the message from.
-		* a list of,
-			* A UInt32, message slots
+	The Message_Remove packet consists of:
+		* A uint32, board to get the messages from.
+		* A uint32, list ID of message slots.
 	"""
 
-	no = 18
+	no = 21
 	struct = "I[I]"
 
 	def __init__(self, sequence, id, slots):
