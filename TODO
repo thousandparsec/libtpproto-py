@@ -1,5 +1,4 @@
-Things that I have to do:
 
-	Figure out how to deal with "extra" details on Object
-	Figure out how to deal with Order/OrderDesc
+Known Bugs:
+	OrderDesc doesn't escape reserve words - hence .name can be overwritten
 

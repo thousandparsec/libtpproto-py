@@ -109,6 +109,10 @@ class Connection:
 				except objects.DescriptionError:
 					self._description_error(p)
 					p = None
+				except:
+					self._error(p)
+					p = None
+					del b[sequence][0]
 				continue
 				
 			# Is a packet header on the line?
@@ -146,7 +150,7 @@ class Connection:
 
 			q._data = d[s:]
 			
-			if not b.has_key(sequence):
+			if not b.has_key(q.sequence):
 				b[q.sequence] = []	
 			b[q.sequence].append(q)
 
@@ -165,6 +169,9 @@ class Connection:
 		p.process(p._data)
 		"""
 		raise objects.DescriptionError("Can not deal with an undescribed packet.")
+
+	def _error(self, packet):
+		raise NotImplimented("Error handling of bad packets not implimented...")
 
 	############################################
 	# Non-blocking helpers

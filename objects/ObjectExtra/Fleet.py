@@ -32,6 +32,9 @@ class Fleet(Object):
 		self.length += 4 + 4 + len(ships) * 8 + 4
 
 		self.owner = owner
+		# FIXME: Hack
+		if self.owner == 4294967295:
+			self.owner = -1
 		self.ships = ships
 		self.damage = damage
 

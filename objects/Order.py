@@ -45,10 +45,10 @@ class Order(Describable):
 						if len(self.substruct) > 0:
 							args, leftover = unpack(self.substruct, extra)
 						else:
-							args = None
+							args = ()
 
-					args = (self, sequence, id, slot, type, turns, resources,) + args
-					apply(self.__class__.__init__, args)
+				args = (self, sequence, id, slot, type, turns, resources,) + args
+				apply(self.__class__.__init__, args)
 
 				return
 

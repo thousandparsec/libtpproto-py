@@ -31,6 +31,9 @@ class Planet(Object):
 
 		self.length += 4
 		self.owner = owner
+		# FIXME: Hack
+		if self.owner == 4294967295:
+			self.owner = -1
 	
 	def __repr__(self):
 		output = Object.__repr__(self)

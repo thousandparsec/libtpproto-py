@@ -63,7 +63,12 @@ class ServerConnection(Connection):
 
 	def _description_error(self, p):
 		self._send(objects.Fail(p.sequence, constants.FAIL_FRAME, "Packet which doesn't have a possible description."))
-
+		
+	def _error(self, p):
+		type, val, tb = sys.exc_info()
+		print ''.join(traceback.format_exception(type, val, tb))
+		self._send(objects.Fail(p.sequence, constants.FAIL_FRAME, "Packet wasn't valid."))
+		
 	def OnInit(self):
 		pass
 
@@ -93,7 +98,7 @@ class Server:
 		while True:
 			# Check if there is any socket to accept or with data
 			try:
-				ready, trash, errors = select.select([self.s] + self.connections,[],self.connections,1)
+				ready, trash, errors = select.select([self.s] + self.connections,[],self.connections,0.1)
 			except select.error:
 				continue
 
@@ -108,10 +113,19 @@ class Server:
 						socket.poll()
 					except IOError:
 						errors.append(socket)
+			else:
+				for socket in self.connections:
+					try:
+						socket.poll()
+					except IOError:
+						errors.append(socket)
 			
 			# Cleanup any old sockets
 			for socket in errors:
-				self.connections.remove(socket)
+				try:
+					self.connections.remove(socket)
+				except:
+					continue
 				del socket
 
 if __name__ == "__main__":

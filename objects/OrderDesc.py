@@ -11,7 +11,7 @@ def descriptions(added=None):
 	global _descriptions
  
 	if _descriptions == None:
-		_descriptions = import_subtype(edir(__file__))
+		_descriptions = {} # import_subtype(edir(__file__))
 	
 	if added != None:
 		_descriptions[ added.subtype ] = added
@@ -68,6 +68,11 @@ class DynamicBaseOrder(Order):
 				setattr(self, name, args[0:size])
 
 			args = args[size:]
+	
+			# FIXME: Need to figure out a better way to do this...
+			if type in (ARG_TIME, ARG_OBJECT):
+				if getattr(self, name) == 4294967295:
+					setattr(self, name, -1)
 
 		# FIXME: Need to figure out the length a better way
 		self.length = len(self.__repr__()) - Header.size
