@@ -1,6 +1,10 @@
 # Mapping to store between type numbers and classes
 mapping = {}
 
+# Constants
+import constants
+constants = constants
+
 # Header
 from objects.Header import Header, Processed
 Header = Header
@@ -13,9 +17,6 @@ from objects.Description import DescriptionError, Describable, Description
 DescriptionError = DescriptionError
 Describable = Describable
 Description = Description
-
-import Constants
-constants = Constants
 
 # Generic Responses
 from objects.OK import OK
@@ -51,6 +52,9 @@ mapping[Object_GetByPos.no] = Object_GetByPos
 from objects.Object import Object
 Object = Object
 mapping[Object.no] = Object
+
+from objects.ObjectDesc import descriptions
+ObjectDescs = descriptions
 
 # Orders
 from objects.OrderDesc_Get import OrderDesc_Get
