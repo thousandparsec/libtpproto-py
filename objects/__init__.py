@@ -50,11 +50,11 @@ mapping[Object.no] = Object
 #from OrderDesc import OrderDesc
 #OrderDesc = OrderDesc
 #mapping[OrderDesc.no] = OrderDesc
-#
-#from Order_Get import Order_Get
-#Order_Get = Order_Get
-#mapping[Order_Get.no] = Order_Get
-#
+
+from Order_Get import Order_Get
+Order_Get = Order_Get
+mapping[Order_Get.no] = Order_Get
+
 #from Order import Order
 #Order = Order
 #mapping[Order.no] = Order
@@ -62,11 +62,11 @@ mapping[Object.no] = Object
 #from Order_Add import Order_Add
 #Order_Add = Order_Add
 #mapping[Order_Add.no] = Order_Add
-#
-#from Order_Remove import Order_Remove
-#Order_Remove = Order_Remove
-#mapping[Order_Remove] = Order_Remove
-#
+
+from Order_Remove import Order_Remove
+Order_Remove = Order_Remove
+mapping[Order_Remove.no] = Order_Remove
+
 ## Time
 #
 ## Message

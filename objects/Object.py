@@ -43,15 +43,14 @@ class Object(Processed):
 		#  *  4 bytes + len(order_types)*4
 		#  *  4 bytes
 		#  * 16 bytes
-		"""\
-		self.length = \
-			4 + 4 + \
-			4 + len(name) + 1 + \
-			8 + 24 + 24 + \
-			4 + len(contains)*4 + \
-			4 + len(order_types)*4 + \
-			4 + 16
-		"""
+		if not hasattr(self, 'length'):
+			self.length = \
+				4 + 4 + \
+				4 + len(name) + 1 + \
+				8 + 24 + 24 + \
+				4 + len(contains)*4 + \
+				4 + len(order_types)*4 + \
+				4 + 16
 
 		self.id = id
 		self.otype = type

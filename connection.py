@@ -19,6 +19,9 @@ class Connection:
 		if debug:
 			self.debug = debug
 
+		# This is a storage for out of sequence packets
+		self.rbuffer = {}
+
 	def setblocking(self, nb):
 		"""\
 		Sets the connection to either blocking or non-blocking.
@@ -53,7 +56,15 @@ class Connection:
 		
 		return ret
 
-	def _push(self, function, *args):
+	def _next(self, function, *args):
+		"""\
+		*Internal*
+
+		Queues a fuction for polling after the current one.
+		"""
+		self.nb.insert(1, (function, args))
+		
+	def _append(self, function, *args):
 		"""\
 		*Internal*
 
@@ -87,31 +98,53 @@ class Connection:
 		s = self.s.send
 		s(repr(p))
 
-	def _recv(self):
+	def _recv(self, sequence):
 		"""\
 		*Internal*
 		
-		Reads a single TP packet from the socket.
+		Reads a single TP packet with correct sequence number from the socket.
 		"""
 		r = self.s.recv
+		b = self.rbuffer
 		s = objects.Header.size
 		
-		h = r(s, socket.MSG_PEEK)
+		p = None
+		
+		# Check we don't already have a packet
+		if b.has_key(sequence) and len(b[sequence]) > 0:
+			p = b[sequence].pop(0)
 
-		if len(h) == s:
+		while p == None:
+			# Is a packet header on the line?
+			h = r(s, socket.MSG_PEEK)
+
+			# This will only ever occur on a non-blocking connection
+			if len(h) != s:
+				return None
+			
 			p = objects.Header(h)
-
 			if p.length > 0:
 				d = r(s+p.length, socket.MSG_PEEK)
 			
-				if len(d) == s+p.length:
-					p.process(d[s:])
+				if len(d) != s+p.length:
+					return None
+
+				p.process(d[s:])
+			
+			# Remove the stuff from the line
+			r(s+p.length)
 				
-					# Remove the stuff from the buffer
-					r(s+p.length)
-				
-					return p
-		return None
+			# Check its the type of packet we are after
+			if p.sequence != sequence:
+				if not b.has_key(b, sequence):
+					b[p.sequence] = []
+					
+				b[p.sequence].append(p)
+
+				# Guess we try again!
+				p = None
+
+		return p
 
 	def _common(self):
 		"""\
@@ -133,7 +166,7 @@ class Connection:
 		self._send(p)
 		
 		if self._noblock():
-			self._push(self._connect, self.no)
+			self._append(self._connect, self.no)
 			return None
 		
 		# and wait for a response
@@ -145,7 +178,7 @@ class Connection:
 
 		Completes the connect function.
 		"""
-		p = self._recv()
+		p = self._recv(no)
 		if not p:
 			return None
 
@@ -172,7 +205,7 @@ class Connection:
 		self._send(p)
 		
 		if self._noblock():
-			self._push(self._login, self.no)
+			self._append(self._login, self.no)
 			return None
 		
 		# and wait for a response
@@ -184,7 +217,7 @@ class Connection:
 
 		Completes the login function.
 		"""
-		p = self._recv()
+		p = self._recv(no)
 		if not p:
 			return None
 
@@ -244,7 +277,7 @@ class Connection:
 		self._send(p)
 
 		if self._noblock():
-			self._push(self._get_objects_header, self.no)
+			self._append(self._get_objects_header, self.no)
 			return None
 		
 		# and wait for a response
@@ -256,7 +289,7 @@ class Connection:
 
 		Completes the get_objects function.
 		"""
-		p = self._recv()
+		p = self._recv(no)
 		if not p:
 			return None
 
@@ -265,21 +298,21 @@ class Connection:
 			return False, p.s
 		elif not isinstance(p, objects.Sequence):
 			# We got a bad packet
-			raise IOError("Bad Packet was received")
+			raise IOError("Bad Packet was received %s" % p)
 
 		self.store = []
 		
 		if self._noblock():
-			for i in range(0, p.number):
-				self._push(self._get_objects_data, self.no)
+			self._next(self._get_objects_finish)
 
-			self._push(self._get_objects_finish)
+			for i in range(0, p.number):
+				self._next(self._get_objects_data, no)
 
 			# Keep the polling going
 			return _continue
 
 		for i in range(0, p.number):
-			self._get_objects_data(self.no)
+			self._get_objects_data(no)
 			
 		return self._get_objects_finish()
 
@@ -289,7 +322,7 @@ class Connection:
 
 		Completes the get_objects function.
 		"""
-		p = self._recv()
+		p = self._recv(no)
 		if p and isinstance(p, objects.Object):
 			self.store.append(p)
 
