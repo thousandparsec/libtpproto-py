@@ -19,12 +19,16 @@ class Move(Order):
 	
 	def __init__(self, sequence, \
 					id,	slot, type, turns, resources, \
-					x, y, z):
+					x, y=None, z=None):
 		Order.__init__(self, sequence, \
 					id, slot, type, turns, resources)
 
 		self.length += 3*8
-		self.pos = (x, y, z)
+
+		if z==None or y==None:
+			self.pos = x
+		else:
+			self.pos = (x, y, z)
 
 	def __repr__(self):
 		output = Order.__repr__(self)

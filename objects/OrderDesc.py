@@ -25,13 +25,21 @@ struct_map = {
 	ARG_RANGE: ("I", 1),
 }
 
+class ClassNicePrint(type):
+	def __str__(self):
+		return "<dynamic-class '%s' at %s>" % (self.name, hex(id(self)))
+	__repr__ = __str__
+
+from Header import Header
 from Order import Order
-class DynamicDesc(Order):
+class DynamicBaseOrder(Order):
 	"""\
 	An Order Type built by a OrderDesc.
 	"""
 	substruct = ""
 	subtype = -1
+
+	__metaclass__ = ClassNicePrint
 
 	def __init__(self, sequence, \
 			id, type, slot, turns, resources, \
@@ -44,12 +52,16 @@ class DynamicDesc(Order):
 			raise ValueError("Not enough arguments.")
 
 		for name, type in self.names:
-			struct, size = struct_map[size]
+			struct, size = struct_map[type]
 
 			setattr(self, name, args[0:size])
 			args = args[size:]
 
+		# FIXME: Need to figure out the length a better way
+		self.length = len(self.__repr__()) - Header.size
+
 	def __repr__(self):
+		print "self.type", self.type
 		args = []
 		for name, type in self.names:
 			for attr in getattr(self, name):
@@ -59,7 +71,7 @@ class DynamicDesc(Order):
 					args.append(attr)
 	
 		output = Order.__repr__(self)
-		output += apply(pack, (self.substruct,) + args)
+		output += apply(pack, [self.substruct,] + args)
 		return output
 
 class OrderDesc(Description):
@@ -106,6 +118,16 @@ class OrderDesc(Description):
 		self.description = description
 		self.arguments = arguments
 
+		self.length = 4 + \
+			4 + len(name) + 1 + \
+			4 + len(description) + 1
+
+		for argument in arguments:
+			self.length += \
+				4 + len(argument[0]) + 1 + \
+				4 + \
+				4 + len(argument[2]) + 1
+
 		descriptions(self.build())
 
 	def __repr__(self):
@@ -124,23 +146,23 @@ class OrderDesc(Description):
 
 		Builds a class from this description.
 		"""
-		class C(DynamicDesc):
+		class DynamicOrder(DynamicBaseOrder):
 			pass
 
-		C.name = self.name
-		C.__doc__ = self.description
+		DynamicOrder.name = self.name
+		DynamicOrder.__doc__ = self.description
 
 		# Arguments
-		C.names = []
-		C.subtype = self.id
+		DynamicOrder.names = []
+		DynamicOrder.subtype = self.id
 	
 		for name, type, desc in self.arguments:
 			struct, size = struct_map[type]
 
- 			C.names.append((name, type))
-			C.substruct += struct
-			setattr(C, name + "__doc__", desc)
+ 			DynamicOrder.names.append((name, type))
+			DynamicOrder.substruct += struct
+			setattr(DynamicOrder, name + "__doc__", desc)
 
-		return C
+		return DynamicOrder
 
 __all__ = ["descriptions", "OrderDesc"]

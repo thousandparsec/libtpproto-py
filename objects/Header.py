@@ -8,7 +8,7 @@ _marker = []
 class FrameError(Exception):
 	pass
 
-class Header:
+class Header(object):
 	"""\
 	Base class for all packets.
 
@@ -84,7 +84,8 @@ class Header:
 		"""\
 		Return a reconisable string.
 		"""
-		return "<%s @ %s>" % (self.__class__, hex(id(self)))
+		
+		return "<%s - %s @ %s>" % (self.__class__.__module__, self.__class__.__name__, hex(id(self)))
 
 	def __repr__(self):
 		"""\

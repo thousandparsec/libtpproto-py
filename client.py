@@ -77,7 +77,6 @@ class ClientConnection(Connection):
 		# Increase the no number
 		self.no += 1
 
-
 	def _okfail(self, no):
 		"""\
 		*Internal*

@@ -111,7 +111,6 @@ class Connection:
 				if len(h) == 0:
 					raise IOError("Socket has been terminated.")
 			except socket.error, e:
-				print "Socket error", e
 				h = ""
 
 			# This will only ever occur on a non-blocking connection

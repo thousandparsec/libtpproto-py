@@ -36,7 +36,7 @@ class Order(Describable):
 	
 		# Upgrade the class to the real type
 		# FIXME: The order/object class needs to be merged as this is all repeated
-		if self.__class__ == Order or str(self.__class__).endswith("Order_Insert"):
+		if self.__class__ == Order or str(self.__class__.__name__).endswith("Order_Insert"):
 			if descriptions().has_key(type):
 				self.__class__ = descriptions()[type]
 
