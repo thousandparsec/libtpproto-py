@@ -1,10 +1,7 @@
 
 from xstruct import pack
 
-from Header import Processed
-
-# Import prebuilt orders
-from ObjectDesc import *
+from Description import Description
 
 _descriptions = None
 def descriptions(added=None):
@@ -37,7 +34,7 @@ def buildstruct(parameters):
 		elif type == ARG_RANGE:
  			pass
  
-class OrderDesc(Processed):
+class OrderDesc(Description):
 	"""\
 	The OrderDesc packet consists of:
 	    * a UInt32, order type
@@ -72,19 +69,23 @@ class OrderDesc(Processed):
 	no = 9
 	struct="I SS [SIS]"
 
-	def __init__(self, sequence, s=""):
-		Processed.__init__(self, sequence)
+	def __init__(self, sequence, \
+			id, name, description, \
+			arguments):
+		Description.__init__(self, sequence)
 
-		# Length is:
-		#  * 4 bytes (32 bit integer)
-		#  * the string
-		#  * null terminator
-		#
-		self.length = 4 + len(s) + 1
-		self.s = s
+		self.id = id
+		self.name = name
+		self.description = description
+		self.arguments = arguments
 	
 	def __repr__(self):
-		output = Processed.__repr__(self)
-		output += pack(self.struct, self.s)
+		output = Description.__repr__(self)
+		output += pack(self.struct, \
+				self.id, \
+				self.name, \
+				self.description, \
+				self.arguments)
 
 		return output
+	

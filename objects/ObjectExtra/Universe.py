@@ -29,6 +29,7 @@ class Universe(Object):
 			order_types, \
 			order_number)
 
+		self.length += 4
 		self.turn = turn
 	
 	def __repr__(self):

@@ -1,9 +1,8 @@
 
-from xstruct import pack
-
+from xstruct import pack, unpack
 
 from Description import Describable
-from ObjectDesc import descriptions
+from OrderDesc import descriptions
 
 class Order(Describable):
 	"""\
@@ -24,21 +23,42 @@ class Order(Describable):
 	no = 11
 	struct = "III [II]"
 
-	def __init__(self, sequence, s=""):
-		if 1 > sequence:
-			raise ValueError("OK is a reply packet so needs a valid sequence number (%i)" % sequence)
-		Processed.__init__(self, sequence)
+	def __init__(self, sequence, \
+			id,	slot, turns, resources, \
+			extra=None, *args):
+		Describable.__init__(self, sequence)
+		
+		# Upgrade the class to the real type
+		if self.__class__ == Order:
+			if descriptions().has_key(type):
+				self.__class__ = descriptions()[type]
 
-		# Length is:
-		#  * 4 bytes (32 bit integer)
-		#  * the string
-		#  * null terminator
-		#
-		self.length = 4 + len(s) + 1
-		self.s = s
-	
+				if extra != None or len(args) > 0:
+					args = (extra,)+args
+					if extra != None:
+						if len(self.substruct) > 0:
+							args, leftover = unpack(self.substruct, extra)
+
+					args = (self, sequence, id, slot, turns, resources,) + args
+					apply(self.__class__.__init__, args)
+
+				return
+			else:
+				# FIXME: Should throw a description error
+				if extra != None:
+					self.extra = extra
+		
+		self.length = \
+			4 + 4 + 4 + \
+			4 + len(resources)*(4+4)
+
+		self.id = id
+		self.slot = slot
+		self.turns = turns
+		self.resources = resources
+
 	def __repr__(self):
-		output = Processed.__repr__(self)
-		output += pack(self.struct, self.s)
+		output = Describable.__repr__(self)
+		output += pack(self.struct, self.id, self.slot, self.turns, self.resources)
 
 		return output

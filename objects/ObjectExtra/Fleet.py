@@ -29,6 +29,7 @@ class Fleet(Object):
 			order_types, \
 			order_number)
 
+		self.length += 4
 		self.owner = owner
 
 	def __repr__(self):

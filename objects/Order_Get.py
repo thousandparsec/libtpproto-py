@@ -7,7 +7,8 @@ class Order_Get(Processed):
 	"""\
 	The Order_Get packet consists of:
 		* A uint32, object to get the orders from.
-		* A uint32, list ID of order slots.
+		* a list of,
+			* A uint32, list ID of order slots.
 	"""
 
 	no = 10

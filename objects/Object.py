@@ -50,7 +50,6 @@ class Object(Describable):
 					args = (self, sequence, id, type, name, size, posx, posy, posz, 
 							velx, vely, velz, contains, order_types, order_number) + args
 
-					print self.__class__
 					apply(self.__class__.__init__, args)
 				return
 			else:
@@ -89,7 +88,7 @@ class Object(Describable):
 
 	def __repr__(self):
 		output = Describable.__repr__(self)
-		# struct = "IIS Q 3Q 3Q [I] [I] I 16x"
+		# struct = "IIS Q 3q 3q [I] [I] I 16x"
 		output += pack(self.struct, \
 				self.id, \
 				self.otype, \

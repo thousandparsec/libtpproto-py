@@ -53,7 +53,7 @@ mapping[Object.no] = Object
 #from OrderDesc_Get import OrderDesc_Get
 #OrderDesc_Get = OrderDesc_Get
 #mapping[OrderDesc_Get.no] = OrderDesc_Get
-#
+
 #from OrderDesc import OrderDesc
 #OrderDesc = OrderDesc
 #mapping[OrderDesc.no] = OrderDesc
@@ -62,13 +62,13 @@ from objects.Order_Get import Order_Get
 Order_Get = Order_Get
 mapping[Order_Get.no] = Order_Get
 
-#from Order import Order
-#Order = Order
-#mapping[Order.no] = Order
-#
-#from Order_Add import Order_Add
-#Order_Add = Order_Add
-#mapping[Order_Add.no] = Order_Add
+from objects.Order import Order
+Order = Order
+mapping[Order.no] = Order
+
+from objects.Order_Insert import Order_Insert
+Order_Insert = Order_Insert
+mapping[Order_Insert.no] = Order_Insert
 
 from objects.Order_Remove import Order_Remove
 Order_Remove = Order_Remove
