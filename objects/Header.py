@@ -1,7 +1,13 @@
 
 from xstruct import pack, unpack, hexbyte
 
-version = "TP02"
+version = "TP03"
+def SetVersion(i):
+	global version
+	if i == 2:
+		version = "TP02"
+	elif i == 3:
+		version = "TP03"
 
 _marker = []
 

@@ -6,11 +6,12 @@ import constants
 constants = constants
 
 # Header
-from objects.Header import Header, Processed
+from objects.Header import Header, Processed, SetVersion
 Header = Header
 Header.mapping = mapping
 
 Processed = Processed
+SetVersion = SetVersion
 
 # Special Description Stuff
 from objects.Description import DescriptionError, Describable, Description
