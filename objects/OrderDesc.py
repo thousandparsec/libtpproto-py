@@ -12,9 +12,16 @@ def descriptions(added=None):
  
 	if _descriptions == None:
 		try:
-			_descriptions = import_subtype(edir(__file__), __loader__)
+			_descriptions = import_subtype(edir(__file__), py2exe=__loader__)
 		except NameError:
-			_descriptions = import_subtype(edir(__file__))
+			try:
+				import sys
+				sys.frozen
+				import carchive
+				this = carchive.CArchive(sys.executable).openEmbeddedZlib("out1.pyz")
+				_descriptions = import_subtype("tp.netlib.objects.OrderExtra", installer=this.contents())
+			except NameError:
+				_descriptions = import_subtype(edir(__file__))
 	
 	if added != None:
 		_descriptions[ added.subtype ] = added

@@ -47,6 +47,7 @@ Non-Blocking Example Usage:
 
 # Python Imports
 import socket
+import encodings.idna
 
 # Local imports
 import xstruct

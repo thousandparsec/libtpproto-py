@@ -18,23 +18,30 @@ def edir(p):
 
 	return d
 
-def import_subtype(p, loader=None):
+def import_subtype(p, py2exe=None, installer=None):
 	subtypes = {}
 
-	if loader == None:
-		paths = splitall(p)
+	if py2exe != None:
+		paths = splitall(p, py2exe.archive)
+	elif installer != None:
+		paths = p.split(".")
 	else:
-		paths = splitall(p, loader.archive)
+		paths = splitall(p)
 	import_base = string.join(paths, ".")
 
-	if loader == None:
-		files = os.listdir(p)
-	else:
+	if py2exe != None:
 		files = []
-		for thing in loader._files.values():
+		for thing in py2exe._files.values():
 			file = thing[0]
 			if p in file:
 				files.append(file)
+	elif installer != None:
+		files = []
+		for file in installer:
+			if file.startswith(import_base + "."):
+				files.append(file[len(import_base)+1:] + ".py")
+	else:
+		files = os.listdir(p)
 
 	for file in files:
 		name, ext = path.splitext(path.basename(file))
@@ -68,8 +75,15 @@ def descriptions():
 
 	if _descriptions == None:
 		try:
-			_descriptions = import_subtype(edir(__file__), __loader__)
-		except NameError:
-			_descriptions = import_subtype(edir(__file__))
-		
+			_descriptions = import_subtype(edir(__file__), py2exe=__loader__)
+		except NameError, e:
+			try:
+				import sys
+				sys.frozen
+				import carchive
+				this = carchive.CArchive(sys.executable).openEmbeddedZlib("out1.pyz")
+				_descriptions = import_subtype("tp.netlib.objects.ObjectExtra", installer=this.contents())
+			except NameError, e:
+				_descriptions = import_subtype(edir(__file__))
+	
 	return _descriptions
