@@ -33,14 +33,14 @@ class ServerConnection(Connection):
 		sequences = self.buffers['receive'].keys()
 		sequences.sort()
 		for sequence in sequences:
-			packet = self._recv(sequence)
+			p = self._recv(sequence)
 
-			if not packet:
+			if not p:
 				continue
 
 			success = False
 
-			bases = [packet.__class__]
+			bases = [p.__class__]
 			while len(bases) > 0:
 				print bases
 
@@ -50,7 +50,7 @@ class ServerConnection(Connection):
 	
 				if hasattr(self, function):
 					try:
-						success = getattr(self, function)(packet)
+						success = getattr(self, function)(p)
 					except:
 						type, val, tb = sys.exc_info()
 						print ''.join(traceback.format_exception(type, val, tb))
@@ -59,16 +59,16 @@ class ServerConnection(Connection):
 				bases += list(c.__bases__)
 
 			if not success:
-				self._send(objects.Fail(packet.sequence, constants.FAIL_PERM, "Service unavalible."))
+				self._send(objects.Fail(p.sequence, constants.FAIL_PERM, "Service unavalible."))
 
-	def _description_error(self, packet):
-		self._send(objects.Fail(packet.sequence, constants.FAIL_FRAME, "Packet which doesn't have a possible description."))
+	def _description_error(self, p):
+		self._send(objects.Fail(p.sequence, constants.FAIL_FRAME, "Packet which doesn't have a possible description."))
 
 	def OnInit(self):
 		pass
 
-	def OnConnect(self, packet):
-		self._send(objects.OK(packet.sequence, "Welcome to py-server!"))
+	def OnConnect(self, p):
+		self._send(objects.OK(p.sequence, "Welcome to py-server!"))
 		return True
 
 class Server:

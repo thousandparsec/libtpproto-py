@@ -95,14 +95,22 @@ class Connection:
 		r = self.s.recv
 		b = self.buffers['receive']
 		s = objects.Header.size
-		
 		p = None
-		
-		# Check we don't already have a packet
-		if b.has_key(sequence) and len(b[sequence]) > 0:
-			p = b[sequence].pop(0)
 
 		while p == None:
+			# Check if a packet is read...
+			if b.has_key(sequence) and len(b[sequence]) > 0:
+				p = b[sequence][0]
+			
+				try:
+					p.process(p._data)
+					del b[sequence][0]
+					
+				except objects.DescriptionError:
+					self._description_error(p)
+					p = None
+				continue
+				
 			# Is a packet header on the line?
 			try:
 				h = r(s, socket.MSG_PEEK)
@@ -119,48 +127,31 @@ class Connection:
 			if self.debug:
 				red("Receiving: %s" % xstruct.hexbyte(h))
 			
-			p = objects.Header(h)
+			q = objects.Header(h)
 				
-			if p.length > 0:
-				d = r(s+p.length, socket.MSG_PEEK)
+			if q.length > 0:
+				d = r(s+q.length, socket.MSG_PEEK)
 				
 				if self.debug:
 					red("%s \n" % xstruct.hexbyte(d[s:]))
 			
 				# This will only ever occur on a non-blocking connection
-				if len(d) != s+p.length:
+				if len(d) != s+q.length:
 					return None
-			
 			else:
 				d = ""
 			
 			# Remove the stuff from the line
-			r(s+p.length)
+			r(s+q.length)
 
-			try:
-				p.process(d[s:])
-			except objects.DescriptionError:
-				p._data = d[s:]
-				p = self._description_error(p)
-				continue
+			q._data = d[s:]
+			
+			if not b.has_key(sequence):
+				b[q.sequence] = []	
+			b[q.sequence].append(q)
 
-			if self.debug:
-				red("Receiving: %s (%s)\n" % (str(p), p.sequence))
-
-			# FIXME: This shouldn't be in the base class
-			# Check if this packet is a description for an undescribed object
-			if isinstance(p, objects.Description):
-				p = self._description(p)
-				
-			# Check its the type of packet we are after
-			if p.sequence != sequence:
-				if not b.has_key(sequence):
-					b[p.sequence] = []
-					
-				b[p.sequence].append(p)
-
-				p = None
-				continue
+		if self.debug:
+			red("Receiving: %s (%s)\n" % (str(p), p.sequence))
 
 		return p
 
@@ -174,12 +165,6 @@ class Connection:
 		p.process(p._data)
 		"""
 		raise objects.DescriptionError("Can not deal with an undescribed packet.")
-
-	def _description(self, packet):
-		"""\
-		Called when we get a description error.
-		"""
-		return packet
 
 	############################################
 	# Non-blocking helpers
@@ -201,6 +186,14 @@ class Connection:
 				self.nb.pop(0)
 		
 		return ret
+
+	def _insert(self, function, *args):
+		"""\
+		*Internal*
+
+		Queues a fuction for polling before the current one.
+		"""
+		self.nb.insert(0, (function, args))
 
 	def _next(self, function, *args):
 		"""\

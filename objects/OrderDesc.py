@@ -18,11 +18,13 @@ def descriptions(added=None):
         return _descriptions
 
 struct_map = {
-	ARG_ABS_COORD: ("qqq", 3),
-	ARG_TIME: ("I", 1),
-	ARG_OBJECT: ("I", 1),
-	ARG_PLAYER: ("I", 1),
-	ARG_RANGE: ("I", 1),
+	ARG_ABS_COORD:	("qqq",			3),
+	ARG_TIME: 		("I",			1),
+	ARG_OBJECT:		("I",			1),
+	ARG_PLAYER:		("2I",			2),
+	ARG_REL_COORD:	("Iqqq",		3),
+	ARG_RANGE:		("iiii",		4),
+	ARG_LIST:		("[ISI][II]", 	2),
 }
 
 class ClassNicePrint(type):
@@ -83,6 +85,9 @@ class DynamicBaseOrder(Order):
 		output = Order.__repr__(self)
 		output += apply(pack, [self.substruct,] + args)
 		return output
+
+	def __str__(self):
+		return "<netlib.objects.OrderExtra.DynamicOrder - %s @ %s>" % (self.name, id(self))
 
 class OrderDesc(Description):
 	"""\

@@ -55,6 +55,8 @@ constants = objects.constants
 
 from common import Connection
 
+sequence_max = 4294967296
+
 class ClientConnection(Connection):
 	"""\
 	Class for a connection from the client side.
@@ -68,6 +70,8 @@ class ClientConnection(Connection):
 
 		if host != None:
 			self.setup(host, port, nb, debug)
+
+		self.__desc = False
 
 	def setup(self, host, port=6923, nb=0, debug=0):
 		"""\
@@ -106,41 +110,25 @@ class ClientConnection(Connection):
 		self.no = 1
 
 	def _description_error(self, p):
-		# The packet doesn't have a description yet!?
-		d = self.buffers['undescribed']
-		
-		# Store the packet and wait for the description
-		if not d.has_key(p.type):
-			d[p.type] = []
-
-		d[p.type].append(p)
-
+		# Need to figure out how to do non-blocking properly...
 		# Send a request for the description
-		p = objects.OrderDesc_Get(self.no-1, [p.type])
-		self._send(p)
+		if not self.__desc:
+			q = objects.OrderDesc_Get(p.sequence-1, [p.type])
+			self._send(q)
 
-		return None
-
-	def _description(self, p):
-		d = self.buffers['undescribed']
-	
-		# The client must have requested the packet
-		if not d.has_key(p.id):
-			return p
-	
-		# Register the desciption error
-		p.register()
-	
-		# The connection requested the packet
-		# We have a packet waiting to be described
-		q = d[p.id].pop(0)
+			self.__desc = True
 		
-		if len(d[p.id]) == 0:
-			del d[p.id]
-	
-		q.process(q._data)
-		return q
+		q = self._recv(p.sequence-1)
 
+		if q != None and isinstance(q, objects.Sequence):
+			q = self._recv(p.sequence-1)
+
+		if q != None and isinstance(q, objects.Description):
+			self.__desc = False
+
+			# Register the desciption
+			q.register()
+	
 	def _common(self):
 		"""\
 		*Internal*
