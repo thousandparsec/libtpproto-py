@@ -8,15 +8,44 @@ from support.output import *
 _continue = []
 
 class Connection:
-	def __init__(self, host, port=6923, nb=0, debug=0):
+	def __init__(self, host=None, port=6923, nb=0, debug=0):
+		"""\
+		"""
+		if host != None:
+			self.setup(host, port, nb, debug)
+
+	def setup(self, host, port=6923, nb=0, debug=0):
+		"""\
+		*Internal*
+
+		Sets up the socket for a connection.
+		"""
 		self.host = host
 		self.port = port
 
-		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-		self.s.connect((host, port))
+		for af, socktype, proto, cannoname, sa in \
+				socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM):
+
+			try:
+				self.s = socket.socket(af, socktype, proto)
+				if debug:
+					print "Trying to connect to connect: (%s, %s)" % (host, port)
+
+				self.s.connect(sa)
+				break
+			except socket.error, msg:
+				if debug:
+					print "Connect fail: (%s, %s)" % (host, port)
+				if self.s:
+					self.sock.close()
+					
+				self.s = None
+				continue
+		
+		if not self.s:
+			raise socket.error, msg
 
 		self.no = 0
-
 		self.setblocking(nb)
 
 		self.debug = debug
