@@ -40,6 +40,10 @@ from objects.Login import Login
 Login = Login
 mapping[Login.no] = Login
 
+from objects.Ping import Ping
+Ping = Ping
+mapping[Ping.no] = Ping
+
 # Objects
 from objects.Object_GetById import Object_GetById
 Object_GetById = Object_GetById
@@ -81,6 +85,10 @@ mapping[Order_Insert.no] = Order_Insert
 from objects.Order_Remove import Order_Remove
 Order_Remove = Order_Remove
 mapping[Order_Remove.no] = Order_Remove
+
+from objects.Order_Probe import Order_Probe
+Order_Probe = Order_Probe
+mapping[Order_Probe.no] = Order_Probe
 
 ## Time
 from objects.TimeRemaining_Get import TimeRemaining_Get

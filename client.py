@@ -119,7 +119,17 @@ class ClientConnection(Connection):
 ##			print "Finished the http headers..."
 
 		else:
-			self.port = port
+			if host.startswith("tp://") or host.startswith("tps://"):
+				if host.count(":") > 1:
+					# Need to extract the port
+					pass
+				else:
+					if host.startswith("tp://"):
+						self.port = 6923
+					elif host.startswith("tps://"):
+						self.port = 6924
+			else:
+				self.port = port
 
 			s = None
 			for af, socktype, proto, cannoname, sa in \
@@ -128,13 +138,13 @@ class ClientConnection(Connection):
 				try:
 					s = socket.socket(af, socktype, proto)
 					if debug:
-						print "Trying to connect to connect: (%s, %s)" % (host, port)
+						print "Trying to connect to connect: (%s, %s)" % (host, self.port)
 
 					s.connect(sa)
 					break
 				except socket.error, msg:
 					if debug:
-						print "Connect fail: (%s, %s)" % (host, port)
+						print "Connect fail: (%s, %s)" % (host, self.port)
 					if s:
 						s.close()
 						
@@ -203,6 +213,23 @@ class ClientConnection(Connection):
 		
 		# Send a connect packet
 		p = objects.Connect(self.no, "py-netlib/0.0.2" + str)
+		self._send(p)
+		
+		if self._noblock():
+			self._append(self._okfail, self.no)
+			return None
+		
+		# and wait for a response
+		return self._okfail(self.no)
+		
+	def ping(self):
+		"""\
+		Pings the Thousand Parsec Server.
+		"""
+		self._common()
+		
+		# Send a connect packet
+		p = objects.Ping(self.no)
 		self._send(p)
 		
 		if self._noblock():

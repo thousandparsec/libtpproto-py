@@ -119,6 +119,10 @@ class ServerConnection(Connection):
 	def OnConnect(self, p):
 		self._send(objects.OK(p.sequence, "Welcome to py-server!"))
 		return True
+		
+	def OnPing(self, p):
+		self._send(objects.OK(p.sequence, "PONG!"))
+		return True
 
 class Server:
 	"""\
