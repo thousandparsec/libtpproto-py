@@ -104,9 +104,6 @@ class Header(object):
 			raise ValueError("Data not the correct length, Required: %s Got: %s" % \
 				(self.length, len(data)) )
 		
-		# Remove the process function
-		del self.__dict__["process"]
-		
 		# Mutate this class
 		self.__class__ = Header.mapping[self._type]
 		args, extra = unpack(self.struct, data)
@@ -119,6 +116,9 @@ class Header(object):
 
 			if len(extra) != 0:
 				raise ValueError("Extra Data found;" + extra)
+
+		# Remove the process function
+		del self.__dict__["process"]
 
 	def data_set(self, data=None):
 		"""\

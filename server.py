@@ -12,8 +12,9 @@ from common import Connection
 
 class ServerConnection(Connection):
 	def __init__(self, socket, address, debug=False):
-		self.address = address
+		Connection.__init__(self)
 
+		self.address = address
 		self.setup(socket, debug=debug, nb=True)
 
 	def fileno(self):
@@ -29,7 +30,7 @@ class ServerConnection(Connection):
 		# Get the packets
 		self._recv(-1)
 		
-		sequences = self.rbuffer.keys()
+		sequences = self.buffers['receive'].keys()
 		sequences.sort()
 		for sequence in sequences:
 			packet = self._recv(sequence)

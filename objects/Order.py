@@ -1,7 +1,7 @@
 
 from xstruct import pack, unpack
 
-from Description import Describable
+from Description import Describable, DescriptionError
 from OrderDesc import descriptions
 
 class Order(Describable):
@@ -48,13 +48,10 @@ class Order(Describable):
 							args = None
 
 					args = (self, sequence, id, slot, type, turns, resources,) + args
+					print args[1:]
 					apply(self.__class__.__init__, args)
 
 				return
-			else:
-				# FIXME: Should throw a description error
-				if extra != None:
-					self.extra = extra
 
 		self.length = \
 			4 + 4 + 4 + 4 + \
@@ -66,6 +63,11 @@ class Order(Describable):
 		self.turns = turns
 		self.resources = resources
 
+		if not descriptions().has_key(type):
+			if extra != None:
+				self.length += len(extra)
+				raise DescriptionError("No description for order type %s." % type)
+			
 	def __repr__(self):
 		output = Describable.__repr__(self)
 		output += pack(self.struct, self.id, self.slot, self.type, self.turns, self.resources)

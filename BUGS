@@ -1,0 +1,3 @@
+Known bugs:
+	If you use netlib you can't have your own modules named utils or objects.
+

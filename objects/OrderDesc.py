@@ -47,9 +47,9 @@ class DynamicBaseOrder(Order):
 		Order.__init__(self, sequence, \
 			id, type, slot, turns, resources)
 
-		if len(self.names) != len(args):
-			# FIXME: Must throw error here
-			raise ValueError("Not enough arguments.")
+#		if len(self.names) != len(args):
+#			# FIXME: Must throw error here
+#			raise ValueError("Not correct number arguments.")
 
 		for name, type in self.names:
 			struct, size = struct_map[type]
@@ -61,7 +61,6 @@ class DynamicBaseOrder(Order):
 		self.length = len(self.__repr__()) - Header.size
 
 	def __repr__(self):
-		print "self.type", self.type
 		args = []
 		for name, type in self.names:
 			for attr in getattr(self, name):
@@ -120,7 +119,8 @@ class OrderDesc(Description):
 
 		self.length = 4 + \
 			4 + len(name) + 1 + \
-			4 + len(description) + 1
+			4 + len(description) + 1 + \
+			4 
 
 		for argument in arguments:
 			self.length += \
@@ -128,7 +128,6 @@ class OrderDesc(Description):
 				4 + \
 				4 + len(argument[2]) + 1
 
-		descriptions(self.build())
 
 	def __repr__(self):
 		output = Description.__repr__(self)
@@ -165,4 +164,7 @@ class OrderDesc(Description):
 
 		return DynamicOrder
 
+	def register(self):
+		descriptions(self.build())
+		
 __all__ = ["descriptions", "OrderDesc"]

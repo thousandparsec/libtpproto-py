@@ -17,6 +17,11 @@ class Connection:
 	go here.
 	"""
 
+	def __init__(self):
+		self.buffers = {}
+		# This is a storage for out of sequence packets
+		self.buffers['receive'] = {}
+
 	def setup(self, s, nb=False, debug=False):
 		"""\
 		*Internal*
@@ -27,11 +32,6 @@ class Connection:
 	
 		self.setblocking(nb)
 		self.debug = debug
-
-		# This is a storage for out of sequence packets
-		self.rbuffer = {}
-		# Storage for frames which havn't got a description yet
-		self.ubuffer = {}
 
 	def setblocking(self, nb):
 		"""\
@@ -93,8 +93,7 @@ class Connection:
 		"""
 		# FIXME: Need to make this more robust for bad packets
 		r = self.s.recv
-		b = self.rbuffer
-		u = self.ubuffer # FIXME: Currently we don't handle different types of "descriptions"
+		b = self.buffers['receive']
 		s = objects.Header.size
 		
 		p = None
@@ -138,7 +137,8 @@ class Connection:
 			try:
 				p.process(d[s:])
 			except objects.DescriptionError:
-				self._description_error(p)
+				p._data = d[s:]
+				p = self._description_error(p)
 				continue
 
 			if self.debug:
@@ -146,15 +146,9 @@ class Connection:
 
 			# FIXME: This shouldn't be in the base class
 			# Check if this packet is a description for an undescribed object
-			if isinstance(p, objects.Description) and u.has_key(p.id):
-				q = u[p.type].pop(0)
-
-				if len(u[p.type]) == 0:
-					del u[p.type]
-					
-				# FIXME: Stuff the description into the packet
+			if isinstance(p, objects.Description):
+				p = self._description(p)
 				
-
 			# Check its the type of packet we are after
 			if p.sequence != sequence:
 				if not b.has_key(sequence):
@@ -166,6 +160,23 @@ class Connection:
 				continue
 
 		return p
+
+	def _description_error(self, packet):
+		"""\
+		Called when we get a packet which hasn't be described.
+
+		The packet will be of type Header ready to be morphed by calling
+		process as follows,
+		
+		p.process(p._data)
+		"""
+		raise objects.DescriptionError("Can not deal with an undescribed packet.")
+
+	def _description(self, packet):
+		"""\
+		Called when we get a description error.
+		"""
+		return packet
 
 	############################################
 	# Non-blocking helpers

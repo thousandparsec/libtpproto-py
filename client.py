@@ -14,8 +14,11 @@ class ClientConnection(Connection):
 	"""
 
 	def __init__(self, host=None, port=6923, nb=0, debug=0):
-		"""\
-		"""
+		Connection.__init__(self)
+
+		self.buffers['undescribed'] = {}
+		self.buffers['store'] = {}
+
 		if host != None:
 			self.setup(host, port, nb, debug)
 
@@ -54,19 +57,42 @@ class ClientConnection(Connection):
 		Connection.setup(self, s, nb=nb, debug=debug)
 
 		self.no = 1
-		self.store = {}
 
-	def _description_error(self, packet):
-		# FIXME: Return an error if its a server connection?
+	def _description_error(self, p):
 		# The packet doesn't have a description yet!?
-
+		d = self.buffers['undescribed']
+		
 		# Store the packet and wait for the description
 		if not d.has_key(p.type):
 			d[p.type] = []
 
 		d[p.type].append(p)
 
-		# FIXME: Send a request for the description
+		# Send a request for the description
+		p = objects.OrderDesc_Get(self.no-1, [p.type])
+		self._send(p)
+
+		return None
+
+	def _description(self, p):
+		d = self.buffers['undescribed']
+	
+		# The client must have requested the packet
+		if not d.has_key(p.id):
+			return p
+	
+		# Register the desciption error
+		p.register()
+	
+		# The connection requested the packet
+		# We have a packet waiting to be described
+		q = d[p.id].pop(0)
+		
+		if len(d[p.id]) == 0:
+			del d[p.id]
+	
+		q.process(q._data)
+		return q
 
 	def _common(self):
 		"""\
@@ -152,7 +178,7 @@ class ClientConnection(Connection):
 			raise IOError("Bad Packet was received %s" % p)
 
 		# We have to wait on multiple packets
-		self.store[no] = []
+		self.buffers['store'][no] = []
 	
 		if self._noblock():
 			# Do the commands in non-blocking mode
@@ -184,7 +210,7 @@ class ClientConnection(Connection):
 			elif not isinstance(p, type):
 				raise IOError("Bad Packet was received %s" % p)
 
-			self.store[no].append(p)
+			self.buffers['store'][no].append(p)
 
 			if self._noblock():
 				return _continue
@@ -195,8 +221,8 @@ class ClientConnection(Connection):
 
 		Completes the get_* functions.
 		"""
-		store = self.store[no]
-		del self.store[no]
+		store = self.buffers['store'][no]
+		del self.buffers['store'][no]
 
 		return store
 
@@ -332,7 +358,7 @@ class ClientConnection(Connection):
 		if kw.has_key('slots'):
 			slots = kw['slots']
 		elif kw.has_key('slot'):
-			slots = [kw['slots']]
+			slots = [kw['slot']]
 		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
 			slots = args[0]
 		else:
@@ -347,6 +373,45 @@ class ClientConnection(Connection):
 			return None
 		else:
 			return self._get_header(objects.OK, self.no)
+
+	def get_orderdescs(self, *args, **kw):
+		"""\
+		Get order descriptions from the server. 
+		
+		Note: When the connection gets an order which hasn't yet been
+		described it will automatically get an order description for that
+		order, you don't need to do this manually.
+
+		# Get the order description for type 5
+		obj = get_orderdescs(5)
+		obj = get_orderdescs(type=5)
+		obj = get_orderdescs(types=[5])
+		obj = get_orderdescs([5])
+		
+		# Get the order description for type 5 and 10
+		obj = get_orderdescs([5, 10])
+		obj = get_orderdescs(types=[5, 10])
+		"""
+		self._common()
+
+		if kw.has_key('types'):
+			slots = kw['types']
+		elif kw.has_key('type'):
+			slots = [kw['type']]
+		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
+			slots = args[0]
+		else:
+			slots = args
+
+		p = objects.OrderDesc_Get(self.no, types)
+
+		self._send(p)
+
+		if self._noblock():
+			self._append(self._get_header, (objects.OrderDesc, self.no))
+			return None
+		else:
+			return self._get_header(objects.OrderDesc, self.no)
 
 	def time(self):
 		"""\
