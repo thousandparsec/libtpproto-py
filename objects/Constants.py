@@ -7,6 +7,7 @@ ARG_PLAYER = 3
 ARG_REL_COORD = 4
 ARG_RANGE = 5
 ARG_LIST = 6
+ARG_STRING = 7
 
 # Constants for Fail
 FAIL_PROTOCOL = 0

@@ -25,6 +25,7 @@ struct_map = {
 	ARG_REL_COORD:	("Iqqq",		3),
 	ARG_RANGE:		("iiii",		4),
 	ARG_LIST:		("[ISI][II]", 	2),
+	ARG_STRING:		("IS",		 	2),
 }
 
 class ClassNicePrint(type):
