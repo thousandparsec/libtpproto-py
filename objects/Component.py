@@ -11,6 +11,7 @@ class Component(Processed):
 		* a UInt32, the number of times this component is in used
 		* a list of UInt32, component types
 		* a String, name of component
+		* a String, description of component
 		* a list of,
 			* a UInt32, component ID
 			* a UInt32, number of the components
@@ -20,9 +21,9 @@ class Component(Processed):
 		    * a UInt32, the component category or ID
 	"""
 	no = 32
-	struct = "III[I]S[II][BII]"
+	struct = "III[I]SS[II][BII]"
 
-	def __init__(self, sequence, id, base, used, types, name, contains, language):
+	def __init__(self, sequence, id, base, used, types, name, description, contains, language):
 		Processed.__init__(self, sequence)
 
 		# Length is:
@@ -30,6 +31,7 @@ class Component(Processed):
 		self.length = 4 + 4 + 4 + \
 				4 + len(types)*4 + \
 				4 + len(name) + 1 + \
+				4 + len(description) + 1 + \
 				4 + len(contains)*(4 + 4) + \
 				4 + len(language)*(1 + 4 + 4)
 
@@ -38,11 +40,12 @@ class Component(Processed):
 		self.used = used
 		self.types = types
 		self.name = name
+		self.description = description
 		self.contains = contains
 		self.language = language
 	
 	def __repr__(self):
 		output = Processed.__repr__(self)
-		output += pack(self.struct, self.id, self.base, self.used, self.types, self.name, self.contains, self.language)
+		output += pack(self.struct, self.id, self.base, self.used, self.types, self.name, self.description, self.contains, self.language)
 
 		return output
