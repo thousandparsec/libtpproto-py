@@ -182,6 +182,7 @@ class Connection:
 					
 				b[p.sequence].append(p)
 
+				p = None
 				continue
 
 		return p
@@ -221,10 +222,6 @@ class Connection:
 		p = self._recv(no)
 		if not p:
 			return None
-
-		# Check the sequence numbers match
-		if p.sequence != no:
-			raise IOError("Sequence numbers don't match\nRequired: %r Got: %r" % (no, p.sequence))
 
 		# Check it's the reply we are after
 		if isinstance(p, objects.OK):
@@ -461,7 +458,43 @@ class Connection:
 		else:
 			# We got a bad packet
 			raise IOError("Bad Packet was received")
+
+	def time(self):
+		"""\
+		Connects to a Thousand Parsec Server.
+		"""
+		self._common()
 		
+		# Send a connect packet
+		p = objects.TimeRemaining_Get(self.no)
+		self._send(p)
+		
+		if self._noblock():
+			self._append(self._time, self.no)
+			return None
+		
+		# and wait for a response
+		return self._time(self.no)
+	
+	def _time(self, no):
+		"""\
+		*Internal*
+
+		Completes the time function.
+		"""
+		p = self._recv(no)
+		if not p:
+			return None
+
+		# Check it's the reply we are after
+		if isinstance(p, objects.TimeRemaining):
+			return True, p.time
+		elif isinstance(p, objects.Fail):
+			return False, p.s
+		else:
+			# We got a bad packet
+			raise IOError("Bad Packet was received")
+
 	def disconnect(self):
 		"""\
 		Disconnect from a server.

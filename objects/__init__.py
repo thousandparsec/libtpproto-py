@@ -77,23 +77,32 @@ mapping[Order_Remove.no] = Order_Remove
 ## Time
 #
 ## Message
-#from Board_Get import Board_Get
+#from objects.Board_Get import Board_Get
 #Board_Get = Board_Get
 #mapping[Board_Get.no] = Board_Get
 #
-#from Board import Board
+#from objects.Board import Board
 #Board = Board
 #mapping[Board.no] = Board
 #
-#from Message_Get import Message_Get
+#from objects.Message_Get import Message_Get
 #Message_Get = Message_Get
 #mapping[Message_Get.no] = Message_Get
 #
-#from Message import Message
+#from objects.Message import Message
 #Message = Message
 #mapping[Message.no] = Message
 #
-#from Message_Post import Message_Post
+#from objects.Message_Post import Message_Post
 #Message_Post = Message_Post
 #mapping[Message_Post.no] = Message_Post
 #
+
+from objects.TimeRemaining_Get import TimeRemaining_Get
+TimeRemaining_Get = TimeRemaining_Get
+mapping[TimeRemaining_Get.no] = TimeRemaining_Get
+
+from objects.TimeRemaining import TimeRemaining
+TimeRemaining = TimeRemaining
+mapping[TimeRemaining.no] = TimeRemaining
+
