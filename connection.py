@@ -2,6 +2,8 @@ import socket
 import objects
 import xstruct
 
+from support.output import *
+
 _continue = []
 
 class Connection:
@@ -16,8 +18,7 @@ class Connection:
 
 		self.setblocking(nb)
 
-		if debug:
-			self.debug = debug
+		self.debug = debug
 
 		# This is a storage for out of sequence packets
 		self.rbuffer = {}
@@ -96,6 +97,8 @@ class Connection:
 		Sends a single TP packet to the socket.
 		"""
 		s = self.s.send
+		if self.debug:
+			green("Sending: %s \n" % xstruct.hexbyte(repr(p)))
 		s(repr(p))
 
 	def _recv(self, sequence):
@@ -122,6 +125,9 @@ class Connection:
 			if len(h) != s:
 				return None
 			
+			if self.debug:
+				red("Receiving: %s" % xstruct.hexbyte(h))
+			
 			p = objects.Header(h)
 			if p.length > 0:
 				d = r(s+p.length, socket.MSG_PEEK)
@@ -129,8 +135,10 @@ class Connection:
 				if len(d) != s+p.length:
 					return None
 
+				red("%s \n" % xstruct.hexbyte(d[s:]))
+
 				p.process(d[s:])
-			
+		
 			# Remove the stuff from the line
 			r(s+p.length)
 				
@@ -340,6 +348,26 @@ class Connection:
 
 		return store
 
+	def get_orders(self, oid, x=None, slot=None, slots=None):
+		"""\
+		Get orders from an object,
+
+		# Get the order in slot 5 from object 2
+		obj = get_orders(2, 5)
+		obj = get_objects(2, slot=5)
+		obj = get_objects(2, slots=[5])
+		obj = get_objects(2, [5])
+		
+		# Get the orders in slots 5 and 10 from object 2
+		obj = get_objects([5, 10])
+		obj = get_objects(slots=[5, 10])
+
+		# Get all the orders from object 2
+		obj = get_objects(2)
+		"""
+		pass	
+
+	
 	def disconnect(self):
 		"""\
 		Disconnect from a server.

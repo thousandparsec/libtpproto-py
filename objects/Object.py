@@ -2,6 +2,7 @@
 from xstruct import pack
 
 from Header import Processed
+from ObjectDesc import descriptions
 
 class Object(Processed):
 	"""\
@@ -43,6 +44,7 @@ class Object(Processed):
 		#  *  4 bytes + len(order_types)*4
 		#  *  4 bytes
 		#  * 16 bytes
+		#  * len(extra)
 		if not hasattr(self, 'length'):
 			self.length = \
 				4 + 4 + \
@@ -82,4 +84,7 @@ class Object(Processed):
 				self.order_types, \
 				self.order_number)
 		return output
+
+	def process_extra(self, extra):
+		pass
 
