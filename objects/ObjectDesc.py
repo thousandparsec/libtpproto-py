@@ -1,14 +1,13 @@
 
+import site
 import string
 import os
 from os import path
 
 def splitall(p):
 	bits = []
-	while p != '':
+	while not p in ['', '..', '.'] and not p in site.sitedirs:
 		p, c = os.path.split(p)
-		if c == ".." or c == ".":
-			break
 		bits.append(c)
 	bits.reverse()
 	return bits	
