@@ -51,10 +51,10 @@ class Object(Describable):
 						else:
 							args = ()
 
-					args = (self, sequence, id, otype, name, size, posx, posy, posz, 
-							velx, vely, velz, contains, order_types, order_number) + args
+				args = (self, sequence, id, otype, name, size, posx, posy, posz, 
+						velx, vely, velz, contains, order_types, order_number) + args
 
-					apply(self.__class__.__init__, args)
+				apply(self.__class__.__init__, args)
 				return
 			else:
 				# FIXME: Should throw a description error

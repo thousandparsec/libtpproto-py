@@ -85,14 +85,16 @@ class Server:
 		while True:
 			# Check if there is any socket to accept or with data
 			ready, trash, errors = select.select([self.s] + self.connections,[],self.connections,1)
-
 			for socket in ready:
 				if socket is self.s:
 					# Accept a new connection
 					socket, address = self.s.accept()
 					self.connections.append(self.handler(socket, address, debug=True))
 				else:
-					socket.poll()
+					try:
+						socket.poll()
+					except IOError:
+						errors.append(socket)
 			
 			# Cleanup any old sockets
 			for socket in errors:

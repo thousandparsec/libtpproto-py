@@ -27,3 +27,5 @@ class Galaxy(Object):
 			contains, \
 			order_types, \
 			order_number)
+			
+		self.length += 0
