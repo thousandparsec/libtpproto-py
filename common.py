@@ -98,6 +98,11 @@ class Connection:
 		
 		Reads a single TP packet with correct sequence number from the socket.
 		"""
+		if not hasattr(sequence, '__getitem__'):
+			sequences = [sequence]
+		else:
+			sequences = sequence
+		
 		# FIXME: Need to make this more robust for bad packets
 		r = self.s.recv
 		b = self.buffers['receive']
@@ -105,7 +110,10 @@ class Connection:
 		p = None
 
 		while p == None:
-			# Check if a packet is read...
+			for sequence in sequences:
+				if b.has_key(sequence) and len(b[sequence]) > 0:
+					break
+			
 			if b.has_key(sequence) and len(b[sequence]) > 0:
 				p = b[sequence][0]
 			
@@ -141,8 +149,11 @@ class Connection:
 			
 			if self.debug:
 				red("Receiving: %s" % xstruct.hexbyte(h))
-			
-			q = objects.Header(h)
+
+			try:
+				q = objects.Header(h)
+			except objects.Header.VersionError, e:
+				q = self._version_error(h)
 				
 			if q.length > 0:
 				d = r(s+q.length, socket.MSG_PEEK)
@@ -183,6 +194,16 @@ class Connection:
 		p.process(p._data)
 		"""
 		raise objects.DescriptionError("Can not deal with an undescribed packet.")
+
+	def _version_error(self, h):
+		"""\
+		Called when a packet of the wrong version is found.
+
+		The function should either raise the error or return a
+		packet with the correct version.
+		"""
+		print "Version Error"
+		return objects.Header(h, h[:4])
 
 	def _error(self, packet):
 		raise

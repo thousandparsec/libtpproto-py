@@ -1,13 +1,21 @@
 
 from xstruct import pack, unpack, hexbyte
 
+versions = ["TP03", "TP02"]
 version = "TP03"
+
 def SetVersion(i):
 	global version
-	if i == 2:
+
+	if i in versions:
 		version = "TP02"
-	elif i == 3:
-		version = "TP03"
+		return True
+	else:
+		return False
+		
+def GetVersion():
+	global version
+	return version
 
 _marker = []
 
@@ -34,21 +42,30 @@ class Header(object):
 	size=4+4+4+4
 	struct="4sIII"
 
-	def __init__(self, s):
+	class VersionError(Exception):
+		pass
+
+	def __init__(self, s, protocol=None):
 		"""\
 		Create a new header object.
 
 		It takes a string which contains the "header" data.
 		"""
 		self.process = self.__process__
-		
+	
+		if protocol == None:
+			protocol = version
+	
 		output, extra = unpack(Header.struct, s)
 		self.protocol, self.sequence, self._type, self.length = output
 
 		# Sanity Checks
-		if self.protocol != version:
-			raise ValueError("Invalid creation string\n%s\n" % hexbyte(s))
-			
+		if self.protocol != protocol:
+			if self.protocol[:2] == "TP":
+				raise self.VersionError("Wrong version %s\n" % self.protocol)
+			else:
+				raise ValueError("Invalid creation string\n%s\n" % hexbyte(s))
+
 		if self.length != 0 and len(extra) == self.length:
 			self.process(extra)
 		elif len(extra) != 0:
@@ -110,8 +127,9 @@ class Processed(Header):
 
 	def __init__(self, sequence):
 		
-		self.protocol = version
-
+		if not hasattr(self, "protocol"):
+			self.protocol = version
+		
 		self._type = self.no
 		self.sequence = sequence
 	

@@ -13,7 +13,7 @@ class Fail(Processed):
 	struct = "IS"
 
 	def __init__(self, sequence, errno, s=""):
-		if sequence < 1:
+		if errno != 0 and sequence < 1:
 			raise ValueError("Fail is a reply packet so needs a valid sequence number (%i)" % sequence)
 		Processed.__init__(self, sequence)
 

@@ -216,12 +216,37 @@ class ClientConnection(Connection):
 		self._send(p)
 		
 		if self._noblock():
-			self._append(self._okfail, self.no)
+			self._append(self._connect, self.no)
 			return None
 		
 		# and wait for a response
-		return self._okfail(self.no)
-		
+		return self._connect(self.no)
+
+	def _connect(self, no):
+		"""\
+		*Internal*
+
+		Completes the connect function, which will automatically change
+		to an older version if server only supports it.
+		"""
+		p = self._recv([0, no])
+		if not p:
+			return None
+
+		# Check it's the reply we are after
+		if isinstance(p, objects.OK):
+			return True, p.s
+		elif isinstance(p, objects.Fail):
+			if p.protocol != objects.GetVersion():
+				print "Changing version."
+				if objects.SetVersion(p.protocol):
+					return self.connect()
+			return False, p.s
+		else:
+			# We got a bad packet
+			raise IOError("Bad Packet was received")
+
+
 	def ping(self):
 		"""\
 		Pings the Thousand Parsec Server.
