@@ -4,6 +4,20 @@ An advanced version of pack/unpack which works with extra TP strutures.
 Everything is assumed to be network order, ie you don't need to
 prepend every struct with !
 
+Normal stuff from the struct module:
+
+ c	Char
+ b	Int8		(8 bit integer)
+ B	UInt8		(8 bit unsigned integer)
+ h	Int16		(16 bit integer)
+ H	UInt16		(16 bit unsigned integer)
+ i	Int32		(32 bit integer)
+ I	UInt32		(32 bit unsigned integer)
+ q	Int64		(64 bit integer)
+ Q	UInt64		(64 bit unsigned integer)
+ f	float		(32 bit floating point number)
+ d	double		(64 bit floating point number)
+
 Extra stuff defined by this module:
 
  S	String
