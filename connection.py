@@ -45,7 +45,7 @@ class Connection:
 		if not self.s:
 			raise socket.error, msg
 
-		self.no = 0
+		self.no = 1
 		self.setblocking(nb)
 
 		self.debug = debug
