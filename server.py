@@ -35,12 +35,14 @@ class ServerConnection(Connection):
 			return 
 			
 		if self.buffer.startswith("TP"):
-			print "Got a noraml tp connection..."
+			if self.debug:
+				print "Got a noraml tp connection..."
 			self.poll = self.tppoll
 			return
 
 		if self.buffer[-17:].startswith("POST /"):
-			print "Got a http connection..."
+			if self.debug:
+				print "Got a http connection..."
 			self.s.recv(len(self.buffer)) # Clear all the already recived data...
 			self.poll = self.httppoll
 			return
@@ -48,9 +50,15 @@ class ServerConnection(Connection):
 	def httppoll(self):
 		
 		if self.buffer.endswith("\r\n\r\n"):
-			print "Finished the http headers..."
+			if self.debug:
+				print "Finished the http headers..."
+				print self.buffer
+
 			# Send the http headers
-			self.s.send("Content-Type: text/html; charset=iso-8859-1\n\n")
+			self.s.send("HTTP/1.0 200 OK")
+			self.s.send("Cache-Control: no-cache, private\n")
+			self.s.send("Content-Type: application/binary\n")
+			self.s.send("\n")
 			self.poll = self.tppoll	
 			return
 		
