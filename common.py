@@ -136,6 +136,7 @@ class Connection:
 			if len(h) != s and self._noblock():
 				return None
 			elif len(h) != s:
+				print "Ekk! Not enough data on a blocking connection..."
 				continue
 			
 			if self.debug:
@@ -150,8 +151,11 @@ class Connection:
 					red("%s \n" % xstruct.hexbyte(d[s:]))
 			
 				# This will only ever occur on a non-blocking connection
-				if len(d) != s+q.length:
+				if len(d) != s+q.length and self._noblock():
 					return None
+				elif len(d) != s+q.length:
+					print "Ekk! Not enough data on a blocking connection..."
+					continue
 			else:
 				d = ""
 			
