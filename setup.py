@@ -9,16 +9,16 @@ import os.path
 import os
 
 if os.path.exists('CVS'):
-	base = ['LICENSE']
+	base = ['LICENSE', 'COPYING']
 	for file in base:
 		if os.path.exists(file):
 			os.unlink(file)
 		print "Getting %s" % file
 		os.link(os.path.join('..', file), file)
 		
-
 setup(name="py-netlib",
 	version=version,
+	license="GPL",
 	description="Network library for Thousand Parsec",
 	author="Tim Ansell",
 	author_email="tim@thousandparsec.net",
@@ -30,10 +30,6 @@ setup(name="py-netlib",
 		'tp.netlib.objects.ObjectExtra',
 		'tp.netlib.objects.OrderExtra',
 		'tp.netlib.support',
-		'tp.netlib.tests',
-		'tp.netlib.tests.python',
-		'tp.netlib.tests.client',
-		'tp.netlib.tests.server',
 		],
 	package_dir = {'tp.netlib': '', 'tp': 'empty'}
 )

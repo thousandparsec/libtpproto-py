@@ -9,7 +9,7 @@ port = ""
 # Send trash
 
 
-mapping[Connect] =
+mapping[Connect] = True
 
 
 mapping[OK] = OK
