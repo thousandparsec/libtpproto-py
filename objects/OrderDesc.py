@@ -21,7 +21,7 @@ struct_map = {
 	ARG_ABS_COORD:	("qqq",			3),
 	ARG_TIME: 		("I",			1),
 	ARG_OBJECT:		("I",			1),
-	ARG_PLAYER:		("2I",			2),
+	ARG_PLAYER:		("II",			2),
 	ARG_REL_COORD:	("Iqqq",		3),
 	ARG_RANGE:		("iiii",		4),
 	ARG_LIST:		("[ISI][II]", 	2),
@@ -87,7 +87,7 @@ class DynamicBaseOrder(Order):
 		return output
 
 	def __str__(self):
-		return "<netlib.objects.OrderExtra.DynamicOrder - %s @ %s>" % (self.name, id(self))
+		return "<netlib.objects.OrderExtra.DynamicOrder - %s @ %s>" % (self.name, hex(id(self)))
 
 class OrderDesc(Description):
 	"""\
