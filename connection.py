@@ -28,7 +28,6 @@ class Connection:
 
 		self.store = {}
 
-
 	def setblocking(self, nb):
 		"""\
 		Sets the connection to either blocking or non-blocking.
@@ -44,6 +43,22 @@ class Connection:
 		elif nb == 1 and not self._noblock():
 			self.s.setblocking(0)
 			self.nb = []
+
+	def pump(self):
+		"""\
+		Causes the connection to read and process stuff from the
+		buffer. This will allow you to read out of band messages.
+
+		Calling oob will also cause the connection to be pumped.
+		"""
+		noblock = self._noblock()
+		if not noblock:
+			self.setblocking(1)
+		
+		self._recv(-1)
+		
+		if not noblock:
+			self.setblocking(0)
 
 	def poll(self):
 		"""\
@@ -115,7 +130,7 @@ class Connection:
 		"""
 		r = self.s.recv
 		b = self.rbuffer
-		d = self.ubuffer # FIXME: Currently we don't handle different types of "descriptions"
+		u = self.ubuffer # FIXME: Currently we don't handle different types of "descriptions"
 		s = objects.Header.size
 		
 		p = None
@@ -166,11 +181,11 @@ class Connection:
 				continue
 
 			# Check if this packet is a description for an undescribed object
-			if isinstance(p, objects.Description) and d.has_key(p.type):
-				q = d[p.type].pop(0)
+			if isinstance(p, objects.Description) and u.has_key(p.id):
+				q = u[p.type].pop(0)
 
-				if len(d[p.type]) == 0:
-					del d[p.type]
+				if len(u[p.type]) == 0:
+					del u[p.type]
 					
 				# Stuff the description into the packet
 				
@@ -504,6 +519,8 @@ class Connection:
 
 		self.s.close()
 		del self
+
+
 
 """\
 >>> # Create the object and connect to the server

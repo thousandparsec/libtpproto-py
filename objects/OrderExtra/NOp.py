@@ -13,8 +13,7 @@ class NOp(Order):
 					id,	type, slot, turns, resources, \
 					wait):
 		Order.__init__(self, sequence, \
-					id, type, slot, turns, resources,
-					wait)
+					id, type, slot, turns, resources)
 
 		self.length += 4
 		self.wait = wait

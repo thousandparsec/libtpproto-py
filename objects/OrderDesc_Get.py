@@ -1,12 +1,9 @@
 from Get import Get
 
-class Object_GetById(Get):
+class OrderDesc_Get(Get):
 	"""\
 	The Object_Get packet consists of:
-		* A uint32, ID of object to get.
+		* A UInt32, ID of object to get.
 	"""
-	no = 5
-
-
-
+	no = 8
 

@@ -13,8 +13,7 @@ class Move(Order):
 					id,	type, slot, turns, resources, \
 					x, y, z):
 		Order.__init__(self, sequence, \
-					id, type, slot, turns, resources,
-					x, y, z)
+					id, type, slot, turns, resources)
 
 		self.length += 3*8
 		self.pos = (x, y, z)

@@ -49,14 +49,14 @@ from objects.Object import Object
 Object = Object
 mapping[Object.no] = Object
 
-## Orders
-#from OrderDesc_Get import OrderDesc_Get
-#OrderDesc_Get = OrderDesc_Get
-#mapping[OrderDesc_Get.no] = OrderDesc_Get
+# Orders
+from objects.OrderDesc_Get import OrderDesc_Get
+OrderDesc_Get = OrderDesc_Get
+mapping[OrderDesc_Get.no] = OrderDesc_Get
 
-#from OrderDesc import OrderDesc
-#OrderDesc = OrderDesc
-#mapping[OrderDesc.no] = OrderDesc
+from objects.OrderDesc import OrderDesc
+OrderDesc = OrderDesc
+mapping[OrderDesc.no] = OrderDesc
 
 from objects.Order_Get import Order_Get
 Order_Get = Order_Get

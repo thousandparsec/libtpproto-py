@@ -3,6 +3,7 @@ from xstruct import pack
 
 from Description import Description
 
+# Import prebuild orders
 from ObjectDesc import *
 _descriptions = None
 def descriptions(added=None):
@@ -12,28 +13,57 @@ def descriptions(added=None):
 		_descriptions = import_subtype(edir(__file__))
 	
 	if added != None:
-		_descriptions[ added.type ] = added
+		_descriptions[ added.subtype ] = added
         return _descriptions
 
 # Constants
-ARG_COORD = 0
+ARG_ABS_COORD = 0
 ARG_TIME = 1
 ARG_OBJECT = 2
 ARG_PLAYER = 3  
+ARG_RANGE = 4
 
-def buildstruct(parameters):
-	for name, type, desc in parameters:
- 		if type == ARG_COORD:
-			struct += "qqq "
- 		elif type == ARG_TIME:
- 			struct += "I "
-		elif type == ARG_OBJECT:
-			struct += "I "
-		elif type == ARG_PLAYER:
-			struct += "I " 
-		elif type == ARG_RANGE:
- 			pass
- 
+struct_map = {
+	ARG_ABS_COORD: ("qqq", 3),
+	ARG_TIME: ("I", 1),
+	ARG_OBJECT: ("I", 1),
+	ARG_PLAYER: ("I", 1),
+	ARG_RANGE: ("I", 1),
+}
+
+from Order import Order
+class DynamicDesc(Order):
+	"""\
+	An Order Type built by a OrderDesc.
+	"""
+	substruct = ""
+	subtype = -1
+
+	def __init__(self, sequence, \
+			id, type, slot, turns, resources, \
+			*args):
+		Order.__init__(self, sequence, \
+			id, type, slot, turns, resources)
+
+		if len(self.names) != len(args):
+			# FIXME: Must throw error here
+			raise ValueError("Not enough arguments.")
+
+		for name, size, struct in self.names:
+			setattr(self, name, args[0:size])
+
+			args = args[size:]
+
+	def __repr__(self):
+		args = []
+		for name, size, struct in names:
+			for attr in getattr(self, name):
+				args.append(attr)
+	
+		output = Order.__repr__(self)
+		output += apply(pack, (self.substruct,) + args)
+		return output
+
 class OrderDesc(Description):
 	"""\
 	The OrderDesc packet consists of:
@@ -72,13 +102,14 @@ class OrderDesc(Description):
 	def __init__(self, sequence, \
 			id, name, description, \
 			arguments):
-		Description.__init__(self, sequence)
+		Description.__init__(self, sequence, id)
 
-		self.id = id
 		self.name = name
 		self.description = description
 		self.arguments = arguments
-	
+
+		descriptions(self.build())
+
 	def __repr__(self):
 		output = Description.__repr__(self)
 		output += pack(self.struct, \
@@ -88,4 +119,25 @@ class OrderDesc(Description):
 				self.arguments)
 
 		return output
+
+	def build(self):
+		"""\
+		*Internal*
+
+		Builds a class from this description.
+		"""
+		class C(DynamicDesc):
+			pass
 	
+		C.__doc__ = self.description
+		C.names = []
+		C.subtype = self.id
+	
+		for name, type, desc in self.arguments:
+			struct, size = struct_map[type]
+
+ 			C.names.append((name, size, struct))
+			C.substruct += struct
+			setattr(C, name + "__doc__", desc)
+
+		return C
