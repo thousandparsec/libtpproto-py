@@ -129,11 +129,14 @@ class Connection:
 				if len(h) == 0:
 					raise IOError("Socket has been terminated.")
 			except socket.error, e:
+				print "Socket error:", e
 				h = ""
 
 			# This will only ever occur on a non-blocking connection
-			if len(h) != s:
+			if len(h) != s and self._noblock():
 				return None
+			elif len(h) != s:
+				continue
 			
 			if self.debug:
 				red("Receiving: %s" % xstruct.hexbyte(h))
