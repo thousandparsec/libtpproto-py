@@ -73,40 +73,78 @@ class ClientConnection(Connection):
 
 		self.__desc = False
 
-	def setup(self, host, port=6923, nb=0, debug=0):
+	def setup(self, host, port=6923, nb=0, debug=0, proxy=None):
 		"""\
 		*Internal*
 
 		Sets up the socket for a connection.
 		"""
 		self.host = host
-		self.port = port
 
-		s = None
-		for af, socktype, proto, cannoname, sa in \
-				socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM):
+		if host.startswith("http://") or host.startswith("https://"):
 
-			try:
-				s = socket.socket(af, socktype, proto)
-				if debug:
-					print "Trying to connect to connect: (%s, %s)" % (host, port)
+			import urllib
+			opener = None
 
-				s.connect(sa)
-				break
-			except socket.error, msg:
-				if debug:
-					print "Connect fail: (%s, %s)" % (host, port)
-				if s:
-					s.close()
-					
-				s = None
-				continue
+			# use enviroment varibles
+			if proxy == None:
+				opener = urllib.FancyURLopener()
+			elif proxy == "":
+				# Don't use any proxies
+				opener = urllib.FancyURLopener({})
+			else:
+				if host.startswith("http://"):
+					opener = urlib.FancyURLopener({'http': proxy})
+				elif host.startswith("https://"):
+					opener = urlib.FancyURLopener({'https': proxy})
+				else:
+					raise "URL Error..."
 		
-		if not s:
-			raise socket.error, msg
+			import random, string
+			url = "/"
+			for i in range(0, 12):
+				url += random.choice(string.letters+string.digits)
+			
+			o = opener.open(host + url, "")
+			s = socket.fromfd(o.fileno(), socket.AF_INET, socket.SOCK_STREAM)
+
+##			# Read in the headers
+##			buffer = ""
+##			while not buffer.endswith("\r\n\r\n"):
+##				print "buffer:", repr(buffer)
+##				try:
+##					buffer += s.recv(1)
+##				except socket.error, e:
+##					pass
+##			print "Finished the http headers..."
+
+		else:
+			self.port = port
+
+			s = None
+			for af, socktype, proto, cannoname, sa in \
+					socket.getaddrinfo(host, port, 0, socket.SOCK_STREAM):
+
+				try:
+					s = socket.socket(af, socktype, proto)
+					if debug:
+						print "Trying to connect to connect: (%s, %s)" % (host, port)
+
+					s.connect(sa)
+					break
+				except socket.error, msg:
+					if debug:
+						print "Connect fail: (%s, %s)" % (host, port)
+					if s:
+						s.close()
+						
+					s = None
+					continue
+			
+			if not s:
+				raise socket.error, msg
 
 		Connection.setup(self, s, nb=nb, debug=debug)
-
 		self.no = 1
 
 	def _description_error(self, p):

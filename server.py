@@ -17,13 +17,49 @@ class ServerConnection(Connection):
 		self.address = address
 		self.setup(socket, debug=debug, nb=True)
 
+		self.poll = self.initalpoll
+
 	def fileno(self):
 		return self.s.fileno()
 
-	def poll(self):
+	def initalpoll(self):
 		"""\
 		Checks to see if any packets are on the line
 		"""
+		if not hasattr(self, "buffer"):
+			self.buffer = ""
+
+		try:
+			self.buffer = self.s.recv(len(self.buffer)+1, socket.MSG_PEEK)
+		except socket.error, e:
+			return 
+			
+		if self.buffer.startswith("TP"):
+			print "Got a noraml tp connection..."
+			self.poll = self.tppoll
+			return
+
+		if self.buffer[-17:].startswith("POST /"):
+			print "Got a http connection..."
+			self.s.recv(len(self.buffer)) # Clear all the already recived data...
+			self.poll = self.httppoll
+			return
+
+	def httppoll(self):
+		
+		if self.buffer.endswith("\r\n\r\n"):
+			print "Finished the http headers..."
+			# Send the http headers
+			self.s.send("Content-Type: text/html; charset=iso-8859-1\n\n")
+			self.poll = self.tppoll	
+			return
+		
+		try:
+			self.buffer += self.s.recv(1)
+		except socket.error, e:
+			return 
+
+	def tppoll(self):
 		# Complete any pending commands
 		Connection.poll(self)
 
@@ -127,7 +163,7 @@ class Server:
 				except:
 					continue
 				del socket
-
+	
 if __name__ == "__main__":
 	port = 6924
 	while True:
