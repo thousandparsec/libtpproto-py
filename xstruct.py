@@ -47,11 +47,15 @@ import sys
 import string
 from types import *
 
+# Squash errors about hex/oct
+import warnings
+
 _pack = struct.pack
 _unpack = struct.unpack
 _calcsize = struct.calcsize
 
 semi = {'n':(16, 'H'), 'j':(32, 'I'), 'p':(64, 'Q')}
+smallints = "njbBhHiI"
 
 def hexbyte(string):
 	"""\
@@ -115,8 +119,12 @@ def pack(struct, *args):
 				output += apply(_pack, ["!"+substruct,] + new_args)
 		
 		else:
+			if char in smallints and isinstance(args[0], long):
+				args[0] = int(args[0])
+			
 			if char in semi.keys():
 				char = semi[char][1]
+			
 			output += _pack("!"+char, args.pop(0))
 			
 	return output

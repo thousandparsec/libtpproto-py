@@ -20,6 +20,19 @@ DescriptionError = DescriptionError
 Describable = Describable
 Description = Description
 
+# Base
+from objects.Base import GetWithID
+GetWithID = GetWithID
+
+from objects.Base import GetWithIDandSlot
+GetWithIDandSlot = GetWithIDandSlot
+
+from objects.Base import GetIDSequence
+GetIDSequence = GetIDSequence
+
+from objects.Base import IDSequence
+IDSequence = IDSequence
+
 # Generic Responses
 from objects.OK import OK
 OK = OK
@@ -67,6 +80,10 @@ mapping[Object_GetID_ByPos.no] = Object_GetID_ByPos
 from objects.Object_GetID_ByContainer import Object_GetID_ByContainer
 Object_GetID_ByContainer = Object_GetID_ByContainer
 mapping[Object_GetID_ByContainer.no] = Object_GetID_ByContainer
+
+from objects.Object_IDSequence import Object_IDSequence
+Object_IDSequence = Object_IDSequence
+mapping[Object_IDSequence.no] = Object_IDSequence
 
 from objects.ObjectDesc import descriptions
 ObjectDescs = descriptions

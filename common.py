@@ -156,6 +156,9 @@ class Connection:
 				q = self._version_error(h)
 				
 			if q.length > 0:
+				if q.length > 1024*1024:
+					raise IOError("Packet was to large!")
+			
 				d = r(s+q.length, socket.MSG_PEEK)
 				
 				if self.debug:

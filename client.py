@@ -91,6 +91,7 @@ class ClientConnection(Connection):
 		Sets up the socket for a connection.
 		"""
 		self.host = host
+		self.proxy = None
 
 		if host.startswith("http://") or host.startswith("https://"):
 
@@ -132,7 +133,7 @@ class ClientConnection(Connection):
 		else:
 			if host.startswith("tp://") or host.startswith("tps://"):
 				if host.count(":") > 1:
-					# Need to extract the port
+					# FIXME: Need to extract the port
 					pass
 				else:
 					if host.startswith("tp://"):
@@ -443,10 +444,12 @@ class ClientConnection(Connection):
 				if objects.SetVersion(p.protocol):
 					return self.connect()
 			return False, p.s
+		elif isinstance(p, objects.Redirect):
+			self.setup(p.s, nb=self._noblock(), debug=self.debug, proxy=self.proxy)
+			return self.connect()
 		else:
 			# We got a bad packet
 			raise IOError("Bad Packet was received")
-
 
 	def ping(self):
 		"""\
@@ -535,7 +538,7 @@ class ClientConnection(Connection):
 		else:
 			return self._get_idsequence(self.no, iter)
 
-	def get_objects(self, a=None, y=None, z=None, r=None, x=None, id=None, ids=None):
+	def get_objects(self, a=None, id=None, ids=None):
 		"""\
 		Get objects from the server,
 
@@ -548,33 +551,19 @@ class ClientConnection(Connection):
 		# Get the objects with ids=25, 36
 		[<obj id=25>, <obj id=36>] = get_objects([25, 36])
 		[<obj id=25>, <obj id=36>] = get_objects(ids=[25, 36])
-
-		# Get the objects by position
-		[<obj id=x>, ..] = get_objects(x, y, z, radius)
-		[<obj id=x>, ..] = get_objects(x=x, y=y, z=z, r=radius)
 		"""
 		self._common()
 
-		# Setup arguments
-		if a != None and y != None and z != None and r != None:
-			x = a
+		if a != None:
+			if hasattr(a, '__getitem__'):
+				ids = a
+			else:
+				id = a
 		
 		if id != None:
 			ids = [id]
-		if a != None and not (y != None and z != None and r != None):
-			ids = [a]
-		if hasattr(a, '__getitem__'):
-			ids = a
 	
-		p = None
-
-		# Get by position mode
-		if x != None:
-			p = objects.Object_GetByPos(self.no, x, y, z, r)
-		# Get by id mode
-		if ids != None:
-			p = objects.Object_GetById(self.no, ids)
-
+		p = objects.Object_GetById(self.no, ids)
 		self._send(p)
 
 		if self._noblock():

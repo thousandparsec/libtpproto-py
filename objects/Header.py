@@ -1,6 +1,9 @@
 
 from xstruct import pack, unpack, hexbyte
 
+# Squash warnings about hex/oct
+import warnings
+
 versions = ["TP03", "TP02"]
 version = "TP03"
 

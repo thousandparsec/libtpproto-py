@@ -20,12 +20,13 @@ def descriptions(added=None):
 				import carchive
 				this = carchive.CArchive(sys.executable).openEmbeddedZlib("out1.pyz")
 				_descriptions = import_subtype("tp.netlib.objects.OrderExtra", installer=this.contents())
-			except NameError:
+			except AttributeError:
 				_descriptions = import_subtype(edir(__file__))
 	
 	if added != None:
 		_descriptions[ added.subtype ] = added
-		return _descriptions
+	
+	return _descriptions
 
 struct_map = {
 	ARG_ABS_COORD:	("qqq",			3),

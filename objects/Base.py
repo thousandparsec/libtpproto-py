@@ -66,7 +66,7 @@ class GetIDSequence(Processed):
 	Get ID Sequence frame consist of:
 		* a SInt32, the sequence key
 		* a UInt32, the starting number in the sequence
-		* a UInt32, the number of IDs to get
+		* a SInt32, the number of IDs to get
 
 	Requirements:
 		* To start a sequence, the key of -1 should be sent in the first
@@ -79,20 +79,20 @@ class GetIDSequence(Processed):
 		* Key persist for only as long as the connection remains and there
 		  are IDs left in the sequence
 	"""
-	struct = "jII"
+	struct = "jIj"
 
-	def __init__(self, sequence, key, start, length):
+	def __init__(self, sequence, key, start, amount):
 		Processed.__init__(self, sequence)
 
 		self.length = 4 + 4 + 4
 	
 		self.key = key
 		self.start = start
-		self.length = length
+		self.amount = amount
 	
 	def __repr__(self):
 		output = Processed.__repr__(self)
-		output += pack(self.struct, self.key, self.start, self.length)
+		output += pack(self.struct, self.key, self.start, self.amount)
 
 		return output
 
