@@ -12,8 +12,8 @@ class Connection:
 		self.host = host
 		self.port = port
 
-        	self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	        self.s.connect((host, port))
+		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.s.connect((host, port))
 
 		self.no = 0
 
@@ -297,7 +297,6 @@ class Connection:
 	
 		if self._noblock():
 			# Do the commands in non-blocking mode
-
 			self._next(self._get_finish, no)
 			for i in range(0, p.number):
 				self._next(self._get_data, (type, no))
