@@ -18,10 +18,10 @@ class NOp(Order):
 	wait__doc__ = "Number of turns to wait for."
 
 	def __init__(self, sequence, \
-					id,	type, slot, turns, resources, \
+					id,	slot, type, turns, resources, \
 					wait):
 		Order.__init__(self, sequence, \
-					id, type, slot, turns, resources)
+					id, slot, type, turns, resources)
 
 		self.length += 4
 		self.wait = wait

@@ -18,10 +18,10 @@ class Move(Order):
 	pos__doc__ = "Position to move to."
 	
 	def __init__(self, sequence, \
-					id,	type, slot, turns, resources, \
+					id,	slot, type, turns, resources, \
 					x, y, z):
 		Order.__init__(self, sequence, \
-					id, type, slot, turns, resources)
+					id, slot, type, turns, resources)
 
 		self.length += 3*8
 		self.pos = (x, y, z)
