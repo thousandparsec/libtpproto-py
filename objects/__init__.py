@@ -14,6 +14,9 @@ DescriptionError = DescriptionError
 Describable = Describable
 Description = Description
 
+import Constants
+constants = Constants
+
 # Generic Responses
 from objects.OK import OK
 OK = OK
@@ -54,8 +57,9 @@ from objects.OrderDesc_Get import OrderDesc_Get
 OrderDesc_Get = OrderDesc_Get
 mapping[OrderDesc_Get.no] = OrderDesc_Get
 
-from objects.OrderDesc import OrderDesc
+from objects.OrderDesc import OrderDesc, descriptions
 OrderDesc = OrderDesc
+OrderDescs = descriptions
 mapping[OrderDesc.no] = OrderDesc
 
 from objects.Order_Get import Order_Get

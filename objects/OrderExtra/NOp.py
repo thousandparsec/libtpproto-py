@@ -1,6 +1,6 @@
 
 from xstruct import pack
-from objects import Order
+from objects import *
 
 class NOp(Order):
 	"""\
@@ -8,6 +8,9 @@ class NOp(Order):
 	"""
 	subtype = 0
 	substruct = "I"
+	
+	name = "Wait"
+	names = [("wait", constants.ARG_TIME)]
 
 	def __init__(self, sequence, \
 					id,	type, slot, turns, resources, \

@@ -1,6 +1,6 @@
 
 from xstruct import pack
-from objects import Order
+from objects import *
 
 class Move(Order):
 	"""\
@@ -8,6 +8,9 @@ class Move(Order):
 	"""
 	subtype = 1
 	substruct = "qqq"
+
+	name = "Move"
+	names = [("pos", constants.ARG_ABS_COORD)]
 
 	def __init__(self, sequence, \
 					id,	type, slot, turns, resources, \

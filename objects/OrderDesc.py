@@ -2,6 +2,7 @@
 from xstruct import pack
 
 from Description import Description
+from Constants import *
 
 # Import prebuild orders
 from ObjectDesc import *
@@ -15,13 +16,6 @@ def descriptions(added=None):
 	if added != None:
 		_descriptions[ added.subtype ] = added
         return _descriptions
-
-# Constants
-ARG_ABS_COORD = 0
-ARG_TIME = 1
-ARG_OBJECT = 2
-ARG_PLAYER = 3  
-ARG_RANGE = 4
 
 struct_map = {
 	ARG_ABS_COORD: ("qqq", 3),
@@ -49,16 +43,20 @@ class DynamicDesc(Order):
 			# FIXME: Must throw error here
 			raise ValueError("Not enough arguments.")
 
-		for name, size, struct in self.names:
-			setattr(self, name, args[0:size])
+		for name, type in self.names:
+			struct, size = struct_map[size]
 
+			setattr(self, name, args[0:size])
 			args = args[size:]
 
 	def __repr__(self):
 		args = []
-		for name, size, struct in names:
+		for name, type in self.names:
 			for attr in getattr(self, name):
-				args.append(attr)
+				try:
+					args += attr
+				except:
+					args.append(attr)
 	
 		output = Order.__repr__(self)
 		output += apply(pack, (self.substruct,) + args)
@@ -128,16 +126,21 @@ class OrderDesc(Description):
 		"""
 		class C(DynamicDesc):
 			pass
-	
+
+		C.name = self.name
 		C.__doc__ = self.description
+
+		# Arguments
 		C.names = []
 		C.subtype = self.id
 	
 		for name, type, desc in self.arguments:
 			struct, size = struct_map[type]
 
- 			C.names.append((name, size, struct))
+ 			C.names.append((name, type))
 			C.substruct += struct
 			setattr(C, name + "__doc__", desc)
 
 		return C
+
+__all__ = ["descriptions", "OrderDesc"]
