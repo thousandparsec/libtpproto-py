@@ -10,6 +10,10 @@ from support.output import *
 
 _continue = []
 
+class l(list):
+	def __str__(self):
+		return "[%s]" % ", ".join([str(i) for i in self])
+
 class NotImplimented(Exception):
 	pass
 

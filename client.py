@@ -53,7 +53,7 @@ import xstruct
 import objects
 constants = objects.constants
 
-from common import Connection
+from common import Connection, l
 
 sequence_max = 4294967296
 
@@ -259,7 +259,7 @@ class ClientConnection(Connection):
 		store = self.buffers['store'][no]
 		del self.buffers['store'][no]
 
-		return store
+		return l(store)
 
 	def get_objects(self, a=None, y=None, z=None, r=None, x=None, id=None, ids=None):
 		"""\
