@@ -396,7 +396,7 @@ class ClientConnection(Connection):
 		if kw.has_key('slots'):
 			slots = kw['slots']
 		elif kw.has_key('slot'):
-			slots = [kw['slots']]
+			slots = [kw['slot']]
 		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
 			slots = args[0]
 		else:
@@ -519,7 +519,7 @@ class ClientConnection(Connection):
 
 	def time(self):
 		"""\
-		Connects to a Thousand Parsec Server.
+		Gets the time till end of turn from a Thousand Parsec Server.
 		"""
 		self._common()
 		
@@ -606,7 +606,7 @@ class ClientConnection(Connection):
 		if kw.has_key('slots'):
 			slots = kw['slots']
 		elif kw.has_key('slot'):
-			slots = [kw['slots']]
+			slots = [kw['slot']]
 		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
 			slots = args[0]
 		else:
@@ -668,7 +668,7 @@ class ClientConnection(Connection):
 		if kw.has_key('slots'):
 			slots = kw['slots']
 		elif kw.has_key('slot'):
-			slots = [kw['slots']]
+			slots = [kw['slot']]
 		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
 			slots = args[0]
 		else:
@@ -683,6 +683,42 @@ class ClientConnection(Connection):
 			return None
 		else:
 			return self._get_header(objects.OK, self.no)
+
+
+	def get_categories(self, *args, **kw):
+		"""\
+		Get category descriptions,
+
+		# Get the description for category 5
+		[<cat id=5>] = get_categories(5)
+		[<cat id=5>] = get_categories(id=5)
+		[<cat id=5>] = get_categories(ids=[5])
+		[(False, "No such 5")] = get_categories([5])
+		
+		# Get the descriptions for category 5 and 10
+		[<msg id=5>, (False, "No such 10")] = get_categories([5, 10])
+		[<msg id=5>, (False, "No such 10")] = get_categories(ids=[5, 10])
+		"""
+		self._common()
+
+		if kw.has_key('ids'):
+			ids = kw['ids']
+		elif kw.has_key('id'):
+			ids = [kw['id']]
+		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
+			ids = args[0]
+		else:
+			ids = args
+
+		p = objects.Category_Get(self.no, ids)
+
+		self._send(p)
+
+		if self._noblock():
+			self._append(self._get_header, (objects.Category, self.no))
+			return None
+		else:
+			return self._get_header(objects.Category, self.no)
 
 	def disconnect(self):
 		"""\

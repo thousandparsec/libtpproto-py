@@ -18,7 +18,7 @@ class Category_Get(Processed):
 		# Length is:
 		#  * 4 bytes (uint32 - id)
 		#
-		self.length = 4 + 4 * len(slots)
+		self.length = 4 + 4 * len(ids)
 	
 		self.ids = ids
 	
