@@ -1,3 +1,50 @@
+"""\
+This module contains the client based connections.
+
+Blocking Example Usage:
+
+>>> # Create the object and connect to the server
+>>> c = netlib.Connection("127.0.0.1", 6329)
+>>> if failed(c.connect()):
+>>>    print "Could not connect to the server"
+>>>    sys.exit(1)
+>>>
+>>> if failed(c.login("username", "password")):
+>>> 	print "Could not login"
+>>> 	sys.exit(1)
+>>>
+>>> c.disconnect()
+>>>
+
+Non-Blocking Example Usage:
+
+>>> # Create the object and connect to the server
+>>> c = netlib.Connection("127.0.0.1", 6329, nb=1)
+>>>
+>>> c.connect()
+>>> c.login("username", "password")
+>>>
+>>> # Wait for the connection to be complete
+>>> if failed(c.wait()):
+>>>    print "Could not connect to the server"
+>>>    sys.exit(1)
+>>>
+>>> r = c.poll()
+>>> while r == None:
+>>> 	r = c.poll()
+>>>
+>>> 	# Do some other stuff!
+>>> 	pass
+>>>
+>>> if failed(r):
+>>> 	print "Could not login"
+>>> 	sys.exit(1)
+>>>
+>>> # Disconnect and cleanup
+>>> c.disconnect()
+>>>
+"""
+
 # Python Imports
 import socket
 
@@ -169,10 +216,10 @@ class ClientConnection(Connection):
 
 		if isinstance(p, objects.Fail):
 			# The whole command failed :(
-			return False, p.s
+			return [(False, p.s)]
 		elif isinstance(p, type):
 			# Must only be one, so return
-			return p
+			return [p]
 		elif not isinstance(p, objects.Sequence):
 			# We got a bad packet
 			raise IOError("Bad Packet was received %s" % p)
@@ -231,18 +278,18 @@ class ClientConnection(Connection):
 		Get objects from the server,
 
 		# Get the object with id=25
-		obj = get_objects(25)
-		obj = get_objects(id=25)
-		obj = get_objects(ids=[25])
-		obj = get_objects([id])
+		[<obj id=25>] = get_objects(25)
+		[<obj id=25>] = get_objects(id=25)
+		[<obj id=25>] = get_objects(ids=[25])
+		[<obj id=25>] = get_objects([id])
 		
 		# Get the objects with ids=25, 36
-		obj = get_objects([25, 36])
-		obj = get_objects(ids=[25, 36])
+		[<obj id=25>, <obj id=36>] = get_objects([25, 36])
+		[<obj id=25>, <obj id=36>] = get_objects(ids=[25, 36])
 
 		# Get the objects by position
-		obj = get_objects(x, y, z, radius)
-		obj = get_objects(x=x, y=y, z=z, r=radius)
+		[<obj id=x>, ..] = get_objects(x, y, z, radius)
+		[<obj id=x>, ..] = get_objects(x=x, y=y, z=z, r=radius)
 		"""
 		self._common()
 
@@ -279,17 +326,17 @@ class ClientConnection(Connection):
 		Get orders from an object,
 
 		# Get the order in slot 5 from object 2
-		obj = get_orders(2, 5)
-		obj = get_orders(2, slot=5)
-		obj = get_orders(2, slots=[5])
-		obj = get_orders(2, [5])
+		[<ord id=2 slot=5>] = get_orders(2, 5)
+		[<ord id=2 slot=5>] = get_orders(2, slot=5)
+		[<ord id=2 slot=5>] = get_orders(2, slots=[5])
+		[<ord id=2 slot=5>] = get_orders(2, [5])
 		
 		# Get the orders in slots 5 and 10 from object 2
-		obj = get_orders(2, [5, 10])
-		obj = get_orders(2, slots=[5, 10])
+		[<ord id=2 slot=5>, <ord id=2 slot=10>] = get_orders(2, [5, 10])
+		[<ord id=2 slot=5>, <ord id=2 slot=10>] = get_orders(2, slots=[5, 10])
 
 		# Get all the orders from object 2
-		obj = get_orders(2)
+		[<ord id=2 slot=5>, ...] = get_orders(2)
 		"""
 		self._common()
 
@@ -344,14 +391,14 @@ class ClientConnection(Connection):
 		Removes orders from an object,
 
 		# Remove the order in slot 5 from object 2
-		obj = remove_orders(2, 5)
-		obj = remove_objects(2, slot=5)
-		obj = remove_objects(2, slots=[5])
-		obj = remove_objects(2, [5])
+		[<Ok>] = remove_orders(2, 5)
+		[<Ok>] = remove_objects(2, slot=5)
+		[<Ok>] = remove_objects(2, slots=[5])
+		[(False, "No order 5")] = remove_objects(2, [5])
 		
 		# Remove the orders in slots 5 and 10 from object 2
-		obj = remove_objects(2, [5, 10])
-		obj = remove_objects(2, slots=[5, 10])
+		[<Ok>, (False, "No order 10")] = remove_objects(2, [5, 10])
+		[<Ok>, (False, "No order 10")] = remove_objects(2, slots=[5, 10])
 		"""
 		self._common()
 
@@ -383,14 +430,14 @@ class ClientConnection(Connection):
 		order, you don't need to do this manually.
 
 		# Get the order description for type 5
-		obj = get_orderdescs(5)
-		obj = get_orderdescs(type=5)
-		obj = get_orderdescs(types=[5])
-		obj = get_orderdescs([5])
+		[<orddesc id=5>] = get_orderdescs(5)
+		[<orddesc id=5>] = get_orderdescs(type=5)
+		[<orddesc id=5>] = get_orderdescs(types=[5])
+		[(False, "No desc 5")] = get_orderdescs([5])
 		
 		# Get the order description for type 5 and 10
-		obj = get_orderdescs([5, 10])
-		obj = get_orderdescs(types=[5, 10])
+		[<orddesc id=5>, (False, "No desc 10")] = get_orderdescs([5, 10])
+		[<orddesc id=5>, (False, "No desc 10")] = get_orderdescs(types=[5, 10])
 		"""
 		self._common()
 
@@ -454,14 +501,14 @@ class ClientConnection(Connection):
 		Get boards from the server,
 
 		# Get the board with id=25
-		obj = get_boards(25)
-		obj = get_boards(id=25)
-		obj = get_boards(ids=[25])
-		obj = get_boards([id])
+		[<board id=25>] = get_boards(25)
+		[<board id=25>] = get_boards(id=25)
+		[<board id=25>] = get_boards(ids=[25])
+		[(False, "No such board")] = get_boards([id])
 		
 		# Get the boards with ids=25, 36
-		obj = get_boards([25, 36])
-		obj = get_boards(ids=[25, 36])
+		[<board id=25>, (False, "No board")] = get_boards([25, 36])
+		[<board id=25>, (False, "No board")] = get_boards(ids=[25, 36])
 		"""
 		self._common()
 
@@ -488,17 +535,14 @@ class ClientConnection(Connection):
 		Get messages from an board,
 
 		# Get the message in slot 5 from board 2
-		obj = get_messages(2, 5)
-		obj = get_messages(2, slot=5)
-		obj = get_messages(2, slots=[5])
-		obj = get_messages(2, [5])
+		[<msg id=2 slot=5>] = get_messages(2, 5)
+		[<msg id=2 slot=5>] = get_messages(2, slot=5)
+		[<msg id=2 slot=5>] = get_messages(2, slots=[5])
+		[(False, "No such 5")] = get_messages(2, [5])
 		
 		# Get the messages in slots 5 and 10 from board 2
-		obj = get_messages(2, [5, 10])
-		obj = get_messages(2, slots=[5, 10])
-
-		# Get all the messages from board 2
-		obj = get_messages(2)
+		[<msg id=2 slot=5>, (False, "No such 10")] = get_messages(2, [5, 10])
+		[<msg id=2 slot=5>, (False, "No such 10")] = get_messages(2, slots=[5, 10])
 		"""
 		self._common()
 
@@ -526,8 +570,8 @@ class ClientConnection(Connection):
 		Add a new message to an board.
 
 		Forms are
-		insert_message(bid, slot, [arguments for message])
-		insert_message(bid, slot, [Message Object])
+		[<Ok>] = insert_message(bid, slot, [arguments for message])
+		[(False, "Insert failed")] = insert_message(bid, slot, [Message Object])
 		"""
 		self._common()
 		
@@ -553,14 +597,14 @@ class ClientConnection(Connection):
 		Removes messages from an board,
 
 		# Remove the message in slot 5 from board 2
-		obj = remove_messages(2, 5)
-		obj = remove_messages(2, slot=5)
-		obj = remove_messages(2, slots=[5])
-		obj = remove_messages(2, [5])
+		[<Ok>] = remove_messages(2, 5)
+		[<Ok>] = remove_messages(2, slot=5)
+		[<Ok>] = remove_messages(2, slots=[5])
+		[(False, "Insert failed")] = remove_messages(2, [5])
 		
 		# Remove the messages in slots 5 and 10 from board 2
-		obj = remove_messages(2, [5, 10])
-		obj = remove_messages(2, slots=[5, 10])
+		[<Ok>, (False, "No such 10")] = remove_messages(2, [10, 5])
+		[<Ok>, (False, "No such 10")] = remove_messages(2, slots=[10, 5])
 		"""
 		self._common()
 
@@ -592,51 +636,3 @@ class ClientConnection(Connection):
 
 		self.s.close()
 		del self
-
-"""\
->>> # Create the object and connect to the server
->>> c = netlib.Connection("127.0.0.1", 6329)
->>> if not c.connect():
->>>    print "Could not connect to the server"
->>>    sys.exit(1)
->>>
->>> if not c.login("username", "password"):
->>> 	print "Could not login"
->>> 	sys.exit(1)
->>>
->>> c.disconnect()
->>>
-
-Non-Blocking Example Usage:
-
->>>
->>> import sys
->>>
->>> from tp import netlib
->>>
->>> # Create the object and connect to the server
->>> c = netlib.Connection("127.0.0.1", 6329, nb=1)
->>>
->>> c.connect()
->>> c.login("username", "password")
->>>
->>> # Wait for the connection to be complete
->>> if not c.wait():
->>>    print "Could not connect to the server"
->>>    sys.exit(1)
->>>
->>> r = c.poll()
->>> while r == None:
->>> 	r = c.poll()
->>>
->>> 	# Do some other stuff!
->>> 	pass
->>>
->>> if not r:
->>> 	print "Could not login"
->>> 	sys.exit(1)
->>>
->>> # Disconnect and cleanup
->>> c.disconnect()
->>>
-"""

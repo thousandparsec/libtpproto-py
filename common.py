@@ -131,6 +131,9 @@ class Connection:
 				if len(d) != s+p.length:
 					return None
 			
+			else:
+				d = ""
+			
 			# Remove the stuff from the line
 			r(s+p.length)
 

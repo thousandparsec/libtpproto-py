@@ -48,7 +48,6 @@ class Order(Describable):
 							args = None
 
 					args = (self, sequence, id, slot, type, turns, resources,) + args
-					print args[1:]
 					apply(self.__class__.__init__, args)
 
 				return

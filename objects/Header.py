@@ -43,48 +43,15 @@ class Header(object):
 		if self.protocol != version:
 			raise ValueError("Invalid creation string\n%s\n" % hexbyte(s))
 			
-		if len(extra) == self.length:
+		if self.length != 0 and len(extra) == self.length:
 			self.process(extra)
 		elif len(extra) != 0:
 			raise ValueError("Invalid input string")
-
-	def __getattr__(self, key, default=_marker):
-		hk = self.__dict__.has_key
-		d = self.__dict__
-	
-		# Don't allow any access to anything apart from process 
-		# (except in the case of zero length)
-		if hk("process"):
-			if key == "process" or key == "length" or key[0:2] == "__":
-				try:
-					return d[key]
-				except:
-					try:
-						return getattr(self.__class__, key)
-					except AttributeError, e:
-						if default == _marker:
-							raise AttributeError("No such attribute '%s'" % key)
-						else:
-							return default
-			else:
-				raise AttributeError("Cannot do anything till you call process!")
-		else:
-			try:
-				return d[key]
-			except:
-				try:
-					return getattr(self.__class__, key)
-				except AttributeError, e:
-					if default == _marker:
-						raise AttributeError("No such attribute '%s'" % key)
-					else:
-						return default
 
 	def __str__(self):
 		"""\
 		Return a reconisable string.
 		"""
-		
 		return "<%s - %s @ %s>" % (self.__class__.__module__, self.__class__.__name__, hex(id(self)))
 
 	def __repr__(self):
