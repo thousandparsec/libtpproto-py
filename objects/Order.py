@@ -10,7 +10,7 @@ class Order(Describable):
 	A Order packet consist of:
 
 	* a UInt32, Object ID of the order is on/to be placed on
-	* a UInt32, Slot number of the order/to be put in, 
+	* a SInt32, Slot number of the order/to be put in, 
 		-1 will insert at the last position,
 		otherwise it is inserted before the number
 	* a UInt32, Order type ID
@@ -22,7 +22,7 @@ class Order(Describable):
 	* Extra data required by the order is appended to the end and is defined on a descriptions
 	"""
 	no = 11
-	struct = "IIII [II]"
+	struct = "IjII [II]"
 
 	def __init__(self, sequence, \
 			id,	slot, type, turns, resources, \

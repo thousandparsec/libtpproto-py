@@ -9,7 +9,3 @@ class Message_Insert(Message):
 			*args, **kw):
 		self.no = 20
 		apply(Order.__init__, (self, sequence, id, slot)+args, kw)
-
-		# FIXME: This is a hack :)
-		if self.slot == 4294967295:
-			self.slot = -1

@@ -22,10 +22,13 @@ Extra stuff defined by this module:
 
  S	String
  Y	Padded String	
- [	List Start	(unsigned int32 length)
+ [	List Start			(unsigned int32 length)
  ]	List End	
- {      List Start      (unsigned int64 length)
- }      List End
+ {  List Start			(unsigned int64 length)
+ }  List End
+ n  SInt16				(16 bit semi-signed integer)
+ j  SInt32				(32 bit semi-signed integer)
+ p  SInt64				(64 bit semi-signed integer)
  
 The structure of the data in the list is described by the data inside the
 brackets.
@@ -47,6 +50,8 @@ from types import *
 _pack = struct.pack
 _unpack = struct.unpack
 _calcsize = struct.calcsize
+
+semi = {'n':(16, 'H'), 'j':(32, 'I'), 'p':(64, 'Q')}
 
 def hexbyte(string):
 	"""\
@@ -108,8 +113,10 @@ def pack(struct, *args):
 					new_args.append(args.pop(0))
 					
 				output += apply(_pack, ["!"+substruct,] + new_args)
-				
+		
 		else:
+			if char in semi.keys():
+				char = semi[char][1]
 			output += _pack("!"+char, args.pop(0))
 			
 	return output
@@ -162,13 +169,19 @@ def unpack(struct, s):
 
 			output += data
 		else:
-			substruct = "!"+char
+			if char in semi.keys():
+				substruct = "!"+semi[char][1]
+			else:
+				substruct = "!"+char
 
 			size = _calcsize(substruct)
 
 			data = _unpack(substruct, s[:size])
 			s = s[size:]
 
+			if char in semi.keys():
+				if data[0] == 2**semi[char][0]-1:
+					data = (-1,)
 			output += data
 
 	return tuple(output), s

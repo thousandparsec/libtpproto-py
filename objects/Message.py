@@ -7,13 +7,13 @@ class Message(Processed):
 	"""\
 	The Message packet consists of:
 		* UInt32, ID of Board
-		* UInt32, Slot of Message
+		* SInt32, Slot of Message
 		* a list of UInt32, Type of message
 		* a string, Subject of message
 		* a string, Body of the message
 	"""
 	no = 19
-	struct = "II[I]SS"
+	struct = "Ij[I]SS"
 
 	def __init__(self, sequence, id, slot, types, subject, body):
 		Processed.__init__(self, sequence)
