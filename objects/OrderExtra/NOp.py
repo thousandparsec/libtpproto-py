@@ -10,17 +10,17 @@ class NOp(Order):
 	substruct = "I"
 
 	def __init__(self, sequence, \
-					id,	slot, turns, resources, \
+					id,	type, slot, turns, resources, \
 					wait):
 		Order.__init__(self, sequence, \
-					id, slot, turns, resources,
+					id, type, slot, turns, resources,
 					wait)
 
 		self.length += 4
 		self.wait = wait
 
 	def __repr__(self):
-		output = Object.__repr__(self)
+		output = Order.__repr__(self)
 		output += pack(self.substruct, self.wait)
 
 		return output

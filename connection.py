@@ -141,7 +141,7 @@ class Connection:
 				d = r(s+p.length, socket.MSG_PEEK)
 				
 				if self.debug:
-					red("%s \n" % xstruct.hexbyte(d))
+					red("%s \n" % xstruct.hexbyte(d[s:]))
 			
 				# This will only ever occur on a non-blocking connection
 				if len(d) != s+p.length:
@@ -195,14 +195,14 @@ class Connection:
 		# Increase the no number
 		self.no += 1
 
-	def connect(self):
+	def connect(self, str=""):
 		"""\
 		Connects to a Thousand Parsec Server.
 		"""
 		self._common()
 		
 		# Send a connect packet
-		p = objects.Connect(self.no, "py-netlib/0.1")
+		p = objects.Connect(self.no, "py-netlib/0.0.2" + str)
 		self._send(p)
 		
 		if self._noblock():
@@ -263,10 +263,6 @@ class Connection:
 		if not p:
 			return None
 
-		# Check the sequence numbers match
-		if p.sequence != no:
-			raise IOError("Sequence numbers don't match\nRequired: %i Got: %i" % (no, p.sequence))
-
 		# Check it's the reply we are after
 		if isinstance(p, objects.OK):
 			return True, p.s
@@ -275,6 +271,76 @@ class Connection:
 		else:
 			# We got a bad packet
 			raise IOError("Bad Packet was received")
+	
+	def _get_header(self, type, no):
+		"""\
+		*Internal*
+
+		Completes the get_* function.
+		"""
+		p = self._recv(no)
+		if not p:
+			return None
+
+		if isinstance(p, objects.Fail):
+			# The whole command failed :(
+			return False, p.s
+		elif isinstance(p, type):
+			# Must only be one, so return
+			return p
+		elif not isinstance(p, objects.Sequence):
+			# We got a bad packet
+			raise IOError("Bad Packet was received %s" % p)
+
+		# We have to wait on multiple packets
+		self.store[no] = []
+	
+		if self._noblock():
+			# Do the commands in non-blocking mode
+
+			self._next(self._get_finish, no)
+			for i in range(0, p.number):
+				self._next(self._get_data, (type, no))
+
+			# Keep the polling going
+			return _continue
+
+		else:
+			# Do the commands in blocking mode
+			for i in range(0, p.number):
+				self._get_data(type, no)
+			
+			return self._get_finish(no)
+
+	def _get_data(self, type, no):
+		"""\
+		*Internal*
+
+		Completes the get_* function.
+		"""
+		p = self._recv(no)
+
+		if p != None:
+			if isinstance(p, objects.Fail):
+				p = (False, p.s)
+			elif not isinstance(p, type):
+				raise IOError("Bad Packet was received %s" % p)
+
+			self.store[no].append(p)
+
+			if self._noblock():
+				return _continue
+
+	def _get_finish(self, no):
+		"""\
+		*Internal*
+
+		Completes the get_* functions.
+		"""
+		store = self.store[no]
+		del self.store[no]
+
+		return store
 
 	def get_objects(self, a=None, y=None, z=None, r=None, x=None, id=None, ids=None):
 		"""\
@@ -319,71 +385,12 @@ class Connection:
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_objects_header, self.no)
+			self._append(self._get_header, (objects.Object, self.no))
 			return None
-		
-		# and wait for a response
-		return self._get_objects_header(self.no)
+		else:
+			return self._get_header(objects.Object, self.no)
 
-	def _get_objects_header(self, no):
-		"""\
-		*Internal*
-
-		Completes the get_objects function.
-		"""
-		p = self._recv(no)
-		if not p:
-			return None
-
-		# Check it's the reply we are after
-		if isinstance(p, objects.Fail):
-			return False, p.s
-		elif not isinstance(p, objects.Sequence):
-			# We got a bad packet
-			raise IOError("Bad Packet was received %s" % p)
-
-		self.store[no] = []
-		
-		if self._noblock():
-			self._next(self._get_objects_finish, no)
-
-			for i in range(0, p.number):
-				self._next(self._get_objects_data, no)
-
-			# Keep the polling going
-			return _continue
-
-		for i in range(0, p.number):
-			self._get_objects_data(no)
-			
-		return self._get_objects_finish(no)
-
-	def _get_objects_data(self, no):
-		"""\
-		*Internal*
-
-		Completes the get_objects function.
-		"""
-		p = self._recv(no)
-
-		if p and isinstance(p, objects.Object):
-			self.store[no].append(p)
-
-			if self._noblock():
-				return _continue
-
-	def _get_objects_finish(self, no):
-		"""\
-		*Internal*
-
-		Completes the get_objects function.
-		"""
-		store = self.store[no]
-		del self.store[no]
-
-		return store
-
-	def get_orders(self, oid, x=None, slot=None, slots=None):
+	def get_orders(self, oid, *args, **kw):
 		"""\
 		Get orders from an object,
 
@@ -402,89 +409,60 @@ class Connection:
 		"""
 		self._common()
 
-		if x != None:
-			if hasattr(x, '__getitem__'):
-				slots = [x]
-			else:
-				slots = x
+		if kw.has_key('slots'):
+			slots = kw['slots']
+		elif kw.has_key('slot'):
+			slots = [kw['slots']]
+		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
+			slots = args[0]
+		else:
+			slots = args
 
-		if slot != None:
-			slots = [slot]
-
-		# Get by id mode
-		if ids != None:
-			p = objects.Order_Get(self.no, oid, slots)
+		p = objects.Order_Get(self.no, oid, slots)
 
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_orders_header, self.no)
+			self._append(self._get_header, (objects.Order, self.no))
+			return None
+		else:
+			return self._get_header(objects.Order, self.no)
+
+	def insert_order(self, oid, type, slot, *args, **kw):
+		"""\
+		Add a new order to an object.
+		"""
+		self._common()
+		
+		o = apply(objects.Order_Insert, (self.no, oid, type, slot,)+args, kw)
+		self._send(o)
+
+		if self._noblock():
+			self._append(self._insert_order, self.no)
 			return None
 		
 		# and wait for a response
-		return self._get_orders_header(self.no)
-
-	def _get_orders_header(self, no):
+		return self._insert_order(self.no)
+		
+	def _insert_order(self, no):
 		"""\
 		*Internal*
 
-		Completes the get_orders function.
+		Completes the insert order function.
 		"""
 		p = self._recv(no)
 		if not p:
 			return None
 
 		# Check it's the reply we are after
-		if isinstance(p, objects.Fail):
+		if isinstance(p, objects.OK):
+			return True, p.s
+		elif isinstance(p, objects.Fail):
 			return False, p.s
-		elif not isinstance(p, objects.Sequence):
+		else:
 			# We got a bad packet
-			raise IOError("Bad Packet was received %s" % p)
-
-		self.store[no] = []
+			raise IOError("Bad Packet was received")
 		
-		if self._noblock():
-			self._next(self._get_orders_finish, self.no)
-
-			for i in range(0, p.number):
-				self._next(self._get_orders_data, no)
-
-			# Keep the polling going
-			return _continue
-
-		for i in range(0, p.number):
-			self._get_orders_data(no)
-			
-		return self._get_orders_finish(no)
-
-	def _get_orders_data(self, no):
-		"""\
-		*Internal*
-
-		Completes the get_orders function.
-		"""
-		p = self._recv(no)
-
-		if p and isinstance(p, objects.Order):
-			self.store[no].append(p)
-
-			if self._noblock():
-				return _continue
-
-	def _get_orders_finish(self, no):
-		"""\
-		*Internal*
-
-		Completes the get_orders function.
-		"""
-		store = self.store[no]
-		del self.store[no]
-
-		return store
-
-	def insert_order(self, oid, slots, *args, **kw):
-		pass
-
 	def disconnect(self):
 		"""\
 		Disconnect from a server.

@@ -112,7 +112,7 @@ class Header:
 
 		# Do the class specific function
 		if hasattr(self, "process_extra"):
-			apply(self.__init__, (self.sequence,) + args + (extra,))
+			apply(self.__init__, (self.sequence,) + args, {'extra':extra})
 		else:
 			apply(self.__init__, (self.sequence,) + args)
 

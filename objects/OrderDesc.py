@@ -3,17 +3,17 @@ from xstruct import pack
 
 from Description import Description
 
+from ObjectDesc import *
 _descriptions = None
 def descriptions(added=None):
-        global _descriptions
+	global _descriptions
  
-        if _descriptions == None:
-                _descriptions = import_subtype(edir(__file__))
+	if _descriptions == None:
+		_descriptions = import_subtype(edir(__file__))
 	
 	if added != None:
 		_descriptions[ added.type ] = added
         return _descriptions
-
 
 # Constants
 ARG_COORD = 0

@@ -31,16 +31,20 @@ class Object(Describable):
 			contains, \
 			order_types, \
 			order_number, \
-			extra=None, *args):
+			*args, **kw):
 		Describable.__init__(self, sequence)
-		
+
+		if kw.has_key('extra'):
+			extra = kw['extra']
+		else:
+			extra = None
+
 		# Upgrade the class to the real type
 		if self.__class__ == Object:
 			if descriptions().has_key(type):
 				self.__class__ = descriptions()[type]
 
 				if extra != None or len(args) > 0:
-					args = (extra,)+args
 					if extra != None:
 						if len(self.substruct) > 0:
 							args, leftover = unpack(self.substruct, extra)
