@@ -81,7 +81,7 @@ class Connection:
 		"""
 		s = self.s.send
 		if self.debug:
-			green("Sending: %s \n" % str(p))
+			green("Sending: %s (%s)\n" % (str(p), p.sequence))
 			green("Sending: %s \n" % xstruct.hexbyte(repr(p)))
 		s(repr(p))
 
@@ -91,6 +91,7 @@ class Connection:
 		
 		Reads a single TP packet with correct sequence number from the socket.
 		"""
+		# FIXME: Need to make this more robust for bad packets
 		r = self.s.recv
 		b = self.rbuffer
 		u = self.ubuffer # FIXME: Currently we don't handle different types of "descriptions"
@@ -104,7 +105,10 @@ class Connection:
 
 		while p == None:
 			# Is a packet header on the line?
-			h = r(s, socket.MSG_PEEK)
+			try:
+				h = r(s, socket.MSG_PEEK)
+			except:
+				h = ""
 
 			# This will only ever occur on a non-blocking connection
 			if len(h) != s:
@@ -135,7 +139,7 @@ class Connection:
 				continue
 
 			if self.debug:
-				red("Receiving: %s \n" % str(str(p)))
+				red("Receiving: %s (%s)\n" % (str(p), p.sequence))
 
 			# FIXME: This shouldn't be in the base class
 			# Check if this packet is a description for an undescribed object
