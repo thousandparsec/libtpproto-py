@@ -171,7 +171,7 @@ class OrderDesc(Description):
 			pass
 
 		DynamicOrder.name = self.name
-#		DynamicOrder.__doc__ = self.description
+		DynamicOrder.doc = self.description
 
 		# Arguments
 		DynamicOrder.names = []
