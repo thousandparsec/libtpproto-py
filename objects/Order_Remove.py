@@ -1,31 +1,13 @@
 
 from xstruct import pack
 
-from Header import Processed
+from Get import GetSlot
 
-class Order_Remove(Processed):
+class Order_Remove(GetSlot):
 	"""\
 	The Order_Remove packet consists of:
-		* A uint32, object to get the orders from.
-		* A uint32, list ID of order slots.
+		* A UInt32, object to remove the orders from.
+		* a list of,
+			* A SInt32, order slots
 	"""
-
 	no = 13
-	struct = "I[I]"
-
-	def __init__(self, sequence, id, slots):
-		Processed.__init__(self, sequence)
-
-		# Length is:
-		#  * 4 bytes (uint32 - id)
-		#
-		self.length = 4 + 4 + 4 * len(slots)
-	
-		self.id = id
-		self.slots = slots
-	
-	def __repr__(self):
-		output = Processed.__repr__(self)
-		output += pack(self.struct, self.id, self.slots)
-
-		return output
