@@ -6,7 +6,7 @@ from ObjectDesc import descriptions
 
 class Object(Describable):
 	"""\
-	The Login packet consists of:
+	The Object packet consists of:
 		 4 * a uint32, object ID
 		 4 * a uint32, object type
 		   * a text string, name of object
@@ -41,7 +41,8 @@ class Object(Describable):
 				if extra != None or len(args) > 0:
 					args = (extra,)+args
 					if extra != None:
-						args, leftover = unpack(self.substruct, extra)
+						if len(self.substruct) > 0:
+							args, leftover = unpack(self.substruct, extra)
 
 					args = (self, sequence, id, type, name, size, posx, posy, posz, 
 						velx, vely, velz, contains, order_types, order_number) + args

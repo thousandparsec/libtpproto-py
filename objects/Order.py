@@ -1,11 +1,16 @@
 
 from xstruct import pack
 
-from Header import Processed
-from OrderDesc import descriptions
 
-class Order(Processed):
+from Description import Describable
+from ObjectDesc import descriptions
+
+class Order(Describable):
 	"""\
+	The Order packet consists of:
+
+ The Order Description packet contains: int32 order type, string name, string description, int32 number of parameters and then of each parameter: string name, int32 type ID, string desc. The Parameter Types are given below:
+
 	The OK packet consists of:
 		* A string 
 		(the string can be safely ignored - however it may 

@@ -1,14 +1,14 @@
 
 from objects import Object
 
-class Universe(Object):
+class Galaxy(Object):
 	"""\
-	The Universe is the top level object, everyone can always get it. It does not handle much itself.
-
-	It only has one piece of data, that is the int32 turn number, also know as the year since game start.
+	The Galaxy is a container for a large group of close star systems, like the Milky Way.
+	
+	The Galaxy contains no extra data.
 	"""
-	subtype = 0
-	substruct = "I"
+	subtype = 1
+	substruct = ""
 
 	def __init__(self, sequence, \
 			id, type, name, \
@@ -17,8 +17,7 @@ class Universe(Object):
 			velx, vely, velz, \
 			contains, \
 			order_types, \
-			order_number, \
-			turn):
+			order_number):
 		Object.__init__(self, sequence, \
 			id, type, name, \
 			size, \
@@ -27,5 +26,3 @@ class Universe(Object):
 			contains, \
 			order_types, \
 			order_number)
-
-		self.turn = turn

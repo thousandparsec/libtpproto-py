@@ -3,10 +3,19 @@ from xstruct import pack
 
 from Header import Processed
 
-# Where we store incoming desciptions so they can be accessed by Order
-descriptions = {}
-
 # Import prebuilt orders
+from ObjectDesc import *
+
+_descriptions = None
+def descriptions(added=None):
+        global _descriptions
+ 
+        if _descriptions == None:
+                _descriptions = import_subtype(edir(__file__))
+	
+	if added != None:
+		_descriptions[ added.type ] = added
+        return _descriptions
 
 
 # Constants
@@ -15,7 +24,7 @@ ARG_TIME = 1
 ARG_OBJECT = 2
 ARG_PLAYER = 3  
 
-def buildstruct(param):
+def buildstruct(parameters):
 	for name, type, desc in parameters:
  		if type == ARG_COORD:
 			struct += "qqq "
@@ -26,40 +35,39 @@ def buildstruct(param):
 		elif type == ARG_PLAYER:
 			struct += "I " 
 		elif type == ARG_RANGE:
- 			
+ 			pass
  
 class OrderDesc(Processed):
 	"""\
 	The OrderDesc packet consists of:
-		* A string 
-
-		Argument Name
-		Argument Description
-		Argument Type
-		Argument Extra
+		* int32 order type
+		* string name
+		* string description
+		* int32 number of parameters
+		* A list of,
+			* Argument Name
+			* Argument Type
+			* Argument Description
 
 		IE
 		Name: Drink With Friends
 		Description: Go to the pub and drink with friends
 		Arguments:
 			Name: How Long
-			Description: How many turns to drink for.
 			Type: ARG_TIME
+			Description: How many turns to drink for.
 
 			Name: Who With
-			Description: Which player to drink with.
 			Type: ARG_PLAYER
+			Description: Which player to drink with.
 
 			Name: Where
-			Description: Where to go drinking.
 			Type: ARG_COORD
+			Description: Where to go drinking.
 
 			Name: Cargo
-			Description: How much beer to drink.
 			Type: ARG_INT
-
-	Structure for the data:
-		<uint32><uint32><int64><int64><int64><uint32>
+			Description: How much beer to drink.
 
 	"""
 
