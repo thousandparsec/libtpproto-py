@@ -41,7 +41,9 @@ def hexbyte(string):
 	s = ""
 	for i in string:
 		s += str(hex(ord(i)))
-		if ord(i) > ord('A') and ord(i) < ord('z'):
+		if (ord(i) >= ord('A') and ord(i) <= ord('z')) \
+			or (ord(i) >= ord('0') and ord(i) <= ord('9')) \
+			or (ord(i) == ord(" ")):
 			s += "(%s)" % i
 		s += " "
 	return s
