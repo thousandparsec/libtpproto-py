@@ -4,7 +4,7 @@ from xstruct import pack
 from Header import Processed
 from OrderDesc import descriptions
 
-class OK(Processed):
+class Order(Processed):
 	"""\
 	The OK packet consists of:
 		* A string 

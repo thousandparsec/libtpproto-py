@@ -2,7 +2,10 @@ import socket
 import objects
 import xstruct
 
+from objects.Description import *
+
 from support.output import *
+
 
 _continue = []
 
@@ -22,6 +25,9 @@ class Connection:
 
 		# This is a storage for out of sequence packets
 		self.rbuffer = {}
+		# Storage for frames which havn't got a description yet
+		self.ubuffer = {}
+
 
 	def setblocking(self, nb):
 		"""\
@@ -109,6 +115,7 @@ class Connection:
 		"""
 		r = self.s.recv
 		b = self.rbuffer
+		d = self.ubuffer # FIXME: Currently we don't handle different types of "descriptions"
 		s = objects.Header.size
 		
 		p = None
@@ -129,28 +136,53 @@ class Connection:
 				red("Receiving: %s" % xstruct.hexbyte(h))
 			
 			p = objects.Header(h)
+				
 			if p.length > 0:
 				d = r(s+p.length, socket.MSG_PEEK)
+				
+				if self.debug:
+					red("%s \n" % xstruct.hexbyte(d))
 			
+				# This will only ever occur on a non-blocking connection
 				if len(d) != s+p.length:
 					return None
-
-				red("%s \n" % xstruct.hexbyte(d[s:]))
-
-				p.process(d[s:])
-		
+			
 			# Remove the stuff from the line
 			r(s+p.length)
+
+			try:
+				p.process(d[s:])
+			except DescriptionError:
+				# The packet doesn't have a description yet!?
+
+				# Store the packet and wait for the description
+				if not d.has_key(p.type):
+					d[p.type] = []
+
+				d[p.type].append(p)
+
+				# Send a request for the description
 				
+				continue
+
+			# Check if this packet is a description for an undescribed object
+			if isinstance(p, Description) and d.has_key(p.type):
+				q = d[p.type].pop(0)
+
+				if len(d[p.type]) == 0:
+					del d[p.type]
+					
+				# Stuff the description into the packet
+				
+
 			# Check its the type of packet we are after
 			if p.sequence != sequence:
-				if not b.has_key(b, sequence):
+				if not b.has_key(sequence):
 					b[p.sequence] = []
 					
 				b[p.sequence].append(p)
 
-				# Guess we try again!
-				p = None
+				continue
 
 		return p
 
