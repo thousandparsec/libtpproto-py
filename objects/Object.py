@@ -22,6 +22,7 @@ class Object(Describable):
 
 	no = 7
 	struct = "IIS Q 3q 3q [I] [I] I 16x"
+
 	def __init__(self, sequence, \
 			id, type, name, \
 			size, \
@@ -43,10 +44,13 @@ class Object(Describable):
 					if extra != None:
 						if len(self.substruct) > 0:
 							args, leftover = unpack(self.substruct, extra)
+						else:
+							args = ()
 
 					args = (self, sequence, id, type, name, size, posx, posy, posz, 
-						velx, vely, velz, contains, order_types, order_number) + args
+							velx, vely, velz, contains, order_types, order_number) + args
 
+					print self.__class__
 					apply(self.__class__.__init__, args)
 				return
 			else:
