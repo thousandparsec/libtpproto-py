@@ -22,8 +22,8 @@ class Message(Processed):
 		#
 		self.length = 4 + 4 + \
 				4 + len(types)*4 + \
-				4 + len(subject) + 1 + \
-				4 + len(body) + 1 
+				4 + len(subject) + \
+				4 + len(body) 
 
 		self.id = id
 		self.slot = slot

@@ -32,7 +32,7 @@ class Fail(Processed):
 		#  * the string
 		#  * null terminator
 		#
-		self.length = 4 + 4 + len(s) + 1
+		self.length = 4 + 4 + len(s)
 
 		self.errno = errno
 		self.s = s

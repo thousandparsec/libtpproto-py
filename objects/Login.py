@@ -24,7 +24,7 @@ class Login(Processed):
 		#  * the string
 		#  * null terminator
 		#
-		self.length = 4 + len(username) + 1 + 4 + len(password) + 1
+		self.length = 4 + len(username) + 4 + len(password)
 
 		self.username = username
 		self.password = password

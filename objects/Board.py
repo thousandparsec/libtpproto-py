@@ -21,8 +21,8 @@ class Board(Processed):
 		# Length is:
 		#
 		self.length = 4 + \
-				4 + len(name) + 1 + \
-				4 + len(desc) + 1 + \
+				4 + len(name) + \
+				4 + len(desc) + \
 				4
 
 		self.id = id

@@ -30,8 +30,8 @@ class Component(Processed):
 		#
 		self.length = 4 + 4 + 4 + \
 				4 + len(types)*4 + \
-				4 + len(name) + 1 + \
-				4 + len(description) + 1 + \
+				4 + len(name) + \
+				4 + len(description) + \
 				4 + len(contains)*(4 + 4) + \
 				4 + len(language)*(1 + 4 + 4)
 

@@ -23,7 +23,7 @@ class Redirect(Processed):
 	no = 24
 	struct = "S"
 
-	def __init__(self, sequence, s=""):
+	def __init__(self, sequence, uri=""):
 		Processed.__init__(self, sequence)
 
 		# Length is:
@@ -31,12 +31,12 @@ class Redirect(Processed):
 		#  * the string
 		#  * null terminator
 		#
-		self.length = 4 + len(s) + 1
+		self.length = 4 + len(uri)
 
-		self.s = s
+		self.uri = uri
 	
 	def __repr__(self):
 		output = Processed.__repr__(self)
-		output += pack(self.struct, self.s)
+		output += pack(self.struct, self.uri)
 
 		return output

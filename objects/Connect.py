@@ -20,8 +20,7 @@ class Connect(Processed):
 		#  * the string
 		#  * null terminator
 		#
-		self.length = 4 + len(s) + 1
-
+		self.length = 4 + len(s)
 		self.s = s
 	
 	def __repr__(self):

@@ -117,7 +117,6 @@ def pack(struct, *args):
 					new_args.append(args.pop(0))
 					
 				output += apply(_pack, ["!"+substruct,] + new_args)
-		
 		else:
 			if char in smallints and isinstance(args[0], long):
 				args[0] = int(args[0])
@@ -243,7 +242,7 @@ def pack_string(s):
 	"""
 	s = str(s)
 	
-	temp = s + "\0"
+	temp = s
 	return pack("!I", len(temp)) + temp
 
 def unpack_string(s):
@@ -260,7 +259,7 @@ def unpack_string(s):
 	(l, ), s = unpack("I", s)
 	if l > 0:
 		# Get the string, (we don't need the null terminator so nuke it)
-		output = s[:l-1]
+		output = s[:l]
 		s = s[l:]
 		
 		return output, s

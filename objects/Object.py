@@ -65,7 +65,7 @@ class Object(Describable):
 
 		# Length is:
 		#  *  8 bytes
-		#  *  4 bytes + len(name) + 1 bytes
+		#  *  4 bytes + len(name)
 		#  *  8 bytes
 		#  * 24 bytes
 		#  * 24 bytes
@@ -76,7 +76,7 @@ class Object(Describable):
 		#  * len(extra)
 		self.length = \
 			4 + 4 + \
-			4 + len(name) + 1 + \
+			4 + len(name) + \
 			8 + 24 + 24 + \
 			4 + len(contains)*4 + \
 			4 + len(order_types)*4 + \

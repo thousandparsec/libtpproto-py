@@ -153,15 +153,15 @@ class OrderDesc(Description):
 		self.modify_time = modify_time
 
 		self.length = 4 + \
-			4 + len(name) + 1 + \
-			4 + len(description) + 1 + \
+			4 + len(name) + \
+			4 + len(description) + \
 			4 + 8 
 
 		for argument in arguments:
 			self.length += \
-				4 + len(argument[0]) + 1 + \
+				4 + len(argument[0]) + \
 				4 + \
-				4 + len(argument[2]) + 1
+				4 + len(argument[2])
 
 	def __repr__(self):
 		output = Description.__repr__(self)

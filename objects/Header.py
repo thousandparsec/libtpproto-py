@@ -4,14 +4,14 @@ from xstruct import pack, unpack, hexbyte
 # Squash warnings about hex/oct
 import warnings
 
-versions = ["TP03", "TP02"]
+versions = ["TP03"]
 version = "TP03"
 
 def SetVersion(i):
 	global version
 
 	if i in versions:
-		version = "TP02"
+		version = i
 		return True
 	else:
 		return False
