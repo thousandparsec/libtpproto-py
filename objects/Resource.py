@@ -45,6 +45,6 @@ class Resource(Processed):
 		output += pack(self.struct, self.id, \
 			self.name_singular, self.name_plural, \
 			self.unit_singular, self.unit_plural, \
-			self.desc, self.weight, self.size, self.modify_time):
+			self.desc, self.weight, self.size, self.modify_time)
 
 		return output

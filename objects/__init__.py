@@ -177,6 +177,23 @@ from objects.Message_Remove import Message_Remove
 Message_Remove = Message_Remove
 mapping[Message_Remove.no] = Message_Remove
 
+# Resource Stuff
+from objects.Resource_Get import Resource_Get
+Resource_Get = Resource_Get
+mapping[Resource_Get.no] = Resource_Get
+
+from objects.Resource import Resource
+Resource = Resource
+mapping[Resource.no] = Resource
+
+from objects.Resource_GetID import Resource_GetID
+Resource_GetID = Resource_GetID
+mapping[Resource_GetID.no] = Resource_GetID
+
+from objects.Resource_IDSequence import Resource_IDSequence
+Resource_IDSequence = Resource_IDSequence
+mapping[Resource_IDSequence.no] = Resource_IDSequence
+
 # Design Stuff
 from objects.Category_Get import Category_Get
 Category_Get = Category_Get

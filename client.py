@@ -217,6 +217,23 @@ class ClientConnection(Connection):
 			# We got a bad packet
 			raise IOError("Bad Packet was received")
 
+	def _get_single(self, type, no):
+		"""\
+		*Internal*
+
+		Completes the function which only get a signle packet returned.
+		"""
+		p = self._recv(no)
+		if not p:
+			return None
+
+		if isinstance(p, type):
+			return p
+		elif isinstance(p, objects.Fail):
+			return False, p.s
+		else:
+			raise IOError("Bad Pakcet was received")
+
 	def _get_header(self, type, no):
 		"""\
 		*Internal*
@@ -294,7 +311,7 @@ class ClientConnection(Connection):
 		"""
 		self._common()
 
-		p = object.mapping[type](self.no, key, position, amount)
+		p = type(self.no, key, position, amount)
 		self._send(p)
 
 		if self._noblock():
@@ -354,23 +371,29 @@ class ClientConnection(Connection):
 			self.type = type
 			self.amount = amount
 
-			self.ids = None
-			self.remaining = None
 			self.key = None
+			self.remaining = None
+
+			self.position = None
+			self.ids = None
 
 			# Send out a packet if we are non-blocking
 			if self.connection._noblock():
 				self.next()
 
+		def __iter__(self):
+			return self
+
 		def next(self):
 			"""\
 			Get the next (ids, modified time) pair.
 			"""
-			# Get the first bit of information
+
+			# Get the total number of IDs
 			if self.key is None and self.remaining is None:
 				if self.ids is None:
 					self.ids = []
-					p = self.connection._get_ids(self.type, -1, 0, 0, raw=true)
+					p = self.connection._get_ids(self.type, -1, 0, 0, raw=True)
 				else:
 					p = self.connect.poll()
 				
@@ -383,16 +406,29 @@ class ClientConnection(Connection):
 
 				self.remaining = p.left
 				self.key = p.key
+				self.position = 0
+
+				print "Initialising......"
+				print "Key:", self.key
+				print "Remaining:", self.remaining
+				print "Position:", self.position
+				print "IDs:", self.ids
 			
 			# Get more IDs
 			if len(self.ids) <= 0:
+				print "Getting more keys......"
+				print "Key:", self.key
+				print "Remaining:", self.remaining
+				print "Position:", self.position
+				print "IDs:", self.ids
+
 				no = self.remaining
 				if no <= 0:
 					raise StopIteration()
 				elif no > self.amount:
 					no = self.amount
 				
-				p = self.connection._get_ids(self.type, self.key, self.position, no, raw=true)
+				p = self.connection._get_ids(self.type, self.key, self.position, no, raw=True)
 				# Check for Non-blocking mode
 				if p is None:
 					return (None, None)
@@ -402,9 +438,15 @@ class ClientConnection(Connection):
 				
 				self.ids = p.ids
 				self.remaining = p.left
-			
-			self.position += 1	
-			return self.ids.pop()
+				
+			print "Normal......"
+			print "Key:", self.key
+			print "Remaining:", self.remaining
+			print "Position:", self.position
+			print "IDs:", self.ids
+
+			self.position += 1
+			return self.ids.pop(0)
 
 	def connect(self, str=""):
 		"""\
@@ -485,7 +527,88 @@ class ClientConnection(Connection):
 		
 		# and wait for a response
 		return self._okfail(self.no)
+
+	def features(self):
+		"""\
+		Gets the features the Thousand Parsec Server supports.
+		"""
+		self._common()
+		
+		# Send a connect packet
+		p = objects.Feature_Get(self.no)
+		self._send(p)
+		
+		if self._noblock():
+			self._append(self._features, self.no)
+			return None
+		
+		# and wait for a response
+		return self._features(self.no)
+
+	def _features(self, no):
+		"""\
+		*Internal*
+
+		Completes the features function.
+		"""
+		p = self._recv(no)
+		if not p:
+			return None
+
+		# Check it's the reply we are after
+		if isinstance(p, objects.Feature):
+			return p.features
+		elif isinstance(p, objects.Fail):
+			return False, p.s
+		else:
+			# We got a bad packet
+			raise IOError("Bad Packet was received")
+
+	def time(self):
+		"""\
+		Gets the time till end of turn from a Thousand Parsec Server.
+		"""
+		self._common()
+		
+		# Send a connect packet
+		p = objects.TimeRemaining_Get(self.no)
+		self._send(p)
+		
+		if self._noblock():
+			self._append(self._time, self.no)
+			return None
+		
+		# and wait for a response
+		return self._time(self.no)
 	
+	def _time(self, no):
+		"""\
+		*Internal*
+
+		Completes the time function.
+		"""
+		p = self._recv(no)
+		if not p:
+			return None
+
+		# Check it's the reply we are after
+		if isinstance(p, objects.TimeRemaining):
+			return p.time
+		elif isinstance(p, objects.Fail):
+			return False, p.s
+		else:
+			# We got a bad packet
+			raise IOError("Bad Packet was received")
+
+	def disconnect(self):
+		"""\
+		Disconnect from a server.
+		"""
+		if self._noblock() and len(self.nb) > 0:
+			raise IOError("Still waiting on non-blocking commands!")
+
+		self.s.close()
+
 	def get_object_ids(self, a=None, y=None, z=None, r=None, x=None, id=None, iter=False):
 		"""\
 		Get objects ids from the server,
@@ -509,8 +632,8 @@ class ClientConnection(Connection):
 		[(25, 10029436), ..] = get_objects_ids(id=id)
 
 		# Get all object ids (plus modification times) contain by an object via an Iterator
-		<Iter> = get_object_ids(id, iter=true)
-		<Iter> = get_object_ids(id=id, iter=true)
+		<Iter> = get_object_ids(id, iter=True)
+		<Iter> = get_object_ids(id=id, iter=True)
 		"""
 		self._common()
 
@@ -715,41 +838,29 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.OrderDesc, self.no)
 
-	def time(self):
+	def get_board_ids(self, iter=False):
 		"""\
-		Gets the time till end of turn from a Thousand Parsec Server.
+		Get board ids from the server,
+		
+		# Get all object ids (plus modification times)
+		[(25, 10029436), ...] = get_board_ids()
+
+		# Get all object ids (plus modification times) via an Iterator
+		<Iter> = get_board_ids(iter=True)
 		"""
 		self._common()
+
+		if iter:
+			return self.IDIter(self, objects.Board_GetID)
+			
+		p = objects.Board_GetID(self.no, -1, 0, -1)
 		
-		# Send a connect packet
-		p = objects.TimeRemaining_Get(self.no)
 		self._send(p)
-		
 		if self._noblock():
-			self._append(self._time, self.no)
+			self._append(self._get_idsequence, (self.no, iter))
 			return None
-		
-		# and wait for a response
-		return self._time(self.no)
-	
-	def _time(self, no):
-		"""\
-		*Internal*
-
-		Completes the time function.
-		"""
-		p = self._recv(no)
-		if not p:
-			return None
-
-		# Check it's the reply we are after
-		if isinstance(p, objects.TimeRemaining):
-			return True, p.time
-		elif isinstance(p, objects.Fail):
-			return False, p.s
 		else:
-			# We got a bad packet
-			raise IOError("Bad Packet was received")
+			return self._get_idsequence(self.no, iter)
 
 	def get_boards(self, x=None, id=None, ids=None):
 		"""\
@@ -882,6 +993,68 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.OK, self.no)
 
+	def get_resource_ids(self, iter=False):
+		"""\
+		Get resource ids from the server,
+		
+		# Get all resource ids (plus modification times)
+		[(25, 10029436), ...] = get_resource_ids()
+
+		# Get all object ids (plus modification times) via an Iterator
+		<Iter> = get_resource_ids(iter=True)
+		"""
+		self._common()
+
+		if iter:
+			return self.IDIter(self, objects.Resource_GetID)
+			
+		p = objects.Resource_GetID(self.no, -1, 0, -1)
+		
+		self._send(p)
+		if self._noblock():
+			self._append(self._get_idsequence, (self.no, iter))
+			return None
+		else:
+			return self._get_idsequence(self.no, iter)
+
+	def get_resources(self, x=None, id=None, ids=None):
+		"""\
+		Get resources from the server,
+
+		# Get the resources with id=25
+		[<board id=25>] = get_resources(25)
+		[<board id=25>] = get_resources(id=25)
+		[<board id=25>] = get_resources(ids=[25])
+		[(False, "No such board")] = get_resources([id])
+		
+		# Get the resources with ids=25, 36
+		[<board id=25>, (False, "No board")] = get_resources([25, 36])
+		[<board id=25>, (False, "No board")] = get_resources(ids=[25, 36])
+		"""
+		self._common()
+
+		# Setup arguments
+		if id != None:
+			ids = [id]
+		if hasattr(x, '__getitem__'):
+			ids = x
+		elif x != None:
+			ids = [x]
+	
+		p = objects.Resource_Get(self.no, ids)
+
+		self._send(p)
+
+		if self._noblock():
+			self._append(self._get_header, (objects.Resource, self.no))
+			return None
+		else:
+			return self._get_header(objects.Resource, self.no)
+
+
+
+
+
 	def get_categories(self, *args, **kw):
 		"""\
 		Get category descriptions,
@@ -952,12 +1125,6 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.Component, self.no)
 
-	def disconnect(self):
-		"""\
-		Disconnect from a server.
-		"""
-		if self._noblock() and len(self.nb) > 0:
-			raise IOError("Still waiting on non-blocking commands!")
 
-		self.s.close()
-		del self
+
+

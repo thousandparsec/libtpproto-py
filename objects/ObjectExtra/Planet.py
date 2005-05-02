@@ -36,12 +36,13 @@ class Planet(Object):
 			order_number, \
 			modify_time)
 
-		self.length += 4 + 12 * len(resources)
+		self.length += 4 + 4 + 12 * len(resources)
 		self.owner = owner
-		self.resources = self.resources
+		self.resources = resources
 	
 	def __repr__(self):
 		output = Object.__repr__(self)
+		print self.substruct, self.owner, self.resources
 		output += pack(self.substruct, self.owner, self.resources)
 
 		return output

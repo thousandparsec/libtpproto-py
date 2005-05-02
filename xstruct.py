@@ -50,6 +50,7 @@ from types import *
 # Squash errors about hex/oct
 import warnings
 
+_error = struct.error
 _pack = struct.pack
 _unpack = struct.unpack
 _calcsize = struct.calcsize
@@ -124,7 +125,12 @@ def pack(struct, *args):
 			if char in semi.keys():
 				char = semi[char][1]
 			
-			output += _pack("!"+char, args.pop(0))
+			a = args.pop(0)
+			try:
+				output += _pack("!"+char, a)
+			except _error, e:
+				print "Struct", char, "Args", a
+				raise
 			
 	return output
 
@@ -183,7 +189,11 @@ def unpack(struct, s):
 
 			size = _calcsize(substruct)
 
-			data = _unpack(substruct, s[:size])
+			try:
+				data = _unpack(substruct, s[:size])
+			except _error, e:
+				print "Struct", substruct, "Args", s[:size]
+				raise
 			s = s[size:]
 
 			if char in semi.keys():
