@@ -28,8 +28,8 @@ class Universe(Object):
 			velx, vely, velz, \
 			contains, \
 			order_types, \
-			modify_time, \
-			order_number)
+			order_number, \
+			modify_time)
 
 		self.length += 4
 		self.turn = turn

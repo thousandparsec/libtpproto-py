@@ -42,7 +42,6 @@ class Planet(Object):
 	
 	def __repr__(self):
 		output = Object.__repr__(self)
-		print self.substruct, self.owner, self.resources
 		output += pack(self.substruct, self.owner, self.resources)
 
 		return output
