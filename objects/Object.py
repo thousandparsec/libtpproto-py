@@ -36,6 +36,8 @@ class Object(Describable):
 			*args, **kw):
 		Describable.__init__(self, sequence)
 
+		print "Object.__init__", order_number, modify_time
+
 		if kw.has_key('extra'):
 			extra = kw['extra']
 		else:
@@ -63,21 +65,11 @@ class Object(Describable):
 				if extra != None:
 					self.extra = extra
 
-		# Length is:
-		#  *  8 bytes
-		#  *  4 bytes + len(name)
-		#  *  8 bytes
-		#  * 24 bytes
-		#  * 24 bytes
-		#  *  4 bytes + len(contains)*4
-		#  *  4 bytes + len(order_types)*4
-		#  *  4 bytes
-		#  * 16 bytes
-		#  * len(extra)
+		struct = "IIS Q 3q 3q [I] [I] I Q 8x"
 		self.length = \
 			4 + 4 + \
 			4 + len(name) + \
-			8 + 24 + 24 + \
+			8 + 3*8 + 3*8 + \
 			4 + len(contains)*4 + \
 			4 + len(order_types)*4 + \
 			4 + 8 + 8
@@ -95,7 +87,6 @@ class Object(Describable):
 
 	def __repr__(self):
 		output = Describable.__repr__(self)
-		# struct = "IIS Q 3q 3q [I] [I] I 16x"
 		output += pack(self.struct, \
 				self.id, \
 				self.otype, \

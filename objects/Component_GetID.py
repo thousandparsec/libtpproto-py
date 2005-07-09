@@ -3,5 +3,5 @@ from Base import GetIDSequence
 class Component_GetID(GetIDSequence):
 	"""\
 	"""
-	no = 45
+	no = 56
 

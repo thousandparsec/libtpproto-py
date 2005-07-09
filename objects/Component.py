@@ -6,46 +6,42 @@ from Header import Processed
 class Component(Processed):
 	"""\
 	The Component packet consists of:
-	    * a UInt32, component ID
-		* a UInt32, base component ID
-		* a UInt32, the number of times this component is in used
-		* a list of UInt32, component types
-		* a String, name of component
-		* a String, description of component
+		* a UInt32, Component ID
 		* a list of,
-			* a UInt32, component ID
-			* a UInt32, number of the components
-		* a list as described in Component Language section
-		    * a UInt8, the operand
-		    * a UInt32, the number of components
-		    * a UInt32, the component category or ID
+			* a UInt32, Category ID the Component is in
+		* a String, name of component
+		* a String, description of the component
+		* a String, NCL "Requirements" function
+		* a list of,
+			* a UInt32, Property ID
+			* a String, NCL "Property Value" function
 	"""
-	no = 1046
-	struct = "III[I]SS[II][BII]"
+	no = 55
+	struct = "I[I]SSS[IS]"
 
-	def __init__(self, sequence, id, base, used, types, name, description, contains, language):
+	def __init__(self, sequence, id, categories, name, description, requirements, properties):
 		Processed.__init__(self, sequence)
 
 		# Length is:
 		#
-		self.length = 4 + 4 + 4 + \
-				4 + len(types)*4 + \
+		self.length = 4 + 4 + \
+				4 + len(categories)*4 + \
 				4 + len(name) + \
 				4 + len(description) + \
-				4 + len(contains)*(4 + 4) + \
-				4 + len(language)*(1 + 4 + 4)
+				4 + len(requirement) 
+
+		for id, value in properties:
+			self.length += 4 + 4 + len(value)
 
 		self.id = id
-		self.base = base
-		self.used = used
-		self.types = types
+		self.categories = categories
 		self.name = name
 		self.description = description
-		self.contains = contains
-		self.language = language
+		self.requirements = requirements
+		self.properties = properties
 	
 	def __repr__(self):
 		output = Processed.__repr__(self)
-		output += pack(self.struct, self.id, self.base, self.used, self.types, self.name, self.description, self.contains, self.language)
+		output += pack(self.struct, self.id, self.categories, self.name, self.description, self.requirements, self.properties)
 
 		return output
