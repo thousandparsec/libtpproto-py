@@ -27,7 +27,7 @@ class Design(Processed):
 		# Length is:
 		#
 		self.length = 4 + \
-				4 + len(categories)*4 \
+				4 + len(categories)*4 + \
 				4 + len(name) + \
 				4 + len(desc) + \
 				4 + 4 + \

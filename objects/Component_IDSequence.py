@@ -1,6 +1,6 @@
 from Base import IDSequence
 
-class Category_IDSequence(IDSequence):
+class Component_IDSequence(IDSequence):
 	"""\
 	"""
 	no = 57

@@ -134,7 +134,7 @@ from objects.Order_Probe import Order_Probe
 Order_Probe = Order_Probe
 mapping[Order_Probe.no] = Order_Probe
 
-## Time
+# Time
 from objects.TimeRemaining_Get import TimeRemaining_Get
 TimeRemaining_Get = TimeRemaining_Get
 mapping[TimeRemaining_Get.no] = TimeRemaining_Get
@@ -143,7 +143,7 @@ from objects.TimeRemaining import TimeRemaining
 TimeRemaining = TimeRemaining
 mapping[TimeRemaining.no] = TimeRemaining
 
-## Message
+# Messages
 
 from objects.Board_Get import Board_Get
 Board_Get = Board_Get
@@ -194,7 +194,7 @@ from objects.Resource_IDSequence import Resource_IDSequence
 Resource_IDSequence = Resource_IDSequence
 mapping[Resource_IDSequence.no] = Resource_IDSequence
 
-# Design Stuff
+# Design Categories
 from objects.Category_Get import Category_Get
 Category_Get = Category_Get
 mapping[Category_Get.no] = Category_Get
@@ -203,6 +203,48 @@ from objects.Category import Category
 Category = Category
 mapping[Category.no] = Category
 
+from objects.Category_Add import Category_Add
+Category_Add = Category_Add
+mapping[Category_Add.no] = Category_Add
+
+from objects.Category_Remove import Category_Remove
+Category_Remove = Category_Remove
+mapping[Category_Remove.no] = Category_Remove
+
+from objects.Category_GetID import Category_GetID
+Category_GetID = Category_GetID
+mapping[Category_GetID.no] = Category_GetID
+
+from objects.Category_IDSequence import Category_IDSequence
+Category_IDSequence = Category_IDSequence
+mapping[Category_IDSequence.no] = Category_IDSequence
+
+# Design Designs
+from objects.Design_Get import Design_Get
+Design_Get = Design_Get
+mapping[Design_Get.no] = Design_Get
+
+from objects.Design import Design
+Design = Design
+mapping[Design.no] = Design
+
+from objects.Design_Add import Design_Add
+Design_Add = Design_Add
+mapping[Design_Add.no] = Design_Add
+
+from objects.Design_Remove import Design_Remove
+Design_Remove = Design_Remove
+mapping[Design_Remove.no] = Design_Remove
+
+from objects.Design_GetID import Design_GetID
+Design_GetID = Design_GetID
+mapping[Design_GetID.no] = Design_GetID
+
+from objects.Design_IDSequence import Design_IDSequence
+Design_IDSequence = Design_IDSequence
+mapping[Design_IDSequence.no] = Design_IDSequence
+
+# Design Components
 from objects.Component_Get import Component_Get
 Component_Get = Component_Get
 mapping[Component_Get.no] = Component_Get
@@ -215,10 +257,32 @@ from objects.Component import Component
 Component = Component
 mapping[Component.no] = Component
 
-from objects.Component_Insert import Component_Insert
-Component_Insert = Component_Insert
-mapping[Component_Insert.no] = Component_Insert
+from objects.Component_GetID import Component_GetID
+Component_GetID = Component_GetID
+mapping[Component_GetID.no] = Component_GetID
 
-from objects.Component_Remove import Component_Remove
-Component_Remove = Component_Remove
-mapping[Component_Remove.no] = Component_Remove
+from objects.Component_IDSequence import Component_IDSequence
+Component_IDSequence = Component_IDSequence
+mapping[Component_IDSequence.no] = Component_IDSequence
+
+# Design Properties
+from objects.Property_Get import Property_Get
+Property_Get = Property_Get
+mapping[Property_Get.no] = Property_Get
+
+from objects.Property import Property
+Property = Property
+mapping[Property.no] = Property
+
+from objects.Property import Property
+Property = Property
+mapping[Property.no] = Property
+
+from objects.Property_GetID import Property_GetID
+Property_GetID = Property_GetID
+mapping[Property_GetID.no] = Property_GetID
+
+from objects.Property_IDSequence import Property_IDSequence
+Property_IDSequence = Property_IDSequence
+mapping[Property_IDSequence.no] = Property_IDSequence
+
