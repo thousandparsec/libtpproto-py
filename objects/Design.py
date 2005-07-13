@@ -7,6 +7,7 @@ class Design(Processed):
 	"""\
 	The Design packet consists of:
 	    * a UInt32, design ID
+		* a UInt64, the last modified time
 		* a list of,
 			* a UInt32, category this design is in
 	    * a String, name of the design
@@ -19,14 +20,14 @@ class Design(Processed):
 			* a String, property display string
 	"""
 	no = 48
-	struct = "I[I]SSjIS[IS]"
+	struct = "IQ[I]SSjIS[IS]"
 
-	def __init__(self, sequence, id, categories, name, description, use, owner, feedback, properties):
+	def __init__(self, sequence, id, modify_time, categories, name, description, use, owner, feedback, properties):
 		Processed.__init__(self, sequence)
 
 		# Length is:
 		#
-		self.length = 4 + \
+		self.length = 4 + 8 + \
 				4 + len(categories)*4 + \
 				4 + len(name) + \
 				4 + len(desc) + \
@@ -37,6 +38,7 @@ class Design(Processed):
 			self.length += 4 + 4 + len(s)
 
 		self.id = id
+		self.modify_time = time
 		self.categories = categories
 		self.name = name
 		self.description = description
