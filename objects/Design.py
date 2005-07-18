@@ -6,21 +6,22 @@ from Header import Processed
 class Design(Processed):
 	"""\
 	The Design packet consists of:
-	    * a UInt32, design ID
+		* a UInt32, design ID
 		* a UInt64, the last modified time
 		* a list of,
 			* a UInt32, category this design is in
-	    * a String, name of the design
-    	* a String, description of the design
+		* a String, name of the design
+		* a String, description of the design
 		* a SInt32, number of times in use
 		* a UInt32, owner of the design
 		* a String, design feedback
 		* a list of,
+			* a UInt32, property id
 			* a UInt32, property value
 			* a String, property display string
 	"""
 	no = 48
-	struct = "IQ[I]SSjIS[IS]"
+	struct = "IQ[I]SSjIS[IIS]"
 
 	def __init__(self, sequence, id, modify_time, categories, name, description, use, owner, feedback, properties):
 		Processed.__init__(self, sequence)

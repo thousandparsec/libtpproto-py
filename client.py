@@ -1051,23 +1051,19 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.Resource, self.no)
 
-
-
-
-
 	def get_categories(self, *args, **kw):
 		"""\
-		Get category descriptions,
+		Get category information,
 
-		# Get the description for category 5
+		# Get the information for category 5
 		[<cat id=5>] = get_categories(5)
 		[<cat id=5>] = get_categories(id=5)
 		[<cat id=5>] = get_categories(ids=[5])
 		[(False, "No such 5")] = get_categories([5])
 		
-		# Get the descriptions for category 5 and 10
-		[<msg id=5>, (False, "No such 10")] = get_categories([5, 10])
-		[<msg id=5>, (False, "No such 10")] = get_categories(ids=[5, 10])
+		# Get the information for category 5 and 10
+		[<cat id=5>, (False, "No such 10")] = get_categories([5, 10])
+		[<cat id=5>, (False, "No such 10")] = get_categories(ids=[5, 10])
 		"""
 		self._common()
 
@@ -1090,19 +1086,54 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.Category, self.no)
 
+	def get_designs(self, *args, **kw):
+		"""\
+		Get designs descriptions,
+
+		# Get the information for design 5
+		[<des id=5>] = get_designs(5)
+		[<des id=5>] = get_designs(id=5)
+		[<des id=5>] = get_designs(ids=[5])
+		[(False, "No such 5")] = get_designs([5])
+		
+		# Get the information for design 5 and 10
+		[<des id=5>, (False, "No such 10")] = get_designs([5, 10])
+		[<des id=5>, (False, "No such 10")] = get_designs(ids=[5, 10])
+		"""
+		self._common()
+
+		if kw.has_key('ids'):
+			ids = kw['ids']
+		elif kw.has_key('id'):
+			ids = [kw['id']]
+		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
+			ids = args[0]
+		else:
+			ids = args
+
+		p = objects.Design_Get(self.no, ids)
+
+		self._send(p)
+
+		if self._noblock():
+			self._append(self._get_header, (objects.Design, self.no))
+			return None
+		else:
+			return self._get_header(objects.Design, self.no)
+
 	def get_components(self, *args, **kw):
 		"""\
 		Get components descriptions,
 
 		# Get the description for components 5
-		[<cat id=5>] = get_components(5)
-		[<cat id=5>] = get_components(id=5)
-		[<cat id=5>] = get_components(ids=[5])
+		[<com id=5>] = get_components(5)
+		[<com id=5>] = get_components(id=5)
+		[<com id=5>] = get_components(ids=[5])
 		[(False, "No such 5")] = get_components([5])
 		
 		# Get the descriptions for components 5 and 10
-		[<msg id=5>, (False, "No such 10")] = get_components([5, 10])
-		[<msg id=5>, (False, "No such 10")] = get_components(ids=[5, 10])
+		[<com id=5>, (False, "No such 10")] = get_components([5, 10])
+		[<com id=5>, (False, "No such 10")] = get_components(ids=[5, 10])
 		"""
 		self._common()
 
@@ -1125,6 +1156,38 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.Component, self.no)
 
+	def get_properties(self, *args, **kw):
+		"""\
+		Get properties descriptions,
 
+		# Get the description for properties 5
+		[<pro id=5>] = get_properties(5)
+		[<pro id=5>] = get_properties(id=5)
+		[<pro id=5>] = get_properties(ids=[5])
+		[(False, "No such 5")] = get_properties([5])
+		
+		# Get the descriptions for properties 5 and 10
+		[<pro id=5>, (False, "No such 10")] = get_properties([5, 10])
+		[<pro id=5>, (False, "No such 10")] = get_properties(ids=[5, 10])
+		"""
+		self._common()
 
+		if kw.has_key('ids'):
+			ids = kw['ids']
+		elif kw.has_key('id'):
+			ids = [kw['id']]
+		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
+			ids = args[0]
+		else:
+			ids = args
+
+		p = objects.Property_Get(self.no, ids)
+
+		self._send(p)
+
+		if self._noblock():
+			self._append(self._get_header, (objects.Property, self.no))
+			return None
+		else:
+			return self._get_header(objects.Property, self.no)
 

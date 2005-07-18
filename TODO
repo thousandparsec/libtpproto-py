@@ -1,4 +1,39 @@
 
-Known Bugs:
-	OrderDesc doesn't escape reserve words - hence .name can be overwritten
+These operations need to be added,
+Design_Add
+Design_Remove
+Design_Modify
+Category_Add
+Category_Remove
+
+A test suite
+	libtpproto-py badly needs a test suite, it should try to do the following,
+		- Take each packet, turn it into a string then reform it, check the details
+		are all the same
+		- Have hand built packet strings which you reform a packet from, check the 
+		details are correct
+		- Test the client.py functions, this could be done with a dumb server which 
+		just returns a bunch of strings to packets - this should also test weird 
+		possabilities such as incomplete packets, incorrectly formatted packets,
+		garbage, packets which are too big, etc
+		- Test the server.py functions, not sure how you could do this, again it
+		should test as many weird cases as you can think of.
+
+		- Test the above in non-blocking and blocking mode, force situations where 
+		the packets are slow to test if non-blocking is actually nn-blocking
+
+		- Test all the above from a py2exe created executable
+		- Test all the above from a McMillian Installer created executable
+		- Test all the above from a "python frozen" created executable
+
+Figure out how to support multiple versions
+	Currently libtpproto-py only supports the currently in development version of
+	the protocol. Somebody needs to figure out a way to both support and 
+	automatically downgrade to the old version. A hack which kinda works is already
+	in the code base but full support really needs to be added.
+
+Package the library
+	Make sure the setup.py still works and package for each release. Figure out how
+	to do debian packages.
+
 

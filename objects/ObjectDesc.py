@@ -6,7 +6,7 @@ from os import path
 
 def splitall(p, extra = []):
 	bits = []
-	while not p in ['', '..', '.'] and not p in site.sitedirs and not p in extra:
+	while not p in ['', '..', '.'] and not p in getattr(site, 'sitedirs', ()) and not p in extra:
 		p, c = os.path.split(p)
 		bits.append(c)
 	bits.reverse()

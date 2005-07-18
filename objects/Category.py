@@ -6,10 +6,10 @@ from Header import Processed
 class Category(Processed):
 	"""\
 	The Category packet consists of:
-	    * a UInt32, Category ID
+		* a UInt32, Category ID
 		* a UInt64, the last modified time
-	    * a String, name of the category
-    	* a String, description of the category
+		* a String, name of the category
+		* a String, description of the category
 	"""
 	no = 42
 	struct = "IQSS"

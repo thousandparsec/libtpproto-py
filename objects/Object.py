@@ -36,7 +36,7 @@ class Object(Describable):
 			*args, **kw):
 		Describable.__init__(self, sequence)
 
-		print "Object.__init__", order_number, modify_time
+#		print "Object.__init__", order_number, modify_time
 
 		if kw.has_key('extra'):
 			extra = kw['extra']

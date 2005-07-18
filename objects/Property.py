@@ -18,7 +18,7 @@ class Property(Processed):
 	no = 59
 	struct = "IQ[I]ISSS"
 
-	def __init__(self, sequence, id, modify_time, categories, name, description, display):
+	def __init__(self, sequence, id, modify_time, categories, name, description, calculate):
 		Processed.__init__(self, sequence)
 
 		# Length is:
@@ -27,17 +27,17 @@ class Property(Processed):
 				4 + len(categories)*4 + \
 				4 + len(name) + \
 				4 + len(description) + \
-				4 + len(display) 
+				4 + len(calculate)
 
 		self.id = id
 		self.modify_time = modify_time
 		self.categories = categories
 		self.name = name
 		self.description = description
-		self.display = display
+		self.calculate = calculate
 	
 	def __repr__(self):
 		output = Processed.__repr__(self)
-		output += pack(self.struct, self.id, self.categories, self.name, self.description, self.display)
+		output += pack(self.struct, self.id, self.categories, self.name, self.description, self.calculate)
 
 		return output
