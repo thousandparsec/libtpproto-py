@@ -15,23 +15,23 @@ class Board(Processed):
 	no = 17
 	struct = "ISSI"
 
-	def __init__(self, sequence, id, name, desc, number):
+	def __init__(self, sequence, id, name, description, number):
 		Processed.__init__(self, sequence)
 
 		# Length is:
 		#
 		self.length = 4 + \
 				4 + len(name) + \
-				4 + len(desc) + \
+				4 + len(description) + \
 				4
 
 		self.id = id
 		self.name = name
-		self.desc = desc
+		self.description = description
 		self.number = number
 	
 	def __repr__(self):
 		output = Processed.__repr__(self)
-		output += pack(self.struct, self.id, self.name, self.desc, self.number)
+		output += pack(self.struct, self.id, self.name, self.description, self.number)
 
 		return output

@@ -14,6 +14,5 @@ ServerConnection = ServerConnection
 
 import objects
 from objects import constants
-import clang
 
 sys.path.pop(0)

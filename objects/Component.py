@@ -29,7 +29,7 @@ class Component(Processed):
 				4 + len(categories)*4 + \
 				4 + len(name) + \
 				4 + len(description) + \
-				4 + len(requirement) 
+				4 + len(requirements) 
 
 		for id, value in properties:
 			self.length += 4 + 4 + len(value)
@@ -44,6 +44,6 @@ class Component(Processed):
 	
 	def __repr__(self):
 		output = Processed.__repr__(self)
-		output += pack(self.struct, self.id, self.categories, self.name, self.description, self.requirements, self.properties)
+		output += pack(self.struct, self.id, self.modify_time, self.categories, self.name, self.description, self.requirements, self.properties)
 
 		return output

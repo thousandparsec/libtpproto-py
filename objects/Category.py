@@ -14,22 +14,22 @@ class Category(Processed):
 	no = 42
 	struct = "IQSS"
 
-	def __init__(self, sequence, id, modify_time, name, desc):
+	def __init__(self, sequence, id, modify_time, name, description):
 		Processed.__init__(self, sequence)
 
 		# Length is:
 		#
 		self.length = 4 + 8 + \
 				4 + len(name) + \
-				4 + len(desc)
+				4 + len(description)
 
 		self.id = id
 		self.modify_time = modify_time
 		self.name = name
-		self.desc = desc
+		self.description = description
 	
 	def __repr__(self):
 		output = Processed.__repr__(self)
-		output += pack(self.struct, self.id, self.name, self.desc)
+		output += pack(self.struct, self.id, self.modify_time, self.name, self.description)
 
 		return output

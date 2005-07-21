@@ -22,7 +22,7 @@ class Resource(Processed):
 	def __init__(self, sequence, id, \
 			name_singular, name_plural, \
 			unit_singular, unit_plural, \
-			desc, weight, size, modify_time):
+			description, weight, size, modify_time):
 		Processed.__init__(self, sequence)
 
 		# Length is:
@@ -32,19 +32,19 @@ class Resource(Processed):
 				4 + len(name_plural) + \
 				4 + len(unit_singular) + \
 				4 + len(unit_plural) + \
-				4 + len(desc) + \
+				4 + len(description) + \
 				4 + 4 + 8
 
 		self.id = id
 		self.name_singular, self.name_plural = name_singular, name_plural
 		self.unit_singular, self.unit_plural = unit_singular, unit_plural
-		self.desc, self.weight, self.size, self.modify_time = desc, weight, size, modify_time
+		self.description, self.weight, self.size, self.modify_time = description, weight, size, modify_time
 	
 	def __repr__(self):
 		output = Processed.__repr__(self)
 		output += pack(self.struct, self.id, \
 			self.name_singular, self.name_plural, \
 			self.unit_singular, self.unit_plural, \
-			self.desc, self.weight, self.size, self.modify_time)
+			self.description, self.weight, self.size, self.modify_time)
 
 		return output
