@@ -300,7 +300,6 @@ class ClientConnection(Connection):
 		"""
 		store = self.buffers['store'][no]
 		del self.buffers['store'][no]
-
 		return l(store)
 
 	def _get_ids(self, type, key, position, amount=-1, raw=False):
@@ -408,20 +407,8 @@ class ClientConnection(Connection):
 				self.key = p.key
 				self.position = 0
 
-				print "Initialising......"
-				print "Key:", self.key
-				print "Remaining:", self.remaining
-				print "Position:", self.position
-				print "IDs:", self.ids
-			
 			# Get more IDs
 			if len(self.ids) <= 0:
-				print "Getting more keys......"
-				print "Key:", self.key
-				print "Remaining:", self.remaining
-				print "Position:", self.position
-				print "IDs:", self.ids
-
 				no = self.remaining
 				if no <= 0:
 					raise StopIteration()
@@ -439,12 +426,6 @@ class ClientConnection(Connection):
 				self.ids = p.ids
 				self.remaining = p.left
 				
-			print "Normal......"
-			print "Key:", self.key
-			print "Remaining:", self.remaining
-			print "Position:", self.position
-			print "IDs:", self.ids
-
 			self.position += 1
 			return self.ids.pop(0)
 
@@ -799,6 +780,30 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.OK, self.no)
 
+	def get_orderdesc_ids(self, iter=False):
+		"""\
+		Get orderdesc ids from the server,
+		
+		# Get all order description ids (plus modification times)
+		[(25, 10029436), ...] = get_orderdesc_ids()
+
+		# Get all order description ids (plus modification times) via an Iterator
+		<Iter> = get_orderdesc_ids(iter=True)
+		"""
+		self._common()
+
+		if iter:
+			return self.IDIter(self, objects.OrderDesc_GetID)
+			
+		p = objects.OrderDesc_GetID(self.no, -1, 0, -1)
+		
+		self._send(p)
+		if self._noblock():
+			self._append(self._get_idsequence, (self.no, iter))
+			return None
+		else:
+			return self._get_idsequence(self.no, iter)
+
 	def get_orderdescs(self, *args, **kw):
 		"""\
 		Get order descriptions from the server. 
@@ -807,28 +812,28 @@ class ClientConnection(Connection):
 		described it will automatically get an order description for that
 		order, you don't need to do this manually.
 
-		# Get the order description for type 5
+		# Get the order description for id 5
 		[<orddesc id=5>] = get_orderdescs(5)
-		[<orddesc id=5>] = get_orderdescs(type=5)
-		[<orddesc id=5>] = get_orderdescs(types=[5])
+		[<orddesc id=5>] = get_orderdescs(id=5)
+		[<orddesc id=5>] = get_orderdescs(ids=[5])
 		[(False, "No desc 5")] = get_orderdescs([5])
 		
-		# Get the order description for type 5 and 10
+		# Get the order description for id 5 and 10
 		[<orddesc id=5>, (False, "No desc 10")] = get_orderdescs([5, 10])
-		[<orddesc id=5>, (False, "No desc 10")] = get_orderdescs(types=[5, 10])
+		[<orddesc id=5>, (False, "No desc 10")] = get_orderdescs(ids=[5, 10])
 		"""
 		self._common()
 
-		if kw.has_key('types'):
-			types = kw['types']
-		elif kw.has_key('type'):
-			types = [kw['type']]
+		if kw.has_key('ids'):
+			ids = kw['ids']
+		elif kw.has_key('id'):
+			ids = [kw['id']]
 		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
-			types = args[0]
+			ids = args[0]
 		else:
-			types = args
+			ids = args
 
-		p = objects.OrderDesc_Get(self.no, types)
+		p = objects.OrderDesc_Get(self.no, ids)
 
 		self._send(p)
 
@@ -842,10 +847,10 @@ class ClientConnection(Connection):
 		"""\
 		Get board ids from the server,
 		
-		# Get all object ids (plus modification times)
+		# Get all board ids (plus modification times)
 		[(25, 10029436), ...] = get_board_ids()
 
-		# Get all object ids (plus modification times) via an Iterator
+		# Get all board ids (plus modification times) via an Iterator
 		<Iter> = get_board_ids(iter=True)
 		"""
 		self._common()
@@ -1051,6 +1056,30 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.Resource, self.no)
 
+	def get_category_ids(self, iter=False):
+		"""\
+		Get category ids from the server,
+		
+		# Get all category ids (plus modification times)
+		[(25, 10029436), ...] = get_category_ids()
+
+		# Get all order category ids (plus modification times) via an Iterator
+		<Iter> = get_category_ids(iter=True)
+		"""
+		self._common()
+
+		if iter:
+			return self.IDIter(self, objects.Category_GetID)
+			
+		p = objects.Category_GetID(self.no, -1, 0, -1)
+		
+		self._send(p)
+		if self._noblock():
+			self._append(self._get_idsequence, (self.no, iter))
+			return None
+		else:
+			return self._get_idsequence(self.no, iter)
+
 	def get_categories(self, *args, **kw):
 		"""\
 		Get category information,
@@ -1085,6 +1114,30 @@ class ClientConnection(Connection):
 			return None
 		else:
 			return self._get_header(objects.Category, self.no)
+
+	def get_design_ids(self, iter=False):
+		"""\
+		Get design ids from the server,
+		
+		# Get all design ids (plus modification times)
+		[(25, 10029436), ...] = get_design_ids()
+
+		# Get all order design ids (plus modification times) via an Iterator
+		<Iter> = get_design_ids(iter=True)
+		"""
+		self._common()
+
+		if iter:
+			return self.IDIter(self, objects.Design_GetID)
+			
+		p = objects.Design_GetID(self.no, -1, 0, -1)
+		
+		self._send(p)
+		if self._noblock():
+			self._append(self._get_idsequence, (self.no, iter))
+			return None
+		else:
+			return self._get_idsequence(self.no, iter)
 
 	def get_designs(self, *args, **kw):
 		"""\
@@ -1121,6 +1174,30 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.Design, self.no)
 
+	def get_component_ids(self, iter=False):
+		"""\
+		Get component ids from the server,
+		
+		# Get all component ids (plus modification times)
+		[(25, 10029436), ...] = get_component_ids()
+
+		# Get all order component ids (plus modification times) via an Iterator
+		<Iter> = get_component_ids(iter=True)
+		"""
+		self._common()
+
+		if iter:
+			return self.IDIter(self, objects.Component_GetID)
+			
+		p = objects.Component_GetID(self.no, -1, 0, -1)
+		
+		self._send(p)
+		if self._noblock():
+			self._append(self._get_idsequence, (self.no, iter))
+			return None
+		else:
+			return self._get_idsequence(self.no, iter)
+
 	def get_components(self, *args, **kw):
 		"""\
 		Get components descriptions,
@@ -1155,6 +1232,30 @@ class ClientConnection(Connection):
 			return None
 		else:
 			return self._get_header(objects.Component, self.no)
+
+	def get_property_ids(self, iter=False):
+		"""\
+		Get property ids from the server,
+		
+		# Get all property ids (plus modification times)
+		[(25, 10029436), ...] = get_property_ids()
+
+		# Get all order property ids (plus modification times) via an Iterator
+		<Iter> = get_property_ids(iter=True)
+		"""
+		self._common()
+
+		if iter:
+			return self.IDIter(self, objects.Property_GetID)
+			
+		p = objects.Property_GetID(self.no, -1, 0, -1)
+		
+		self._send(p)
+		if self._noblock():
+			self._append(self._get_idsequence, (self.no, iter))
+			return None
+		else:
+			return self._get_idsequence(self.no, iter)
 
 	def get_properties(self, *args, **kw):
 		"""\

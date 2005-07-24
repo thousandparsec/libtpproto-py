@@ -31,7 +31,7 @@ class Component(Processed):
 				4 + len(description) + \
 				4 + len(requirements) 
 
-		for id, value in properties:
+		for x, value in properties:
 			self.length += 4 + 4 + len(value)
 
 		self.id = id

@@ -129,7 +129,7 @@ def pack(struct, *args):
 			try:
 				output += _pack("!"+char, a)
 			except _error, e:
-				print "Struct", char, "Args", a
+				print "Struct", char, "Args '%s'" % (a,)
 				raise
 			
 	return output
@@ -192,7 +192,7 @@ def unpack(struct, s):
 			try:
 				data = _unpack(substruct, s[:size])
 			except _error, e:
-				print "Struct", substruct, "Args", s[:size]
+				print "Struct", substruct, "Args '%s'" % (s[:size],)
 				raise
 			s = s[size:]
 

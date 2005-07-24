@@ -108,11 +108,11 @@ mapping[OrderDesc.no] = OrderDesc
 
 from objects.OrderDesc_GetID import OrderDesc_GetID
 OrderDesc_GetID = OrderDesc_GetID
-mapping[OrderDesc_GetID] = OrderDesc_GetID
+mapping[OrderDesc_GetID.no] = OrderDesc_GetID
 
 from objects.OrderDesc_IDSequence import OrderDesc_IDSequence
 OrderDesc_IDSequence = OrderDesc_IDSequence
-mapping[OrderDesc_IDSequence] = OrderDesc_IDSequence
+mapping[OrderDesc_IDSequence.no] = OrderDesc_IDSequence
 
 from objects.Order_Get import Order_Get
 Order_Get = Order_Get

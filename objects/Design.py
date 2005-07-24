@@ -13,10 +13,10 @@ class Design(Processed):
 		* a String, name of the design
 		* a String, description of the design
 		* a SInt32, number of times in use
+		* a SInt32, owner of the design
 		* a list of,
 			* a UInt32, the ID of the component
 			* a UInt32, the number of this component
-		* a UInt32, owner of the design
 		* a String, design feedback
 		* a list of,
 			* a UInt32, property id
@@ -24,9 +24,9 @@ class Design(Processed):
 			* a String, property display string
 	"""
 	no = 48
-	struct = "IQ[I]SSj[II]IS[IIS]"
+	struct = "IQ[I]SSjj[II]S[IqS]"
 
-	def __init__(self, sequence, id, modify_time, categories, name, description, use, owner, components, feedback, properties):
+	def __init__(self, sequence, id, modify_time, categories, name, description, used, owner, components, feedback, properties):
 		Processed.__init__(self, sequence)
 
 		# Length is:
@@ -36,18 +36,19 @@ class Design(Processed):
 				4 + len(name) + \
 				4 + len(description) + \
 				4 + 4 + \
-				4 + len(feedback)*8 + \
-				4 + len(feedback)
+				4 + len(components)*8 + \
+				4 + len(feedback) + \
+				4
 
-		for value, s in properties:
-			self.length += 4 + 4 + len(s)
+		for x, value, s in properties:
+			self.length += 4 + 8 + 4 + len(s)
 
 		self.id = id
 		self.modify_time = modify_time
 		self.categories = categories
 		self.name = name
 		self.description = description
-		self.use = use
+		self.used = used
 		self.owner = owner
 		self.components = components
 		self.feedback = feedback
@@ -55,6 +56,6 @@ class Design(Processed):
 		
 	def __repr__(self):
 		output = Processed.__repr__(self)
-		output += pack(self.struct, self.id, self.modify_time, self.categories, self.name, self.description, self.use, self.owner, self.components, self.feedback, self.properties)
+		output += pack(self.struct, self.id, self.modify_time, self.categories, self.name, self.description, self.used, self.owner, self.components, self.feedback, self.properties)
 
 		return output

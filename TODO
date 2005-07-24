@@ -6,6 +6,12 @@ Design_Modify
 Category_Add
 Category_Remove
 
+Find and fix anything with a TODO or FIXME tag in the code.
+
+There is a lot of duplicate code still, this needs to be removed so its easier to 
+keep update and bug free. Some examples would be the stuff in the _ids functions
+in client.py or much of the code in the objects directory.
+
 A test suite
 	libtpproto-py badly needs a test suite, it should try to do the following,
 		- Take each packet, turn it into a string then reform it, check the details
