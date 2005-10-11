@@ -370,6 +370,8 @@ class ClientConnection(Connection):
 			self.type = type
 			self.amount = amount
 
+			self.total = None
+
 			self.key = None
 			self.remaining = None
 
@@ -402,6 +404,9 @@ class ClientConnection(Connection):
 				# Check for an error
 				elif failed(p):
 					raise IOError("Failed to get remaining IDs")
+
+				if self.total == None:
+					self.total = p.left
 
 				self.remaining = p.left
 				self.key = p.key

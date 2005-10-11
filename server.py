@@ -11,11 +11,11 @@ constants = objects.constants
 from common import Connection
 
 class ServerConnection(Connection):
-	def __init__(self, socket, address, debug=False):
+	def __init__(self, s, address, debug=False):
 		Connection.__init__(self)
 
 		self.address = address
-		self.setup(socket, debug=debug, nb=True)
+		self.setup(s, debug=debug, nb=True)
 
 		self.poll = self.initalpoll
 
@@ -150,31 +150,31 @@ class Server:
 			except select.error:
 				continue
 
-			for socket in ready:
-				if socket is self.s:
+			for s in ready:
+				if s is self.s:
 					# Accept a new connection
-					socket, address = self.s.accept()
+					s, address = self.s.accept()
 					print "Accepting connection from", address
-					self.connections.append(self.handler(socket, address, debug=True))
+					self.connections.append(self.handler(s, address, debug=True))
 				else:
 					try:
-						socket.poll()
-					except IOError:
-						errors.append(socket)
+						s.poll()
+					except (IOError, socket.error):
+						errors.append(s)
 			else:
-				for socket in self.connections:
+				for s in self.connections:
 					try:
-						socket.poll()
-					except IOError:
-						errors.append(socket)
+						s.poll()
+					except (IOError, socket.error):
+						errors.append(s)
 			
 			# Cleanup any old sockets
-			for socket in errors:
+			for s in errors:
 				try:
-					self.connections.remove(socket)
+					self.connections.remove(s)
 				except:
 					continue
-				del socket
+				del s
 	
 if __name__ == "__main__":
 	port = 6924
