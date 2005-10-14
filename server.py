@@ -155,7 +155,7 @@ class Server:
 					# Accept a new connection
 					s, address = self.s.accept()
 					print "Accepting connection from", address
-					self.connections.append(self.handler(s, address, debug=True))
+					self.connections.append(self.handler(s, address, debug=self.debug))
 				else:
 					try:
 						s.poll()
