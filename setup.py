@@ -20,7 +20,7 @@ if os.path.exists('CVS'):
 		print "Getting %s" % file
 		os.link(os.path.join('..', file), file)
 		
-setup(name="tp.netlib",
+setup(name="libtpproto-py",
 	version=version,
 	license="GPL",
 	description="Network library for Thousand Parsec",
