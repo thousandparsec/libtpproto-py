@@ -20,7 +20,6 @@ class Design(Processed):
 		* a String, design feedback
 		* a list of,
 			* a UInt32, property id
-			* a UInt32, property value
 			* a String, property display string
 	"""
 	no = 48
@@ -41,7 +40,7 @@ class Design(Processed):
 				4
 
 		for x, value, s in properties:
-			self.length += 4 + 8 + 4 + len(s)
+			self.length += 4 + 4 + len(s)
 
 		self.id = id
 		self.modify_time = modify_time

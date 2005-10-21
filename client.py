@@ -60,10 +60,12 @@ from common import Connection, l
 
 def failed(object):
 	if type(object) == types.TupleType:
-		return not object[0]
+		return failed(object[0])
 	else:
 		if isinstance(object, objects.Fail):
 			return True
+		if isinstance(object, bool):
+			return not object
 	return False
 
 sequence_max = 4294967296
@@ -719,27 +721,27 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.Order, self.no)
 
-	def insert_order(self, oid, slot, type, *args, **kw):
+	def insert_order(self, oid, slot, otype, *args, **kw):
 		"""\
 		Add a new order to an object.
 
 		Forms are
-		insert_order(oid, slot, type, [arguments for order])
+		insert_order(oid, slot, otype, [arguments for order])
 		insert_order(oid, slot, [Order Object])
 		"""
 		self._common()
 		
 		o = None
-		if isinstance(type, objects.Order) or isinstance(type, objects.Order_Insert):
-			o = type
-			o._type = objects.Order_Insert.no
+		if isinstance(otype, objects.Order) or isinstance(otype, objects.Order_Insert):
+			o = otype
+			o.no = objects.Order_Insert.no
 
 			o.id = oid
 			o.slot = slot
 			
 			o.sequence = self.no
 		else:	
-			o = apply(objects.Order_Insert, (self.no, oid, slot, type,)+args, kw)
+			o = apply(objects.Order_Insert, (self.no, oid, slot, otype,)+args, kw)
 			
 		self._send(o)
 
