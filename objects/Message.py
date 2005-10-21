@@ -11,8 +11,8 @@ class Message(Processed):
 		* a list of UInt32, Type of message
 		* a string, Subject of message
 		* a string, Body of the message
-                * UInt32, turn number the messages was generated on
-                * a list of Int32, UInt32 references
+		* UInt32, turn number the messages was generated on
+		* a list of Int32, UInt32 references
 	"""
 	no = 19
 	struct = "Ij[I]SSI[II]"
@@ -26,15 +26,16 @@ class Message(Processed):
 				4 + len(types)*4 + \
 				4 + len(subject) + \
 				4 + len(body) + \
-                                4 + len(references)
+				4 + \
+				4 + len(references)*(4*4)
 
 		self.id = id
 		self.slot = slot
 		self.types = types
 		self.subject = subject
 		self.body = body
-                self.turn = turn
-                self.references = references
+		self.turn = turn
+		self.references = references
 	
 	def __repr__(self):
 		output = Processed.__repr__(self)
