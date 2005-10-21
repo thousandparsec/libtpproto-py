@@ -23,7 +23,7 @@ class Design(Processed):
 			* a String, property display string
 	"""
 	no = 48
-	struct = "IQ[I]SSjj[II]S[IqS]"
+	struct = "IQ[I]SSjj[II]S[IS]"
 
 	def __init__(self, sequence, id, modify_time, categories, name, description, used, owner, components, feedback, properties):
 		Processed.__init__(self, sequence)
@@ -39,7 +39,7 @@ class Design(Processed):
 				4 + len(feedback) + \
 				4
 
-		for x, value, s in properties:
+		for x, s in properties:
 			self.length += 4 + 4 + len(s)
 
 		self.id = id
