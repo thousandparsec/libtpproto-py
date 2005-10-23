@@ -735,6 +735,7 @@ class ClientConnection(Connection):
 		if isinstance(otype, objects.Order) or isinstance(otype, objects.Order_Insert):
 			o = otype
 			o.no = objects.Order_Insert.no
+			o._type = objects.Order_Insert.no
 
 			o.id = oid
 			o.slot = slot
