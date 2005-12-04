@@ -17,6 +17,19 @@ class l(list):
 class NotImplimented(Exception):
 	pass
 
+class SSLWrapper:
+	def __init__(self, s):
+		self.s = socket.ssl(s)
+
+	def send(self, data):
+		no = 0
+		while no != len(data):
+			no += self.s.write(data)
+			print "writing data", no
+	
+	def recv(self, amount):
+		return self.s.read(amount)
+
 class Connection:
 	"""\
 	Base class for Thousand Parsec protocol connections.
@@ -25,9 +38,10 @@ class Connection:
 	"""
 
 	def __init__(self):
-		self.buffers = {}
+		self.buffer = ""
+		self.buffered = {}
 		# This is a storage for out of sequence packets
-		self.buffers['receive'] = {}
+		self.buffered['receive'] = {}
 
 	def setup(self, s, nb=False, debug=False):
 		"""\
@@ -103,84 +117,83 @@ class Connection:
 		else:
 			sequences = sequence
 		
+		print "_recv", sequences, self.buffered
+		
 		# FIXME: Need to make this more robust for bad packets
 		r = self.s.recv
-		b = self.buffers['receive']
-		s = objects.Header.size
+		buffered = self.buffered['receive']
+		size = objects.Header.size
 		p = None
 
 		while p == None:
 			for sequence in sequences:
-				if b.has_key(sequence) and len(b[sequence]) > 0:
+				if buffered.has_key(sequence) and len(buffered[sequence]) > 0:
 					break
 			
-			if b.has_key(sequence) and len(b[sequence]) > 0:
-				p = b[sequence][0]
+			if buffered.has_key(sequence) and len(buffered[sequence]) > 0:
+				p = buffered[sequence][0]
 			
 				try:
 					p.process(p._data)
-					del b[sequence][0]
+					del buffered[sequence][0]
 					
 				except objects.DescriptionError:
 					self._description_error(p)
 					p = None
-				except:
+				except Error, e:
+					print "Error!", e
 					self._error(p)
 					p = None
-					del b[sequence][0]
+					del buffered[sequence][0]
+
+				for k in buffered.keys():
+					if len(buffered[k]) == 0:
+						del buffered[k]
 				continue
 				
-			# Is a packet header on the line?
-			try:
-				h = r(s, socket.MSG_PEEK)
-			
-				if len(h) == 0:
-					raise IOError("Socket has been terminated.")
-			except socket.error, e:
-				#print "Socket error:", e
-				h = ""
+			# Get the data on the line
+			print "Waiting on", size - len(self.buffer)
+			data = r(size-len(self.buffer))
+			if len(data) == 0:
+				raise IOError("Socket has been terminated.")
+			self.buffer += data
 
 			# This will only ever occur on a non-blocking connection
-			if len(h) != s and self._noblock():
-				return None
-			elif len(h) != s:
-				print "Ekk! Not enough data on a blocking connection..."
-				continue
-			
-			if self.debug:
-				red("Receiving: %s" % xstruct.hexbyte(h))
-
-			try:
-				q = objects.Header(h)
-			except objects.Header.VersionError, e:
-				q = self._version_error(h)
-				
-			if q.length > 0:
-				if q.length > 1024*1024:
-					raise IOError("Packet was to large!")
-			
-				d = r(s+q.length, socket.MSG_PEEK)
-				
-				if self.debug:
-					red("%s \n" % xstruct.hexbyte(d[s:]))
-			
-				# This will only ever occur on a non-blocking connection
-				if len(d) != s+q.length and self._noblock():
+			if len(self.buffer) < size:
+				if self._noblock():
 					return None
-				elif len(d) != s+q.length:
+				else:
 					print "Ekk! Not enough data on a blocking connection..."
 					continue
-			else:
-				d = ""
-			
-			# Remove the stuff from the line
-			r(s+q.length)
 
-			q._data = d[s:]
+			h = self.buffer[:size]
+			if self.debug:
+				red("Receiving: %s" % xstruct.hexbyte(h))
 			
-			if not b.has_key(q.sequence):
-				b[q.sequence] = []	
-			b[q.sequence].append(q)
+			q = objects.Header(h)	
+			if q.length > 1024*1024:
+				raise IOError("Packet was to large!")
+			
+			if len(self.buffer) < size+q.length:
+				print "Waiting on", size+q.length - len(self.buffer)
+				self.buffer += r(size+q.length-len(self.buffer))
+
+			# This will only ever occur on a non-blocking connection
+			if len(self.buffer) < size+q.length:
+				if self._noblock():
+					return None
+				else:
+					print "Ekk! Not enough data on a blocking connection..."
+					continue
+				
+			if self.debug:
+				red("%s \n" % xstruct.hexbyte(self.buffer[size:size+q.length]))
+			
+			q._data, self.buffer = self.buffer[size:size+q.length], self.buffer[size+q.length:]
+			
+			if not buffered.has_key(q.sequence):
+				buffered[q.sequence] = []	
+			buffered[q.sequence].append(q)
 
 		if self.debug:
 			red("Receiving: %s (%s)\n" % (str(p), p.sequence))

@@ -3,6 +3,26 @@ Intro
 This provides all the neccessary objects to
 talk to a Thousand Parsec server.
 
+Support Libraries
+==============================================
+For basic Thousand Parsec functionality no extra
+Python libraries are needed. 
+
+It is recommened to install either,
+	python-pyopenssl
+	m2crypto
+
+Installing these libraries will imporve SSL support.
+
+Clients will not be able to connect to TLS enabled
+Thousand Parsec servers (but it should be able to connect 
+to SSL3 and SSL2 servers) without one of these 
+libraries.
+
+Servers will not be able to serve SSL connections 
+(or tunnel HTTPS connections) without one of these
+libraries.
+
 Directory Structure
 ==============================================
 ./tests

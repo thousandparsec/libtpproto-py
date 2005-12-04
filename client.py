@@ -56,7 +56,7 @@ import objects
 constants = objects.constants
 
 from version import version
-from common import Connection, l
+from common import Connection, l, SSLWrapper
 
 def failed(object):
 	if type(object) == types.TupleType:
@@ -78,8 +78,8 @@ class ClientConnection(Connection):
 	def __init__(self, host=None, port=6923, nb=0, debug=0):
 		Connection.__init__(self)
 
-		self.buffers['undescribed'] = {}
-		self.buffers['store'] = {}
+		self.buffered['undescribed'] = {}
+		self.buffered['store'] = {}
 
 		if host != None:
 			self.setup(host, port, nb, debug)
@@ -92,10 +92,10 @@ class ClientConnection(Connection):
 
 		Sets up the socket for a connection.
 		"""
-		self.host = host
+		hoststring = host
 		self.proxy = None
 
-		if host.startswith("http://") or host.startswith("https://"):
+		if hoststring.startswith("http://") or hoststring.startswith("https://"):
 
 			import urllib
 			opener = None
@@ -107,9 +107,9 @@ class ClientConnection(Connection):
 				# Don't use any proxies
 				opener = urllib.FancyURLopener({})
 			else:
-				if host.startswith("http://"):
+				if hoststring.startswith("http://"):
 					opener = urlib.FancyURLopener({'http': proxy})
-				elif host.startswith("https://"):
+				elif hoststring.startswith("https://"):
 					opener = urlib.FancyURLopener({'https': proxy})
 				else:
 					raise "URL Error..."
@@ -119,7 +119,7 @@ class ClientConnection(Connection):
 			for i in range(0, 12):
 				url += random.choice(string.letters+string.digits)
 			
-			o = opener.open(host + url, "")
+			o = opener.open(hoststring + url, "")
 			s = socket.fromfd(o.fileno(), socket.AF_INET, socket.SOCK_STREAM)
 
 ##			# Read in the headers
@@ -133,17 +133,20 @@ class ClientConnection(Connection):
 ##			print "Finished the http headers..."
 
 		else:
-			if host.startswith("tp://") or host.startswith("tps://"):
-				if host.count(":") > 1:
+			if hoststring.startswith("tp://") or hoststring.startswith("tps://"):
+				if hoststring.count(":") > 1:
 					# FIXME: Need to extract the port
 					pass
 				else:
-					if host.startswith("tp://"):
-						self.port = 6923
-					elif host.startswith("tps://"):
-						self.port = 6924
+					if hoststring.startswith("tp://"):
+						host = hoststring[5:]
+						port = 6923
+					elif hoststring.startswith("tps://"):
+						host = hoststring[6:]
+						port = 6924
 			else:
-				self.port = port
+				port = port
+				host = hoststring
 
 			s = None
 			for af, socktype, proto, cannoname, sa in \
@@ -152,13 +155,13 @@ class ClientConnection(Connection):
 				try:
 					s = socket.socket(af, socktype, proto)
 					if debug:
-						print "Trying to connect to connect: (%s, %s)" % (host, self.port)
+						print "Trying to connect to connect: (%s, %s)" % (host, port)
 
 					s.connect(sa)
 					break
 				except socket.error, msg:
 					if debug:
-						print "Connect fail: (%s, %s)" % (host, self.port)
+						print "Connect fail: (%s, %s)" % (host, port)
 					if s:
 						s.close()
 						
@@ -168,6 +171,13 @@ class ClientConnection(Connection):
 			if not s:
 				raise socket.error, msg
 
+			if hoststring.startswith("tps://"):
+				s = SSLWrapper(s)
+
+		self.hoststring = hoststring
+		self.host = host
+		self.port = port
+		
 		Connection.setup(self, s, nb=nb, debug=debug)
 		self.no = 1
 
@@ -257,7 +267,7 @@ class ClientConnection(Connection):
 			raise IOError("Bad Packet was received %s" % p)
 
 		# We have to wait on multiple packets
-		self.buffers['store'][no] = []
+		self.buffered['store'][no] = []
 	
 		if self._noblock():
 			# Do the commands in non-blocking mode
@@ -289,7 +299,7 @@ class ClientConnection(Connection):
 			elif not isinstance(p, type):
 				raise IOError("Bad Packet was received %s" % p)
 
-			self.buffers['store'][no].append(p)
+			self.buffered['store'][no].append(p)
 
 			if self._noblock():
 				return _continue
@@ -300,8 +310,8 @@ class ClientConnection(Connection):
 
 		Completes the get_* functions.
 		"""
-		store = self.buffers['store'][no]
-		del self.buffers['store'][no]
+		store = self.buffered['store'][no]
+		del self.buffered['store'][no]
 		return l(store)
 
 	def _get_ids(self, type, key, position, amount=-1, raw=False):

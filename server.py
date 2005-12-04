@@ -10,6 +10,9 @@ constants = objects.constants
 
 from common import Connection
 
+socket_error = (socket.error,)
+socket_fatal = (IOError,)
+
 class ServerConnection(Connection):
 	def __init__(self, s, address, debug=False):
 		Connection.__init__(self)
@@ -26,20 +29,14 @@ class ServerConnection(Connection):
 		"""\
 		Checks to see if any packets are on the line
 		"""
-		if not hasattr(self, "buffer"):
-			self.buffer = ""
-
-		try:
-			self.buffer = self.s.recv(len(self.buffer)+1, socket.MSG_PEEK)
-		except socket.error, e:
-			return 
-			
+		self.buffer += self.s.recv(len(self.buffer)+1)
+		
 		if self.buffer.startswith("TP"):
 			if self.debug:
-				print "Got a noraml tp connection..."
+				print "Got a normal tp connection..."
 			self.poll = self.tppoll
 			return
-
+			
 		if self.buffer[-17:].startswith("POST /"):
 			if self.debug:
 				print "Got a http connection..."
@@ -47,8 +44,11 @@ class ServerConnection(Connection):
 			self.poll = self.httppoll
 			return
 
+		# We have gotten to much data, we need to close this connection now
+		if len(self.buffer) > 18:
+			raise IOError("No valid connection header found...")
+
 	def httppoll(self):
-		
 		if self.buffer.endswith("\r\n\r\n"):
 			if self.debug:
 				print "Finished the http headers..."
@@ -59,23 +59,26 @@ class ServerConnection(Connection):
 			self.s.send("Cache-Control: no-cache, private\n")
 			self.s.send("Content-Type: application/binary\n")
 			self.s.send("\n")
+			
+			self.buffer = ""
 			self.poll = self.tppoll	
 			return
 		
 		try:
 			self.buffer += self.s.recv(1)
-		except socket.error, e:
+		except socket_error, e:
 			return 
 
 	def tppoll(self):
-		# Complete any pending commands
-		Connection.poll(self)
-
 		# Get the packets
-		self._recv(-1)
+		try:
+			self._recv(-1)
+		except socket_error, e:
+			print self, e
 		
-		sequences = self.buffers['receive'].keys()
+		sequences = self.buffered['receive'].keys()
 		sequences.sort()
+		print "tppoll", sequences
 		for sequence in sequences:
 			p = self._recv(sequence)
 
@@ -130,57 +133,128 @@ class Server:
 	"""
 	handler = ServerConnection
 
-	def __init__(self, address, port):
-		self.s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	def __init__(self, address, port=None, sslport=None, ports=None, sslports=None):
 
-		self.s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-		self.s.bind((address, port))
-		self.s.listen(5)
+		if ports is None:
+			ports = []
+		if not port is None:
+			ports.append(port)
+		
+		if sslports is None:
+			sslports = []
+		if not sslport is None:
+			sslports.append(sslport)
+	
+		self.ports = ports
+		self.sslports = sslports
 
-		# We are non blocking
-		self.s.setblocking(False)
+		print "Ports", self.ports, self.sslports
+
+		self.s = []
+		for port in ports+sslports:
+			s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+			if port in sslports:
+				pem = """\
+-----BEGIN RSA PRIVATE KEY-----
+MIIBOwIBAAJBAOTnGJZ1npXzEpchNblVMLOF7Bnv4R+zTrd93nweSEZb6u024o+U
+y2Y9s/79f2ytS8csVVxjrFn7Bisw6maXz0MCAwEAAQJAfS7JKpe+l+DsPMyDtgyZ
+6sQF4BVo98428XCbuSNSgW8AaWGyqIC1baf0FvNE8OSNrO43Mhqy9C2BG5YQve6K
+sQIhAPwHcln2CiPGJ6Rru1SF3MEvC8WImmTrtWVA9IHVNXDbAiEA6IJepK7qvtYc
+SoKObjZ+nG0OyGi9b6M9GSO52kWbE7kCIQC7TcV8elB62c+ocLBeVsYDhLVY7vbf
+vhWn1KhivVPkNQIhAKaRLwg/n0BT1zSxzyO5un6JyntcPcoKYazu4SgzkWNRAiBn
+qEzVAP7TdKkfE2CtVvd2JkGQHQmD7bgOkmhZTIpENg==
+-----END RSA PRIVATE KEY-----
+-----BEGIN CERTIFICATE-----
+MIICTjCCAfigAwIBAgIBADANBgkqhkiG9w0BAQQFADBWMRkwFwYDVQQKExBXZWJt
+aW4gV2Vic2VydmVyMRAwDgYDVQQLEwdsZXN0ZXIuMQowCAYDVQQDFAEqMRswGQYJ
+KoZIhvcNAQkBFgxyb290QGxlc3Rlci4wHhcNMDQxMDA1MTU0NzQ2WhcNMDkxMDA0
+MTU0NzQ2WjBWMRkwFwYDVQQKExBXZWJtaW4gV2Vic2VydmVyMRAwDgYDVQQLEwds
+ZXN0ZXIuMQowCAYDVQQDFAEqMRswGQYJKoZIhvcNAQkBFgxyb290QGxlc3Rlci4w
+XDANBgkqhkiG9w0BAQEFAANLADBIAkEA5OcYlnWelfMSlyE1uVUws4XsGe/hH7NO
+t33efB5IRlvq7Tbij5TLZj2z/v1/bK1LxyxVXGOsWfsGKzDqZpfPQwIDAQABo4Gw
+MIGtMB0GA1UdDgQWBBTqK6UJRH7+NpEwgEmJzse910voYTB+BgNVHSMEdzB1gBTq
+K6UJRH7+NpEwgEmJzse910voYaFapFgwVjEZMBcGA1UEChMQV2VibWluIFdlYnNl
+cnZlcjEQMA4GA1UECxMHbGVzdGVyLjEKMAgGA1UEAxQBKjEbMBkGCSqGSIb3DQEJ
+ARYMcm9vdEBsZXN0ZXIuggEAMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEEBQAD
+QQBkj8SEY4RAm9WRDtPJ8qPgmIHeiiwDKsJup1ixsbiQOAV7zG/pMCYM4VWVhmR+
+trYiuEhD5HiV/W6DM4WBMg+5
+-----END CERTIFICATE-----"""
+
+				SSLFound = False
+				try:
+					import OpenSSL.crypto
+					import OpenSSL.SSL as SSL
+					SSLFound = True
+
+					context = SSL.Context(SSL.SSLv23_METHOD)
+					context.set_verify(SSL.VERIFY_NONE, lambda x: True)
+					context.use_certificate(OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem))
+					context.use_privatekey(OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, pem))
+
+					s = SSL.Connection(context, s)
+
+					global socket_error, socket_fatal
+					socket_error = tuple([SSL.WantReadError] + list(socket_error))
+					socket_error = tuple([SSL.WantWriteError] + list(socket_error))
+					socket_fatal = tuple([SSL.Error] + list(socket_fatal))
+				except ImportError, e:
+					print e
+				
+				if not SSLFound:
+					print "Unable to find a SSL library which I can use :/"
+					continue
+			
+			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+			s.bind((address, port))
+			s.listen(5)
+			s.setblocking(False)
+
+			self.s.append(s)
 
 		self.connections = []
 		
 	def serve_forever(self):
+		oldready = []
 		while True:
 			# Check if there is any socket to accept or with data
 			try:
-				ready, trash, errors = select.select([self.s] + self.connections,[],self.connections,0.1)
+				ready, trash, errors = select.select(self.s + self.connections,[],self.connections,0.1)
 			except select.error:
 				continue
 
-			for s in ready:
-				if s is self.s:
+			for s in ready+oldready:
+				if s in self.s:
 					# Accept a new connection
-					s, address = self.s.accept()
-					print "Accepting connection from", address
-					self.connections.append(self.handler(s, address, debug=self.debug))
+					n, address = s.accept()
+					print "Accepting connection from %s on %s" % (address, s.getsockname())
+					self.connections.append(self.handler(n, address, debug=self.debug))
 				else:
 					try:
 						s.poll()
-					except (IOError, socket.error):
+						if s in oldready:
+							oldready.remove(s)
+					except socket_error, e:
+						oldready.append(s)
+					except socket_fatal, e:
+						print "fatal fallout", s, e
 						errors.append(s)
-			else:
-				for s in self.connections:
-					try:
-						s.poll()
-					except (IOError, socket.error):
-						errors.append(s)
+				print s, "was ready"
 			
 			# Cleanup any old sockets
 			for s in errors:
+				print "Removing", s
 				try:
 					self.connections.remove(s)
-				except:
-					continue
-				del s
+					s.s.close()
+				except Exception, e:
+					print "Error removing socket", s, e
 	
 if __name__ == "__main__":
 	port = 6924
 	while True:
 		try:
-			s = Server("127.0.0.1", port=port)
+			s = Server("127.0.0.1", port)
 		except:
 			print "This port in use...", port
 			port += 1
