@@ -29,26 +29,28 @@ class ServerConnection(Connection):
 		"""\
 		Checks to see if any packets are on the line
 		"""
-		self.buffer += self.s.recv(len(self.buffer)+1)
+		print "Inital Poll"
+		self.buffer += self.s.recv(6)
 		
 		if self.buffer.startswith("TP"):
 			if self.debug:
 				print "Got a normal tp connection..."
 			self.poll = self.tppoll
-			return
+			return self.poll()
 			
 		if self.buffer[-17:].startswith("POST /"):
 			if self.debug:
 				print "Got a http connection..."
 			self.s.recv(len(self.buffer)) # Clear all the already recived data...
 			self.poll = self.httppoll
-			return
+			return self.poll()
 
 		# We have gotten to much data, we need to close this connection now
 		if len(self.buffer) > 18:
 			raise IOError("No valid connection header found...")
 
 	def httppoll(self):
+		print "HTTP Poll"
 		if self.buffer.endswith("\r\n\r\n"):
 			if self.debug:
 				print "Finished the http headers..."
@@ -62,14 +64,16 @@ class ServerConnection(Connection):
 			
 			self.buffer = ""
 			self.poll = self.tppoll	
-			return
+			return self.poll()
 		
-		try:
-			self.buffer += self.s.recv(1)
-		except socket_error, e:
-			return 
+		self.buffer += self.s.recv(1)
+		
+		# We have gotten to much data, we need to close this connection now
+		if len(self.buffer) > 1024:
+			raise IOError("HTTP Request was to large!")
 
 	def tppoll(self):
+		print "TP Poll"
 		# Get the packets
 		try:
 			self._recv(-1)
@@ -182,25 +186,53 @@ trYiuEhD5HiV/W6DM4WBMg+5
 -----END CERTIFICATE-----"""
 
 				SSLFound = False
-				try:
-					import OpenSSL.crypto
-					import OpenSSL.SSL as SSL
-					SSLFound = True
+				while True:
+					try:
+						import OpenSSL.crypto
+						import OpenSSL.SSL as SSL
+						SSLFound = True
+	
+						context = SSL.Context(SSL.SSLv23_METHOD)
+						context.set_verify(SSL.VERIFY_NONE, lambda x: True)
+						context.use_certificate(OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem))
+						context.use_privatekey(OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, pem))
+	
+						s = SSL.Connection(context, s)
+	
+						global socket_error, socket_fatal
+						socket_error = tuple([SSL.WantReadError] + list(socket_error))
+						socket_error = tuple([SSL.WantWriteError] + list(socket_error))
+						socket_fatal = tuple([SSL.Error] + list(socket_fatal))
+						break
+					except ImportError, e:
+						print "Unable to import pyopenssl"
+	
+					try:
+						from StringIO import StringIO
+						from tempfile import NamedTemporaryFile
+						import M2Crypto
+						import M2Crypto.SSL as SSL
+						SSLFound = True
+	
+						context = SSL.Context('sslv23')
+						context.set_verify(SSL.verify_none, 4, lambda x: True)
+	
+						f = NamedTemporaryFile(mode='w+b')
+						f.write(pem); f.flush()
+						context.load_cert(f.name)
+						f.close()
+						s = SSL.Connection(context, s)
+	
+						global socket_error, socket_fatal
+	#					socket_error = tuple([SSL.WantReadError] + list(socket_error))
+	#					socket_error = tuple([SSL.WantWriteError] + list(socket_error))
+						socket_fatal = tuple([SSL.SSLError] + list(socket_fatal))
+						break
+					except ImportError, e:
+						print "Unable to import M2Crypto"
+					
+					break
 
-					context = SSL.Context(SSL.SSLv23_METHOD)
-					context.set_verify(SSL.VERIFY_NONE, lambda x: True)
-					context.use_certificate(OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem))
-					context.use_privatekey(OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, pem))
-
-					s = SSL.Connection(context, s)
-
-					global socket_error, socket_fatal
-					socket_error = tuple([SSL.WantReadError] + list(socket_error))
-					socket_error = tuple([SSL.WantWriteError] + list(socket_error))
-					socket_fatal = tuple([SSL.Error] + list(socket_fatal))
-				except ImportError, e:
-					print e
-				
 				if not SSLFound:
 					print "Unable to find a SSL library which I can use :/"
 					continue

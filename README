@@ -8,9 +8,15 @@ Support Libraries
 For basic Thousand Parsec functionality no extra
 Python libraries are needed. 
 
-It is recommened to install either,
+It is recommened to install either if you are 
+running a server,
 	python-pyopenssl
 	m2crypto
+or one of the following if you are running a
+client,
+	python-pyopenssl
+	m2crypto
+	TLS Lite
 
 Installing these libraries will imporve SSL support.
 

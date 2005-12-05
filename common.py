@@ -25,7 +25,6 @@ class SSLWrapper:
 		no = 0
 		while no != len(data):
 			no += self.s.write(data)
-			print "writing data", no
 	
 	def recv(self, amount):
 		return self.s.read(amount)
@@ -117,8 +116,6 @@ class Connection:
 		else:
 			sequences = sequence
 		
-		print "_recv", sequences, self.buffered
-		
 		# FIXME: Need to make this more robust for bad packets
 		r = self.s.recv
 		buffered = self.buffered['receive']
@@ -141,7 +138,6 @@ class Connection:
 					self._description_error(p)
 					p = None
 				except Error, e:
-					print "Error!", e
 					self._error(p)
 					p = None
 					del buffered[sequence][0]
@@ -152,9 +148,10 @@ class Connection:
 				continue
 				
 			# Get the data on the line
-			print "Waiting on", size - len(self.buffer)
 			data = r(size-len(self.buffer))
-			if len(data) == 0:
+			if data is None:
+				data = ""
+			elif len(data) == 0:
 				raise IOError("Socket has been terminated.")
 			self.buffer += data
 
@@ -175,7 +172,6 @@ class Connection:
 				raise IOError("Packet was to large!")
 			
 			if len(self.buffer) < size+q.length:
-				print "Waiting on", size+q.length - len(self.buffer)
 				self.buffer += r(size+q.length-len(self.buffer))
 
 			# This will only ever occur on a non-blocking connection
