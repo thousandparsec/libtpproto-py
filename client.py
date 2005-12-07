@@ -145,17 +145,18 @@ class ClientConnection(Connection):
 						
 				if host.count(":") > 0:
 					host, port = host.split(':', 1)
-				
+					port = int(port)
 			else:
 				if hoststring.count(":") > 0:
 					host, port = hoststring.split(':', 1)
+					port = int(port)
 				else:
 					host = hoststring
 
 					if not port:
 						port = 6923
 
-			print "Connecting to", host, port
+			print "Connecting to", host, type(host), port, type(port)
 
 			s = None
 			for af, socktype, proto, cannoname, sa in \
