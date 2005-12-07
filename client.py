@@ -86,7 +86,7 @@ class ClientConnection(Connection):
 
 		self.__desc = False
 
-	def setup(self, host, port=6923, nb=0, debug=0, proxy=None):
+	def setup(self, host, port=None, nb=0, debug=0, proxy=None):
 		"""\
 		*Internal*
 
@@ -134,19 +134,28 @@ class ClientConnection(Connection):
 
 		else:
 			if hoststring.startswith("tp://") or hoststring.startswith("tps://"):
-				if hoststring.count(":") > 1:
-					# FIXME: Need to extract the port
-					pass
-				else:
-					if hoststring.startswith("tp://"):
-						host = hoststring[5:]
+				if hoststring.startswith("tp://"):
+					host = hoststring[5:]
+					if not port:
 						port = 6923
-					elif hoststring.startswith("tps://"):
-						host = hoststring[6:]
+				elif hoststring.startswith("tps://"):
+					host = hoststring[6:]
+					if not port:
 						port = 6924
+						
+				if host.count(":") > 0:
+					host, port = host.split(':', 1)
+				
 			else:
-				port = port
-				host = hoststring
+				if hoststring.count(":") > 0:
+					host, port = hoststring.split(':', 1)
+				else:
+					host = hoststring
+
+					if not port:
+						port = 6923
+
+			print "Connecting to", host, port
 
 			s = None
 			for af, socktype, proto, cannoname, sa in \
