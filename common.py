@@ -137,7 +137,7 @@ class Connection:
 				except objects.DescriptionError:
 					self._description_error(p)
 					p = None
-				except Error, e:
+				except Exception, e:
 					self._error(p)
 					p = None
 					del buffered[sequence][0]

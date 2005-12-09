@@ -272,6 +272,10 @@ def unpack_string(s):
 		output = s[:l]
 		s = s[l:]
 		
+		# Remove any extra null terminators.
+		if output[-1] == '\0':
+			output = output[:-1]
+		
 		return output, s
 	else:
 		return "", s
