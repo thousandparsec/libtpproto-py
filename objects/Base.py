@@ -23,8 +23,8 @@ class GetWithID(Processed):
 
 		self.ids = ids
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.ids)
 
 		return output
@@ -55,8 +55,8 @@ class GetWithIDandSlot(Processed):
 		self.id = id
 		self.slots = slots
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.id, self.slots)
 
 		return output
@@ -90,8 +90,8 @@ class GetIDSequence(Processed):
 		self.start = start
 		self.amount = amount
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.key, self.start, self.amount)
 
 		return output
@@ -118,8 +118,8 @@ class IDSequence(Processed):
 		self.left = left
 		self.ids = ids
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.key, self.left, self.ids)
 
 		return output

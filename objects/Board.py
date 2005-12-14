@@ -31,8 +31,8 @@ class Board(Processed):
 		self.number = number
 		self.modify_time = modify_time
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.id, self.name, self.description, self.number, self.modify_time)
 
 		return output

@@ -53,8 +53,8 @@ class Design(Processed):
 		self.feedback = feedback
 		self.properties = properties
 		
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.id, self.modify_time, self.categories, self.name, self.description, self.used, self.owner, self.components, self.feedback, self.properties)
 
 		return output

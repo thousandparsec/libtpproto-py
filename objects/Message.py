@@ -37,8 +37,8 @@ class Message(Processed):
 		self.turn = turn
 		self.references = references
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.id, self.slot, self.types, self.subject, self.body, self.turn, self.references)
 
 		return output

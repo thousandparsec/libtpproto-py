@@ -101,8 +101,9 @@ from objects.OrderDesc_Get import OrderDesc_Get
 OrderDesc_Get = OrderDesc_Get
 mapping[OrderDesc_Get.no] = OrderDesc_Get
 
-from objects.OrderDesc import OrderDesc, descriptions
+from objects.OrderDesc import OrderDesc, DynamicBaseOrder, descriptions
 OrderDesc = OrderDesc
+DynamicBaseOrder = DynamicBaseOrder
 OrderDescs = descriptions
 mapping[OrderDesc.no] = OrderDesc
 

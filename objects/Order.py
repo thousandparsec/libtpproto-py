@@ -69,8 +69,8 @@ class Order(Describable):
 				self.length += len(extra)
 				raise DescriptionError("No description for order type %s." % type)
 			
-	def __repr__(self):
-		output = Describable.__repr__(self)
+	def __str__(self):
+		output = Describable.__str__(self)
 		output += pack(self.struct, self.id, self.slot, self.type, self.turns, self.resources)
 
 		return output

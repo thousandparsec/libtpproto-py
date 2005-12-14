@@ -80,7 +80,7 @@ class Header(object):
 		"""
 		return "<%s - %s @ %s>" % (self.__class__.__module__, self.__class__.__name__, hex(id(self)))
 
-	def __repr__(self):
+	def __str__(self):
 		"""\
 		Produce a string suitable to be send over the wire.
 		"""

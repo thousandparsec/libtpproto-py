@@ -32,8 +32,8 @@ class Feature(Processed):
 		self.length = 4 + len(features) * 4
 		self.features = features
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.features)
 
 		return output

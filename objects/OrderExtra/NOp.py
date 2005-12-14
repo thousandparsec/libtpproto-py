@@ -26,8 +26,8 @@ class NOp(Order):
 		self.length += 4
 		self.wait = wait
 		
-	def __repr__(self):
-		output = Order.__repr__(self)
+	def __str__(self):
+		output = Order.__str__(self)
 		output += pack(self.substruct, self.wait)
 
 		return output

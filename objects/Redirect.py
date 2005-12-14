@@ -35,8 +35,8 @@ class Redirect(Processed):
 
 		self.uri = uri
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.uri)
 
 		return output

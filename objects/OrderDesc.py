@@ -86,9 +86,9 @@ class DynamicBaseOrder(Order):
 					setattr(self, name, -1)
 
 		# FIXME: Need to figure out the length a better way
-		self.length = len(self.__repr__()) - Header.size
+		self.length = len(self.__str__()) - Header.size
 
-	def __repr__(self):
+	def __str__(self):
 		args = []
 		for name, type in self.names:
 			struct, size = struct_map[type]
@@ -99,11 +99,11 @@ class DynamicBaseOrder(Order):
 			else:
 				args = args + list(attr)
 
-		output = Order.__repr__(self)
+		output = Order.__str__(self)
 		output += apply(pack, [self.substruct,] + args)
 		return output
 
-	def __str__(self):
+	def __repr__(self):
 		return "<netlib.objects.OrderExtra.DynamicOrder - %s @ %s>" % (self.name, hex(id(self)))
 
 class OrderDesc(Description):
@@ -163,8 +163,8 @@ class OrderDesc(Description):
 				4 + \
 				4 + len(argument[2])
 
-	def __repr__(self):
-		output = Description.__repr__(self)
+	def __str__(self):
+		output = Description.__str__(self)
 		output += pack(self.struct, \
 				self.id, \
 				self.name, \
@@ -198,6 +198,7 @@ class OrderDesc(Description):
 			setattr(DynamicOrder, name + "__doc__", desc)
 
 		DynamicOrder.modify_time = self.modify_time
+		DynamicOrder.packet = self
 
 		return DynamicOrder
 

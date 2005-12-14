@@ -34,8 +34,8 @@ class Universe(Object):
 		self.length += 4
 		self.turn = turn
 	
-	def __repr__(self):
-		output = Object.__repr__(self)
+	def __str__(self):
+		output = Object.__str__(self)
 		output += pack(self.substruct, self.turn)
 
 		return output

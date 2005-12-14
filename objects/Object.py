@@ -85,8 +85,8 @@ class Object(Describable):
 		self.order_number = order_number
 		self.modify_time = modify_time
 
-	def __repr__(self):
-		output = Describable.__repr__(self)
+	def __str__(self):
+		output = Describable.__str__(self)
 		output += pack(self.struct, \
 				self.id, \
 				self.otype, \

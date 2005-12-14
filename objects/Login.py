@@ -29,8 +29,8 @@ class Login(Processed):
 		self.username = username
 		self.password = password
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.username, self.password)
 
 		return output

@@ -27,8 +27,8 @@ class Sequence(Processed):
 
 		self.number = number
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.number)
 
 		return output

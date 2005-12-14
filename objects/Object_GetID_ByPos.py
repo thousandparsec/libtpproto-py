@@ -26,8 +26,8 @@ class Object_GetID_ByPos(Processed):
 		self.pos = [posx, posy, posz]
 		self.size = size
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, \
 			self.pos[0], self.pos[1], self.pos[2], self.size)
 

@@ -101,9 +101,9 @@ class Connection:
 		"""
 		s = self.s.send
 		if self.debug:
-			green("Sending: %s (%s)\n" % (str(p), p.sequence))
-			green("Sending: %s \n" % xstruct.hexbyte(repr(p)))
-		s(repr(p))
+			green("Sending: %s (%s)\n" % (repr(p), p.sequence))
+			green("Sending: %s \n" % xstruct.hexbyte(str(p)))
+		s(str(p))
 
 	def _recv(self, sequence):
 		"""\
@@ -192,7 +192,7 @@ class Connection:
 			buffered[q.sequence].append(q)
 
 		if self.debug:
-			red("Receiving: %s (%s)\n" % (str(p), p.sequence))
+			red("Receiving: %s (%s)\n" % (repr(p), p.sequence))
 
 		return p
 

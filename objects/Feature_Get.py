@@ -15,6 +15,6 @@ class Feature_Get(Processed):
 		Processed.__init__(self, sequence)
 		self.length = 0
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		return output

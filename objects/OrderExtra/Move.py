@@ -30,8 +30,8 @@ class Move(Order):
 		else:
 			self.pos = (x, y, z)
 
-	def __repr__(self):
-		output = Order.__repr__(self)
+	def __str__(self):
+		output = Order.__str__(self)
 		output += pack(self.substruct, self.pos[0], self.pos[1], self.pos[2])
 
 		return output

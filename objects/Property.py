@@ -46,8 +46,8 @@ class Property(Processed):
 		self.calculate = calculate
 		self.requirements = requirements
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.id, self.modify_time, self.categories, self.rank, self.name, self.display_name, self.description, self.calculate, self.requirements)
 
 		return output

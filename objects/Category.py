@@ -28,8 +28,8 @@ class Category(Processed):
 		self.name = name
 		self.description = description
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.id, self.modify_time, self.name, self.description)
 
 		return output

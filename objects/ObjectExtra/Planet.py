@@ -40,8 +40,8 @@ class Planet(Object):
 		self.owner = owner
 		self.resources = resources
 	
-	def __repr__(self):
-		output = Object.__repr__(self)
+	def __str__(self):
+		output = Object.__str__(self)
 		output += pack(self.substruct, self.owner, self.resources)
 
 		return output

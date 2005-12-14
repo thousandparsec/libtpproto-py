@@ -40,8 +40,8 @@ class Fleet(Object):
 		self.ships = ships
 		self.damage = damage
 
-	def __repr__(self):
-		output = Object.__repr__(self)
+	def __str__(self):
+		output = Object.__str__(self)
 		output += pack(self.substruct, self.owner, self.ships, self.damage)
 
 		return output

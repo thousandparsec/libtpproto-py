@@ -20,8 +20,8 @@ class TimeRemaining(Processed):
 		self.length = 4
 		self.time = time
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.time)
 
 		return output

@@ -16,5 +16,5 @@ class Ping(Processed):
 		Processed.__init__(self, sequence)
 		self.length = 0
 	
-	def __repr__(self):
-		return Processed.__repr__(self)
+	def __str__(self):
+		return Processed.__str__(self)

@@ -40,8 +40,8 @@ class Resource(Processed):
 		self.unit_singular, self.unit_plural = unit_singular, unit_plural
 		self.description, self.weight, self.size, self.modify_time = description, weight, size, modify_time
 	
-	def __repr__(self):
-		output = Processed.__repr__(self)
+	def __str__(self):
+		output = Processed.__str__(self)
 		output += pack(self.struct, self.id, \
 			self.name_singular, self.name_plural, \
 			self.unit_singular, self.unit_plural, \
