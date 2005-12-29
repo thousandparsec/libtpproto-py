@@ -1320,3 +1320,38 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.Property, self.no)
 
+	def get_players(self, *args, **kw):
+		"""\
+		Get players descriptions,
+
+		# Get the description for players 5
+		[<pro id=5>] = get_players(5)
+		[<pro id=5>] = get_players(id=5)
+		[<pro id=5>] = get_players(ids=[5])
+		[(False, "No such 5")] = get_players([5])
+		
+		# Get the descriptions for players 5 and 10
+		[<pro id=5>, (False, "No such 10")] = get_players([5, 10])
+		[<pro id=5>, (False, "No such 10")] = get_players(ids=[5, 10])
+		"""
+		self._common()
+
+		if kw.has_key('ids'):
+			ids = kw['ids']
+		elif kw.has_key('id'):
+			ids = [kw['id']]
+		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
+			ids = args[0]
+		else:
+			ids = args
+
+		p = objects.Player_Get(self.no, ids)
+
+		self._send(p)
+
+		if self._noblock():
+			self._append(self._get_header, (objects.Player, self.no))
+			return None
+		else:
+			return self._get_header(objects.Player, self.no)
+

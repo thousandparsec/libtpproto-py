@@ -287,3 +287,12 @@ from objects.Property_IDSequence import Property_IDSequence
 Property_IDSequence = Property_IDSequence
 mapping[Property_IDSequence.no] = Property_IDSequence
 
+# Design Properties
+from objects.Player_Get import Player_Get
+Player_Get = Player_Get
+mapping[Player_Get.no] = Player_Get
+
+from objects.Player import Player
+Player = Player
+mapping[Player.no] = Player
+

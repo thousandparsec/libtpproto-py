@@ -148,12 +148,13 @@ class Connection:
 				continue
 				
 			# Get the data on the line
-			data = r(size-len(self.buffer))
-			if data is None:
-				data = ""
-			elif len(data) == 0:
-				raise IOError("Socket has been terminated.")
-			self.buffer += data
+			if len(self.buffer) < size:
+				data = r(size-len(self.buffer))
+				if data is None:
+					data = ""
+				elif len(data) == 0:
+					raise IOError("Socket has been terminated.")
+				self.buffer += data
 
 			# This will only ever occur on a non-blocking connection
 			if len(self.buffer) < size:
