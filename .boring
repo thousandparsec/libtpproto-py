@@ -32,3 +32,6 @@
 \#
 \.cvsignore$
 (^|/)Thumbs\.db$
+(^|/)build$
+(^|/)dist$
+(^|/)MANIFEST$
