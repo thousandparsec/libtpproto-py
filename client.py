@@ -459,6 +459,11 @@ class ClientConnection(Connection):
 	def connect(self, str=""):
 		"""\
 		Connects to a Thousand Parsec Server.
+		
+		(True, "Welcome to ABC") = connect("MyWonderfulClient")
+		(False, "To busy atm!")  = connect("MyWonderfulClient")
+
+		You can used the "failed" function to check the result.
 		"""
 		self._common()
 		
@@ -504,6 +509,11 @@ class ClientConnection(Connection):
 	def ping(self):
 		"""\
 		Pings the Thousand Parsec Server.
+		
+		(True, "Pong!") = ping()
+		(False, "")     = ping()
+
+		You can used the "failed" function to check the result.
 		"""
 		self._common()
 		
@@ -521,6 +531,11 @@ class ClientConnection(Connection):
 	def login(self, username, password):
 		"""\
 		Login to the server using this username/password.
+		
+		(True, "Welcome Mithro!")  = login("mithro", "mypassword")
+		(False, "Go away looser!") = login("mithro", "mypassword")
+
+		You can used the "failed" function to check the result.
 		"""
 		self._common()
 
@@ -539,6 +554,8 @@ class ClientConnection(Connection):
 	def features(self):
 		"""\
 		Gets the features the Thousand Parsec Server supports.
+		
+		FIXME: This documentation should be completed.
 		"""
 		self._common()
 		
@@ -575,6 +592,8 @@ class ClientConnection(Connection):
 	def time(self):
 		"""\
 		Gets the time till end of turn from a Thousand Parsec Server.
+
+		FIXME: This documentation should be completed.
 		"""
 		self._common()
 		
@@ -601,6 +620,7 @@ class ClientConnection(Connection):
 
 		# Check it's the reply we are after
 		if isinstance(p, objects.TimeRemaining):
+			# FIXME: This will cause any truth check to fail if p.time is zero!
 			return p.time
 		elif isinstance(p, objects.Fail):
 			return False, p.s
@@ -611,6 +631,8 @@ class ClientConnection(Connection):
 	def disconnect(self):
 		"""\
 		Disconnect from a server.
+
+		This has no return. This function will either succeed or throw and exception.
 		"""
 		if self._noblock() and len(self.nb) > 0:
 			raise IOError("Still waiting on non-blocking commands!")
@@ -743,11 +765,12 @@ class ClientConnection(Connection):
 
 	def insert_order(self, oid, slot, otype, *args, **kw):
 		"""\
-		Add a new order to an object.
+		Add a new order to an object,
 
-		Forms are
-		insert_order(oid, slot, otype, [arguments for order])
-		insert_order(oid, slot, [Order Object])
+		(True, "Order inserted success")      = insert_order(oid, slot, otype, [arguments for order])
+		(False, "Order couldn't be inserted") = insert_order(oid, slot, [Order Object])
+
+		You can used the "failed" function to check the result.
 		"""
 		self._common()
 		
@@ -779,13 +802,13 @@ class ClientConnection(Connection):
 
 		# Remove the order in slot 5 from object 2
 		[<Ok>] = remove_orders(2, 5)
-		[<Ok>] = remove_objects(2, slot=5)
-		[<Ok>] = remove_objects(2, slots=[5])
-		[(False, "No order 5")] = remove_objects(2, [5])
+		[<Ok>] = remove_orders(2, slot=5)
+		[<Ok>] = remove_orders(2, slots=[5])
+		[(False, "No order 5")] = remove_orders(2, [5])
 		
 		# Remove the orders in slots 5 and 10 from object 2
-		[<Ok>, (False, "No order 10")] = remove_objects(2, [5, 10])
-		[<Ok>, (False, "No order 10")] = remove_objects(2, slots=[5, 10])
+		[<Ok>, (False, "No order 10")] = remove_orders(2, [5, 10])
+		[<Ok>, (False, "No order 10")] = remove_orders(2, slots=[5, 10])
 		"""
 		self._common()
 
