@@ -1225,6 +1225,94 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.Design, self.no)
 
+	def insert_design(self, *args, **kw):
+		"""\
+		Add a new design.
+
+		<design> = insert_design(id, [arguments for design])
+		<Fail> = insert_design([Design Object])
+		"""
+		self._common()
+		
+		d = None
+		if isinstance(args[0], objects.Design) or isinstance(args[0], objects.Design_Add):
+			d = args[0]
+			d.no = objects.Design_Add.no
+			d._type = objects.Design_Add.no
+
+			d.sequence = self.no
+		else:	
+			d = apply(objects.Design_Add, (self.no,)+args, kw)
+			
+		self._send(d)
+
+		if self._noblock():
+			self._append(self._get_header, (objects.Design, self.no))
+			return None
+		else:
+			return self._get_header(objects.Design, self.no)
+
+	def change_design(self, *args, **kw):
+		"""\
+		Change a new design.
+
+		<design> = change_design(id, [arguments for design])
+		<Fail> = change_design([Design Object])
+		"""
+		self._common()
+		
+		d = None
+		if isinstance(args[0], objects.Design) or isinstance(args[0], objects.Design_Add):
+			d = args[0]
+			d.no = objects.Design_Add.no
+			d._type = objects.Design_Add.no
+
+			d.sequence = self.no
+		else:	
+			d = apply(objects.Design_Add, (self.no,)+args, kw)
+			
+		self._send(d)
+
+		if self._noblock():
+			self._append(self._get_header, (objects.Design, self.no))
+			return None
+		else:
+			return self._get_header(objects.Design, self.no)
+
+	def remove_designs(self, a=None, id=None, ids=None):
+		"""\
+		Remove designs from the server,
+
+		# Get the design with id=25
+		[<ok>] = remove_designs(25)
+		[<ok>] = remove_designs(id=25)
+		[<ok>] = remove_designs(ids=[25])
+		[<ok>] = remove_designs([id])
+		
+		# Get the designs with ids=25, 36
+		[<ok>, <ok>] = remove_designs([25, 36])
+		[<ok>, <ok>] = remove_designs(ids=[25, 36])
+		"""
+		self._common()
+
+		if a != None:
+			if hasattr(a, '__getitem__'):
+				ids = a
+			else:
+				id = a
+		
+		if id != None:
+			ids = [id]
+	
+		p = objects.Design_Remove(self.no, ids)
+		self._send(p)
+
+		if self._noblock():
+			self._append(self._okfail, self.no)
+			return None
+		else:
+			return self._okfail(self.no)
+
 	def get_component_ids(self, iter=False):
 		"""\
 		Get component ids from the server,

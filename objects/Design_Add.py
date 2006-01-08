@@ -1,8 +1,8 @@
 
 import copy
-from Order import Order
+from Design import Design
 
-class Design_Add(Order):
+class Design_Add(Design):
 	no = 49
 	def __init__(self, sequence, \
 			id, \

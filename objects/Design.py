@@ -25,7 +25,7 @@ class Design(Processed):
 	no = 48
 	struct = "IQ[I]SSjj[II]S[IS]"
 
-	def __init__(self, sequence, id, modify_time, categories, name, description, used, owner, components, feedback, properties):
+	def __init__(self, sequence, id, modify_time, categories, name, desc, used, owner, components, feedback, properties):
 		Processed.__init__(self, sequence)
 
 		# Length is:
@@ -33,7 +33,7 @@ class Design(Processed):
 		self.length = 4 + 8 + \
 				4 + len(categories)*4 + \
 				4 + len(name) + \
-				4 + len(description) + \
+				4 + len(desc) + \
 				4 + 4 + \
 				4 + len(components)*8 + \
 				4 + len(feedback) + \
@@ -46,7 +46,7 @@ class Design(Processed):
 		self.modify_time = modify_time
 		self.categories = categories
 		self.name = name
-		self.description = description
+		self.desc = desc
 		self.used = used
 		self.owner = owner
 		self.components = components
@@ -54,7 +54,9 @@ class Design(Processed):
 		self.properties = properties
 		
 	def __str__(self):
-		output = Processed.__str__(self)
-		output += pack(self.struct, self.id, self.modify_time, self.categories, self.name, self.description, self.used, self.owner, self.components, self.feedback, self.properties)
+		output1 = pack(self.struct, self.id, self.modify_time, self.categories, self.name, self.desc, self.used, self.owner, self.components, self.feedback, self.properties)
+		
+		self.length = len(output1)
+		output2 = Processed.__str__(self)
 
-		return output
+		return output2+output1
