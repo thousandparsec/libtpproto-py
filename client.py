@@ -1166,6 +1166,67 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.Category, self.no)
 
+	def insert_category(self, *args, **kw):
+		"""\
+		Add a new category.
+
+		<category> = insert_category(id, [arguments for category])
+		<Fail> = insert_category([Category Object])
+		"""
+		self._common()
+		
+		d = None
+		if isinstance(args[0], objects.Category) or isinstance(args[0], objects.Category_Add):
+			d = args[0]
+			d.no = objects.Category_Add.no
+			d._type = objects.Category_Add.no
+
+			d.sequence = self.no
+		else:	
+			d = apply(objects.Category_Add, (self.no,)+args, kw)
+			
+		self._send(d)
+
+		if self._noblock():
+			self._append(self._get_single, (objects.Category, self.no))
+			return None
+		else:
+			return self._get_single(objects.Category, self.no)
+
+	def remove_categories(self, a=None, id=None, ids=None):
+		"""\
+		Remove categories from the server,
+
+		# Get the category with id=25
+		[<ok>] = remove_categories(25)
+		[<ok>] = remove_categories(id=25)
+		[<ok>] = remove_categories(ids=[25])
+		[<ok>] = remove_categories([id])
+		
+		# Get the categories with ids=25, 36
+		[<ok>, <ok>] = remove_categories([25, 36])
+		[<ok>, <ok>] = remove_categories(ids=[25, 36])
+		"""
+		self._common()
+
+		if a != None:
+			if hasattr(a, '__getitem__'):
+				ids = a
+			else:
+				id = a
+		
+		if id != None:
+			ids = [id]
+	
+		p = objects.Category_Remove(self.no, ids)
+		self._send(p)
+
+		if self._noblock():
+			self._append(self._okfail, self.no)
+			return None
+		else:
+			return self._okfail(self.no)
+
 	def get_design_ids(self, iter=False):
 		"""\
 		Get design ids from the server,
