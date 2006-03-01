@@ -1247,10 +1247,10 @@ class ClientConnection(Connection):
 		self._send(d)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.Design, self.no))
+			self._append(self._get_single, (objects.Design, self.no))
 			return None
 		else:
-			return self._get_header(objects.Design, self.no)
+			return self._get_single(objects.Design, self.no)
 
 	def change_design(self, *args, **kw):
 		"""\
@@ -1274,10 +1274,10 @@ class ClientConnection(Connection):
 		self._send(d)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.Design, self.no))
+			self._append(self._get_single, (objects.Design, self.no))
 			return None
 		else:
-			return self._get_header(objects.Design, self.no)
+			return self._get_single(objects.Design, self.no)
 
 	def remove_designs(self, a=None, id=None, ids=None):
 		"""\
