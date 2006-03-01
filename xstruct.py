@@ -122,10 +122,13 @@ def pack(struct, *args):
 			if char in smallints and isinstance(args[0], long):
 				args[0] = int(args[0])
 			
-			if char in semi.keys():
-				char = semi[char][1]
-			
 			a = args.pop(0)
+			if char in semi.keys():
+				if a == -1:
+					a = 2**semi[char][0]-1
+				
+				char = semi[char][1]
+
 			try:
 				output += _pack("!"+char, a)
 			except _error, e:
