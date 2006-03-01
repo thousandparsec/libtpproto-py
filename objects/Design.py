@@ -6,8 +6,8 @@ from Header import Processed
 class Design(Processed):
 	"""\
 	The Design packet consists of:
-		* a UInt32, design ID
-		* a UInt64, the last modified time
+		* a SInt32, design ID
+		* a SInt64, the last modified time
 		* a list of,
 			* a UInt32, category this design is in
 		* a String, name of the design
@@ -23,7 +23,7 @@ class Design(Processed):
 			* a String, property display string
 	"""
 	no = 48
-	struct = "IQ[I]SSjj[II]S[IS]"
+	struct = "jp[I]SSjj[II]S[IS]"
 
 	def __init__(self, sequence, id, modify_time, categories, name, desc, used, owner, components, feedback, properties):
 		Processed.__init__(self, sequence)

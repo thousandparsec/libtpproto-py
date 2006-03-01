@@ -7,12 +7,12 @@ class Category(Processed):
 	"""\
 	The Category packet consists of:
 		* a UInt32, Category ID
-		* a UInt64, the last modified time
+		* a SInt64, the last modified time
 		* a String, name of the category
 		* a String, description of the category
 	"""
 	no = 42
-	struct = "IQSS"
+	struct = "IpSS"
 
 	def __init__(self, sequence, id, modify_time, name, description):
 		Processed.__init__(self, sequence)
