@@ -17,7 +17,7 @@ class Resource(Processed):
 		* a UInt64, the last modified time of this resource description
 	"""
 	no = 23
-	struct = "SSSSSIIQ"
+	struct = "ISSSSSIIQ"
 
 	def __init__(self, sequence, id, \
 			name_singular, name_plural, \
