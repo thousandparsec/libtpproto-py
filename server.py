@@ -138,7 +138,7 @@ class Server:
 	handler = ServerConnection
 
 	def __init__(self, address, port=None, sslport=None, ports=None, sslports=None):
-
+		global socket_error, socket_fatal
 		if ports is None:
 			ports = []
 		if not port is None:
@@ -199,7 +199,6 @@ trYiuEhD5HiV/W6DM4WBMg+5
 	
 						s = SSL.Connection(context, s)
 	
-						global socket_error, socket_fatal
 						socket_error = tuple([SSL.WantReadError] + list(socket_error))
 						socket_error = tuple([SSL.WantWriteError] + list(socket_error))
 						socket_fatal = tuple([SSL.Error] + list(socket_fatal))
@@ -223,7 +222,6 @@ trYiuEhD5HiV/W6DM4WBMg+5
 						f.close()
 						s = SSL.Connection(context, s)
 	
-						global socket_error, socket_fatal
 	#					socket_error = tuple([SSL.WantReadError] + list(socket_error))
 	#					socket_error = tuple([SSL.WantWriteError] + list(socket_error))
 						socket_fatal = tuple([SSL.SSLError] + list(socket_fatal))
