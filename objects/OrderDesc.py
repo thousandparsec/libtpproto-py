@@ -41,7 +41,7 @@ struct_map = {
 
 class ClassNicePrint(type):
 	def __str__(self):
-		return "<dynamic-class '%s' at %s>" % (self.name, hex(id(self)))
+		return "<dynamic-class '%s' at %s>" % (self._name, hex(id(self)))
 	__repr__ = __str__
 
 from Header import Header
@@ -106,7 +106,7 @@ class DynamicBaseOrder(Order):
 		return output
 
 	def __repr__(self):
-		return "<netlib.objects.OrderExtra.DynamicOrder - %s @ %s>" % (self.name, hex(id(self)))
+		return "<netlib.objects.OrderExtra.DynamicOrder - %s @ %s>" % (self._name, hex(id(self)))
 
 class OrderDesc(Description):
 	"""\
@@ -149,7 +149,7 @@ class OrderDesc(Description):
 			arguments, modify_time):
 		Description.__init__(self, sequence, id)
 
-		self.name = name
+		self._name = name
 		self.description = description
 		self.arguments = arguments
 		self.modify_time = modify_time
@@ -169,7 +169,7 @@ class OrderDesc(Description):
 		output = Description.__str__(self)
 		output += pack(self.struct, \
 				self.id, \
-				self.name, \
+				self._name, \
 				self.description, \
 				self.arguments, \
 				self.modify_time)
@@ -185,7 +185,7 @@ class OrderDesc(Description):
 		class DynamicOrder(DynamicBaseOrder):
 			pass
 
-		DynamicOrder.name = self.name
+		DynamicOrder._name = self._name
 		DynamicOrder.doc = self.description
 
 		# Arguments
