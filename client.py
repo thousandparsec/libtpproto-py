@@ -56,7 +56,7 @@ import objects
 constants = objects.constants
 
 from version import version
-from common import Connection, l, SSLWrapper
+from common import Connection, l, SSLWrapper, _continue
 
 def failed(object):
 	if type(object) == types.TupleType:
@@ -210,7 +210,7 @@ class ClientConnection(Connection):
 
 			# Register the desciption
 			q.register()
-	
+
 	def _common(self):
 		"""\
 		*Internal*
@@ -256,7 +256,7 @@ class ClientConnection(Connection):
 		else:
 			raise IOError("Bad Pakcet was received")
 
-	def _get_header(self, type, no):
+	def _get_header(self, type, no, callback=None):
 		"""\
 		*Internal*
 
@@ -271,6 +271,9 @@ class ClientConnection(Connection):
 			return [(False, p.s)]
 		elif isinstance(p, type):
 			# Must only be one, so return
+			if not callback is None:
+				callback(p)
+
 			return [p]
 		elif not isinstance(p, objects.Sequence):
 			# We got a bad packet
@@ -278,12 +281,12 @@ class ClientConnection(Connection):
 
 		# We have to wait on multiple packets
 		self.buffered['store'][no] = []
-	
+
 		if self._noblock():
 			# Do the commands in non-blocking mode
 			self._next(self._get_finish, no)
 			for i in range(0, p.number):
-				self._next(self._get_data, (type, no))
+				self._next(self._get_data, type, no, callback)
 
 			# Keep the polling going
 			return _continue
@@ -291,11 +294,11 @@ class ClientConnection(Connection):
 		else:
 			# Do the commands in blocking mode
 			for i in range(0, p.number):
-				self._get_data(type, no)
+				self._get_data(type, no, callback)
 			
 			return self._get_finish(no)
 
-	def _get_data(self, type, no):
+	def _get_data(self, type, no, callback=None):
 		"""\
 		*Internal*
 
@@ -304,6 +307,9 @@ class ClientConnection(Connection):
 		p = self._recv(no)
 
 		if p != None:
+			if not callback is None:
+				callback(p)
+
 			if isinstance(p, objects.Fail):
 				p = (False, p.s)
 			elif not isinstance(p, type):
@@ -336,11 +342,11 @@ class ClientConnection(Connection):
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_idsequence, (self.no, False, raw))
+			self._append(self._get_idsequence, self.no, False, raw)
 			return None
 		else:
 			return self._get_idsequence(self.no, False, raw)
-	
+
 	def _get_idsequence(self, no, iter=False, raw=False):
 		"""\
 		*Internal*
@@ -506,6 +512,26 @@ class ClientConnection(Connection):
 			# We got a bad packet
 			raise IOError("Bad Packet was received")
 
+	def account(self, username, password, email, comment=""):
+		"""\
+		Tries to create an account on a Thousand Parsec Server.
+
+		You can used the "failed" function to check the result.
+		"""
+		self._common()
+
+		# Send a connect packet
+		from version import version
+		p = objects.Account(self.no, username, password, email, comment)
+		self._send(p)
+
+		if self._noblock():
+			self._append(self._okfail, self.no)
+			return None
+		
+		# and wait for a response
+		return self._okfail(self.no)
+
 	def ping(self):
 		"""\
 		Pings the Thousand Parsec Server.
@@ -527,7 +553,7 @@ class ClientConnection(Connection):
 		
 		# and wait for a response
 		return self._okfail(self.no)
-	
+
 	def login(self, username, password):
 		"""\
 		Login to the server using this username/password.
@@ -607,7 +633,7 @@ class ClientConnection(Connection):
 		
 		# and wait for a response
 		return self._time(self.no)
-	
+
 	def _time(self, no):
 		"""\
 		*Internal*
@@ -671,7 +697,7 @@ class ClientConnection(Connection):
 			x = a
 		elif a != None:
 			id = a	
-	
+
 		p = None
 
 		if x != None:
@@ -686,12 +712,12 @@ class ClientConnection(Connection):
 		
 		self._send(p)
 		if self._noblock():
-			self._append(self._get_idsequence, (self.no, iter))
+			self._append(self._get_idsequence, self.no, iter)
 			return None
 		else:
 			return self._get_idsequence(self.no, iter)
 
-	def get_objects(self, a=None, id=None, ids=None):
+	def get_objects(self, a=None, id=None, ids=None, callback=None):
 		"""\
 		Get objects from the server,
 
@@ -715,15 +741,15 @@ class ClientConnection(Connection):
 		
 		if id != None:
 			ids = [id]
-	
+
 		p = objects.Object_GetById(self.no, ids)
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.Object, self.no))
+			self._append(self._get_header, objects.Object, self.no, callback)
 			return None
 		else:
-			return self._get_header(objects.Object, self.no)
+			return self._get_header(objects.Object, self.no, callback)
 
 	def get_orders(self, oid, *args, **kw):
 		"""\
@@ -753,15 +779,20 @@ class ClientConnection(Connection):
 		else:
 			slots = args
 
+		if kw.has_key('callback'):
+			callback = kw['callback']
+		else:
+			callback = None
+
 		p = objects.Order_Get(self.no, oid, slots)
 
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.Order, self.no))
+			self._append(self._get_header, objects.Order, self.no, callback)
 			return None
 		else:
-			return self._get_header(objects.Order, self.no)
+			return self._get_header(objects.Order, self.no, callback)
 
 	def insert_order(self, oid, slot, otype, *args, **kw):
 		"""\
@@ -826,7 +857,7 @@ class ClientConnection(Connection):
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.OK, self.no))
+			self._append(self._get_header, objects.OK, self.no)
 			return None
 		else:
 			return self._get_header(objects.OK, self.no)
@@ -850,7 +881,7 @@ class ClientConnection(Connection):
 		
 		self._send(p)
 		if self._noblock():
-			self._append(self._get_idsequence, (self.no, iter))
+			self._append(self._get_idsequence, self.no, iter)
 			return None
 		else:
 			return self._get_idsequence(self.no, iter)
@@ -884,15 +915,19 @@ class ClientConnection(Connection):
 		else:
 			ids = args
 
-		p = objects.OrderDesc_Get(self.no, ids)
+		if kw.has_key('callback'):
+			callback = kw['callback']
+		else:
+			callback = None
 
+		p = objects.OrderDesc_Get(self.no, ids)
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.OrderDesc, self.no))
+			self._append(self._get_header, objects.OrderDesc, self.no, callback)
 			return None
 		else:
-			return self._get_header(objects.OrderDesc, self.no)
+			return self._get_header(objects.OrderDesc, self.no, callback)
 
 	def get_board_ids(self, iter=False):
 		"""\
@@ -913,12 +948,12 @@ class ClientConnection(Connection):
 		
 		self._send(p)
 		if self._noblock():
-			self._append(self._get_idsequence, (self.no, iter))
+			self._append(self._get_idsequence, self.no, iter)
 			return None
 		else:
 			return self._get_idsequence(self.no, iter)
 
-	def get_boards(self, x=None, id=None, ids=None):
+	def get_boards(self, x=None, id=None, ids=None, callback=None):
 		"""\
 		Get boards from the server,
 
@@ -941,16 +976,16 @@ class ClientConnection(Connection):
 			ids = x
 		elif x != None:
 			ids = [x]
-	
+
 		p = objects.Board_Get(self.no, ids)
 
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.Board, self.no))
+			self._append(self._get_header, objects.Board, self.no, callback)
 			return None
 		else:
-			return self._get_header(objects.Board, self.no)
+			return self._get_header(objects.Board, self.no, callback)
 
 	def get_messages(self, bid, *args, **kw):
 		"""\
@@ -977,15 +1012,20 @@ class ClientConnection(Connection):
 		else:
 			slots = args
 
+		if kw.has_key('callback'):
+			callback = kw['callback']
+		else:
+			callback = None
+
 		p = objects.Message_Get(self.no, bid, slots)
 
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.Message, self.no))
+			self._append(self._get_header, objects.Message, self.no, callback)
 			return None
 		else:
-			return self._get_header(objects.Message, self.no)
+			return self._get_header(objects.Message, self.no, callback)
 
 	def insert_message(self, bid, slot, message, *args, **kw):
 		"""\
@@ -1044,7 +1084,7 @@ class ClientConnection(Connection):
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.OK, self.no))
+			self._append(self._get_header, objects.OK, self.no)
 			return None
 		else:
 			return self._get_header(objects.OK, self.no)
@@ -1068,12 +1108,12 @@ class ClientConnection(Connection):
 		
 		self._send(p)
 		if self._noblock():
-			self._append(self._get_idsequence, (self.no, iter))
+			self._append(self._get_idsequence, self.no, iter)
 			return None
 		else:
 			return self._get_idsequence(self.no, iter)
 
-	def get_resources(self, x=None, id=None, ids=None):
+	def get_resources(self, x=None, id=None, ids=None, callback=None):
 		"""\
 		Get resources from the server,
 
@@ -1096,16 +1136,16 @@ class ClientConnection(Connection):
 			ids = x
 		elif x != None:
 			ids = [x]
-	
+
 		p = objects.Resource_Get(self.no, ids)
 
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.Resource, self.no))
+			self._append(self._get_header, objects.Resource, self.no, callback)
 			return None
 		else:
-			return self._get_header(objects.Resource, self.no)
+			return self._get_header(objects.Resource, self.no, callback)
 
 	def get_category_ids(self, iter=False):
 		"""\
@@ -1126,7 +1166,7 @@ class ClientConnection(Connection):
 		
 		self._send(p)
 		if self._noblock():
-			self._append(self._get_idsequence, (self.no, iter))
+			self._append(self._get_idsequence, self.no, iter)
 			return None
 		else:
 			return self._get_idsequence(self.no, iter)
@@ -1156,15 +1196,20 @@ class ClientConnection(Connection):
 		else:
 			ids = args
 
+		if kw.has_key('callback'):
+			callback = kw['callback']
+		else:
+			callback = None
+
 		p = objects.Category_Get(self.no, ids)
 
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.Category, self.no))
+			self._append(self._get_header, objects.Category, self.no, callback)
 			return None
 		else:
-			return self._get_header(objects.Category, self.no)
+			return self._get_header(objects.Category, self.no, callback)
 
 	def insert_category(self, *args, **kw):
 		"""\
@@ -1188,7 +1233,7 @@ class ClientConnection(Connection):
 		self._send(d)
 
 		if self._noblock():
-			self._append(self._get_single, (objects.Category, self.no))
+			self._append(self._get_single, objects.Category, self.no)
 			return None
 		else:
 			return self._get_single(objects.Category, self.no)
@@ -1217,7 +1262,7 @@ class ClientConnection(Connection):
 		
 		if id != None:
 			ids = [id]
-	
+
 		p = objects.Category_Remove(self.no, ids)
 		self._send(p)
 
@@ -1246,7 +1291,7 @@ class ClientConnection(Connection):
 		
 		self._send(p)
 		if self._noblock():
-			self._append(self._get_idsequence, (self.no, iter))
+			self._append(self._get_idsequence, self.no, iter)
 			return None
 		else:
 			return self._get_idsequence(self.no, iter)
@@ -1276,15 +1321,20 @@ class ClientConnection(Connection):
 		else:
 			ids = args
 
+		if kw.has_key('callback'):
+			callback = kw['callback']
+		else:
+			callback = None
+
 		p = objects.Design_Get(self.no, ids)
 
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.Design, self.no))
+			self._append(self._get_header, objects.Design, self.no, callback)
 			return None
 		else:
-			return self._get_header(objects.Design, self.no)
+			return self._get_header(objects.Design, self.no, callback)
 
 	def insert_design(self, *args, **kw):
 		"""\
@@ -1308,7 +1358,7 @@ class ClientConnection(Connection):
 		self._send(d)
 
 		if self._noblock():
-			self._append(self._get_single, (objects.Design, self.no))
+			self._append(self._get_single, objects.Design, self.no)
 			return None
 		else:
 			return self._get_single(objects.Design, self.no)
@@ -1335,7 +1385,7 @@ class ClientConnection(Connection):
 		self._send(d)
 
 		if self._noblock():
-			self._append(self._get_single, (objects.Design, self.no))
+			self._append(self._get_single, objects.Design, self.no)
 			return None
 		else:
 			return self._get_single(objects.Design, self.no)
@@ -1364,7 +1414,7 @@ class ClientConnection(Connection):
 		
 		if id != None:
 			ids = [id]
-	
+
 		p = objects.Design_Remove(self.no, ids)
 		self._send(p)
 
@@ -1393,7 +1443,7 @@ class ClientConnection(Connection):
 		
 		self._send(p)
 		if self._noblock():
-			self._append(self._get_idsequence, (self.no, iter))
+			self._append(self._get_idsequence, self.no, iter)
 			return None
 		else:
 			return self._get_idsequence(self.no, iter)
@@ -1423,15 +1473,20 @@ class ClientConnection(Connection):
 		else:
 			ids = args
 
+		if kw.has_key('callback'):
+			callback = kw['callback']
+		else:
+			callback = None
+
 		p = objects.Component_Get(self.no, ids)
 
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.Component, self.no))
+			self._append(self._get_header, objects.Component, self.no, callback)
 			return None
 		else:
-			return self._get_header(objects.Component, self.no)
+			return self._get_header(objects.Component, self.no, callback)
 
 	def get_property_ids(self, iter=False):
 		"""\
@@ -1452,7 +1507,7 @@ class ClientConnection(Connection):
 		
 		self._send(p)
 		if self._noblock():
-			self._append(self._get_idsequence, (self.no, iter))
+			self._append(self._get_idsequence, self.no, iter)
 			return None
 		else:
 			return self._get_idsequence(self.no, iter)
@@ -1482,15 +1537,20 @@ class ClientConnection(Connection):
 		else:
 			ids = args
 
+		if kw.has_key('callback'):
+			callback = kw['callback']
+		else:
+			callback = None
+
 		p = objects.Property_Get(self.no, ids)
 
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.Property, self.no))
+			self._append(self._get_header, objects.Property, self.no, callback)
 			return None
 		else:
-			return self._get_header(objects.Property, self.no)
+			return self._get_header(objects.Property, self.no, callback)
 
 	def get_players(self, *args, **kw):
 		"""\
@@ -1517,13 +1577,18 @@ class ClientConnection(Connection):
 		else:
 			ids = args
 
+		if kw.has_key('callback'):
+			callback = kw['callback']
+		else:
+			callback = None
+
 		p = objects.Player_Get(self.no, ids)
 
 		self._send(p)
 
 		if self._noblock():
-			self._append(self._get_header, (objects.Player, self.no))
+			self._append(self._get_header, objects.Player, self.no, callback)
 			return None
 		else:
-			return self._get_header(objects.Player, self.no)
+			return self._get_header(objects.Player, self.no, callback)
 

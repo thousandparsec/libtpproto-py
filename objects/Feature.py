@@ -24,6 +24,8 @@ class Feature(Processed):
 		FEATURE_ORDERED_RESOURCE:	"Sends Resource Description ID Sequences in decending modified time order",
 		FEATURE_ORDERED_CATEGORY:	"Sends Category Description ID Sequences in decending modified time order",
 		FEATURE_ORDERED_COMPONENT:	"Sends Component ID Sequences in decending modified time order",
+
+		FEATURE_ACCOUNT_REGISTER:	"Client can register an account through the client",
 	}
 
 	def __init__(self, sequence, features):

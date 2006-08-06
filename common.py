@@ -25,7 +25,7 @@ class SSLWrapper:
 		no = 0
 		while no != len(data):
 			no += self.s.write(data)
-	
+
 	def recv(self, amount):
 		return self.s.read(amount)
 
@@ -49,7 +49,7 @@ class Connection:
 		Sets up the socket for a connection.
 		"""
 		self.s = s
-	
+
 		self.setblocking(nb)
 		self.debug = debug
 
@@ -117,7 +117,15 @@ class Connection:
 			sequences = sequence
 		
 		# FIXME: Need to make this more robust for bad packets
-		r = self.s.recv
+		def r(*args):
+			try:
+				data = self.s.recv(*args)
+				if len(data) == 0:
+					raise IOError("Socket has been terminated.")
+				return data
+			except socket.error, e:
+				return ""
+
 		buffered = self.buffered['receive']
 		size = objects.Header.size
 		p = None
@@ -149,12 +157,7 @@ class Connection:
 				
 			# Get the data on the line
 			if len(self.buffer) < size:
-				data = r(size-len(self.buffer))
-				if data is None:
-					data = ""
-				elif len(data) == 0:
-					raise IOError("Socket has been terminated.")
-				self.buffer += data
+				self.buffer += r(size-len(self.buffer))
 
 			# This will only ever occur on a non-blocking connection
 			if len(self.buffer) < size:
@@ -231,15 +234,14 @@ class Connection:
 		if not self._noblock():
 			raise IOError("Not a non-blocking connection!")
 			
-		if len(self.nb) == 0:
-			return None
-
 		ret = _continue
-		while ret == _continue:
-			ret = apply(self.nb[0][0], self.nb[0][1])
+		while ret is _continue:
+			if len(self.nb) == 0:
+				return None
+			func, args = self.nb[0]
+			ret = func(*args)
 			if ret != None:
 				self.nb.pop(0)
-		
 		return ret
 
 	def _insert(self, function, *args):

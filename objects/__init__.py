@@ -59,6 +59,10 @@ from objects.Ping import Ping
 Ping = Ping
 mapping[Ping.no] = Ping
 
+from objects.Account import Account
+Account = Account
+mapping[Account.no] = Account
+
 # Features
 from objects.Feature_Get import Feature_Get
 Feature_Get = Feature_Get
