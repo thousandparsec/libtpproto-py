@@ -79,9 +79,9 @@ class Connection:
 		noblock = self._noblock()
 		if not noblock:
 			self.setblocking(1)
-		
+
 		self._recv(-1)
-		
+
 		if not noblock:
 			self.setblocking(0)
 
@@ -108,7 +108,7 @@ class Connection:
 	def _recv(self, sequence):
 		"""\
 		*Internal*
-		
+
 		Reads a single TP packet with correct sequence number from the socket.
 		"""
 		if not hasattr(sequence, '__getitem__'):
@@ -206,7 +206,7 @@ class Connection:
 
 		The packet will be of type Header ready to be morphed by calling
 		process as follows,
-		
+
 		p.process(p._data)
 		"""
 		raise objects.DescriptionError("Can not deal with an undescribed packet.")
@@ -233,7 +233,7 @@ class Connection:
 		"""
 		if not self._noblock():
 			raise IOError("Not a non-blocking connection!")
-			
+
 		ret = _continue
 		while ret is _continue:
 			if len(self.nb) == 0:
@@ -259,7 +259,7 @@ class Connection:
 		Queues a fuction for polling after the current one.
 		"""
 		self.nb.insert(1, (function, args))
-		
+
 	def _append(self, function, *args):
 		"""\
 		*Internal*

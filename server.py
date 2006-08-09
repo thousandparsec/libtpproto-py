@@ -31,13 +31,13 @@ class ServerConnection(Connection):
 		"""
 		print "Inital Poll"
 		self.buffer += self.s.recv(6)
-		
+
 		if self.buffer.startswith("TP"):
 			if self.debug:
 				print "Got a normal tp connection..."
 			self.poll = self.tppoll
 			return self.poll()
-			
+
 		if self.buffer[-17:].startswith("POST /"):
 			if self.debug:
 				print "Got a http connection..."
@@ -61,13 +61,13 @@ class ServerConnection(Connection):
 			self.s.send("Cache-Control: no-cache, private\n")
 			self.s.send("Content-Type: application/binary\n")
 			self.s.send("\n")
-			
+
 			self.buffer = ""
-			self.poll = self.tppoll	
+			self.poll = self.tppoll
 			return self.poll()
-		
+
 		self.buffer += self.s.recv(1)
-		
+
 		# We have gotten to much data, we need to close this connection now
 		if len(self.buffer) > 1024:
 			raise IOError("HTTP Request was to large!")
@@ -79,7 +79,7 @@ class ServerConnection(Connection):
 			self._recv(-1)
 		except socket_error, e:
 			print self, e
-		
+
 		sequences = self.buffered['receive'].keys()
 		sequences.sort()
 		print "tppoll", sequences
@@ -98,7 +98,7 @@ class ServerConnection(Connection):
 				c = bases.pop(0)
 				function = "On" + c.__name__
 				print function
-	
+
 				if hasattr(self, function):
 					try:
 						success = getattr(self, function)(p)
@@ -106,7 +106,7 @@ class ServerConnection(Connection):
 						type, val, tb = sys.exc_info()
 						print ''.join(traceback.format_exception(type, val, tb))
 					break
-				
+
 				bases += list(c.__bases__)
 
 			if not success:
@@ -114,19 +114,19 @@ class ServerConnection(Connection):
 
 	def _description_error(self, p):
 		self._send(objects.Fail(p.sequence, constants.FAIL_FRAME, "Packet which doesn't have a possible description."))
-		
+
 	def _error(self, p):
 		type, val, tb = sys.exc_info()
 		print ''.join(traceback.format_exception(type, val, tb))
 		self._send(objects.Fail(p.sequence, constants.FAIL_FRAME, "Packet wasn't valid."))
-		
+
 	def OnInit(self):
 		pass
 
 	def OnConnect(self, p):
 		self._send(objects.OK(p.sequence, "Welcome to py-server!"))
 		return True
-		
+
 	def OnPing(self, p):
 		self._send(objects.OK(p.sequence, "PONG!"))
 		return True
@@ -143,12 +143,12 @@ class Server:
 			ports = []
 		if not port is None:
 			ports.append(port)
-		
+
 		if sslports is None:
 			sslports = []
 		if not sslport is None:
 			sslports.append(sslport)
-	
+
 		self.ports = ports
 		self.sslports = sslports
 
@@ -234,7 +234,7 @@ trYiuEhD5HiV/W6DM4WBMg+5
 				if not SSLFound:
 					print "Unable to find a SSL library which I can use :/"
 					continue
-			
+
 			s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 			s.bind((address, port))
 			s.listen(5)
@@ -270,8 +270,7 @@ trYiuEhD5HiV/W6DM4WBMg+5
 					except socket_fatal, e:
 						print "fatal fallout", s, e
 						errors.append(s)
-				print s, "was ready"
-			
+
 			# Cleanup any old sockets
 			for s in errors:
 				print "Removing", s

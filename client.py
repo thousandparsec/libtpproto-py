@@ -113,12 +113,12 @@ class ClientConnection(Connection):
 					opener = urlib.FancyURLopener({'https': proxy})
 				else:
 					raise "URL Error..."
-		
+
 			import random, string
 			url = "/"
 			for i in range(0, 12):
 				url += random.choice(string.letters+string.digits)
-			
+
 			o = opener.open(hoststring + url, "")
 			s = socket.fromfd(o.fileno(), socket.AF_INET, socket.SOCK_STREAM)
 
@@ -142,7 +142,7 @@ class ClientConnection(Connection):
 					host = hoststring[6:]
 					if not port:
 						port = 6924
-						
+
 				if host.count(":") > 0:
 					host, port = host.split(':', 1)
 					port = int(port)
@@ -174,10 +174,10 @@ class ClientConnection(Connection):
 						print "Connect fail: (%s, %s)" % (host, port)
 					if s:
 						s.close()
-						
+
 					s = None
 					continue
-			
+
 			if not s:
 				raise socket.error, msg
 
@@ -187,7 +187,7 @@ class ClientConnection(Connection):
 		self.hoststring = hoststring
 		self.host = host
 		self.port = port
-		
+
 		Connection.setup(self, s, nb=nb, debug=debug)
 		self.no = 1
 
@@ -199,7 +199,7 @@ class ClientConnection(Connection):
 			self._send(q)
 
 			self.__desc = True
-		
+
 		q = self._recv(p.sequence-1)
 
 		if q != None and isinstance(q, objects.Sequence):
@@ -295,7 +295,7 @@ class ClientConnection(Connection):
 			# Do the commands in blocking mode
 			for i in range(0, p.number):
 				self._get_data(type, no, callback)
-			
+
 			return self._get_finish(no)
 
 	def _get_data(self, type, no, callback=None):
@@ -376,7 +376,7 @@ class ClientConnection(Connection):
 		*Internal*
 
 		Class used to iterate over an ID list. It will get more IDs as needed.
-		
+
 		On a non-blocking connection the IDIter will return (None, None) while
 		no data is ready. This makes it good to use in an event loop.
 
@@ -425,7 +425,7 @@ class ClientConnection(Connection):
 					p = self.connection._get_ids(self.type, -1, 0, 0, raw=True)
 				else:
 					p = self.connect.poll()
-				
+
 				# Check for Non-blocking mode
 				if p is None:
 					return (None, None)
@@ -447,7 +447,7 @@ class ClientConnection(Connection):
 					raise StopIteration()
 				elif no > self.amount:
 					no = self.amount
-				
+
 				p = self.connection._get_ids(self.type, self.key, self.position, no, raw=True)
 				# Check for Non-blocking mode
 				if p is None:
@@ -455,33 +455,33 @@ class ClientConnection(Connection):
 				# Check for an error
 				elif failed(p):
 					raise IOError("Failed to get remaining IDs")
-				
+
 				self.ids = p.ids
 				self.remaining = p.left
-				
+
 			self.position += 1
 			return self.ids.pop(0)
 
 	def connect(self, str=""):
 		"""\
 		Connects to a Thousand Parsec Server.
-		
+
 		(True, "Welcome to ABC") = connect("MyWonderfulClient")
 		(False, "To busy atm!")  = connect("MyWonderfulClient")
 
 		You can used the "failed" function to check the result.
 		"""
 		self._common()
-		
+
 		# Send a connect packet
 		from version import version
 		p = objects.Connect(self.no, ("libtpproto-py/%i.%i.%i " % version) + str)
 		self._send(p)
-		
+
 		if self._noblock():
 			self._append(self._connect, self.no)
 			return None
-		
+
 		# and wait for a response
 		return self._connect(self.no)
 
@@ -528,36 +528,36 @@ class ClientConnection(Connection):
 		if self._noblock():
 			self._append(self._okfail, self.no)
 			return None
-		
+
 		# and wait for a response
 		return self._okfail(self.no)
 
 	def ping(self):
 		"""\
 		Pings the Thousand Parsec Server.
-		
+
 		(True, "Pong!") = ping()
 		(False, "")     = ping()
 
 		You can used the "failed" function to check the result.
 		"""
 		self._common()
-		
+
 		# Send a connect packet
 		p = objects.Ping(self.no)
 		self._send(p)
-		
+
 		if self._noblock():
 			self._append(self._okfail, self.no)
 			return None
-		
+
 		# and wait for a response
 		return self._okfail(self.no)
 
 	def login(self, username, password):
 		"""\
 		Login to the server using this username/password.
-		
+
 		(True, "Welcome Mithro!")  = login("mithro", "mypassword")
 		(False, "Go away looser!") = login("mithro", "mypassword")
 
@@ -569,30 +569,30 @@ class ClientConnection(Connection):
 
 		p = objects.Login(self.no, username, password)
 		self._send(p)
-		
+
 		if self._noblock():
 			self._append(self._okfail, self.no)
 			return None
-		
+
 		# and wait for a response
 		return self._okfail(self.no)
 
 	def features(self):
 		"""\
 		Gets the features the Thousand Parsec Server supports.
-		
+
 		FIXME: This documentation should be completed.
 		"""
 		self._common()
-		
+
 		# Send a connect packet
 		p = objects.Feature_Get(self.no)
 		self._send(p)
-		
+
 		if self._noblock():
 			self._append(self._features, self.no)
 			return None
-		
+
 		# and wait for a response
 		return self._features(self.no)
 
@@ -622,15 +622,15 @@ class ClientConnection(Connection):
 		FIXME: This documentation should be completed.
 		"""
 		self._common()
-		
+
 		# Send a connect packet
 		p = objects.TimeRemaining_Get(self.no)
 		self._send(p)
-		
+
 		if self._noblock():
 			self._append(self._time, self.no)
 			return None
-		
+
 		# and wait for a response
 		return self._time(self.no)
 
@@ -668,7 +668,7 @@ class ClientConnection(Connection):
 	def get_object_ids(self, a=None, y=None, z=None, r=None, x=None, id=None, iter=False):
 		"""\
 		Get objects ids from the server,
-		
+
 		# Get all object ids (plus modification times)
 		[(25, 10029436), ...] = get_object_ids()
 
@@ -696,7 +696,7 @@ class ClientConnection(Connection):
 		if a != None and y != None and z != None and r != None:
 			x = a
 		elif a != None:
-			id = a	
+			id = a
 
 		p = None
 
@@ -707,9 +707,9 @@ class ClientConnection(Connection):
 		else:
 			if iter:
 				return self.IDIter(self, objects.Object_GetID)
-			
+
 			p = objects.Object_GetID(self.no, -1, 0, -1)
-		
+
 		self._send(p)
 		if self._noblock():
 			self._append(self._get_idsequence, self.no, iter)
@@ -726,7 +726,7 @@ class ClientConnection(Connection):
 		[<obj id=25>] = get_objects(id=25)
 		[<obj id=25>] = get_objects(ids=[25])
 		[<obj id=25>] = get_objects([id])
-		
+
 		# Get the objects with ids=25, 36
 		[<obj id=25>, <obj id=36>] = get_objects([25, 36])
 		[<obj id=25>, <obj id=36>] = get_objects(ids=[25, 36])
@@ -738,7 +738,7 @@ class ClientConnection(Connection):
 				ids = a
 			else:
 				id = a
-		
+
 		if id != None:
 			ids = [id]
 
@@ -760,7 +760,7 @@ class ClientConnection(Connection):
 		[<ord id=2 slot=5>] = get_orders(2, slot=5)
 		[<ord id=2 slot=5>] = get_orders(2, slots=[5])
 		[<ord id=2 slot=5>] = get_orders(2, [5])
-		
+
 		# Get the orders in slots 5 and 10 from object 2
 		[<ord id=2 slot=5>, <ord id=2 slot=10>] = get_orders(2, [5, 10])
 		[<ord id=2 slot=5>, <ord id=2 slot=10>] = get_orders(2, slots=[5, 10])
@@ -804,7 +804,7 @@ class ClientConnection(Connection):
 		You can used the "failed" function to check the result.
 		"""
 		self._common()
-		
+
 		o = None
 		if isinstance(otype, objects.Order) or isinstance(otype, objects.Order_Insert):
 			o = otype
@@ -813,20 +813,20 @@ class ClientConnection(Connection):
 
 			o.id = oid
 			o.slot = slot
-			
+
 			o.sequence = self.no
-		else:	
+		else:
 			o = apply(objects.Order_Insert, (self.no, oid, slot, otype,)+args, kw)
-			
+
 		self._send(o)
 
 		if self._noblock():
 			self._append(self._okfail, self.no)
 			return None
-		
+
 		# and wait for a response
 		return self._okfail(self.no)
-		
+
 	def remove_orders(self, oid, *args, **kw):
 		"""\
 		Removes orders from an object,
@@ -836,7 +836,7 @@ class ClientConnection(Connection):
 		[<Ok>] = remove_orders(2, slot=5)
 		[<Ok>] = remove_orders(2, slots=[5])
 		[(False, "No order 5")] = remove_orders(2, [5])
-		
+
 		# Remove the orders in slots 5 and 10 from object 2
 		[<Ok>, (False, "No order 10")] = remove_orders(2, [5, 10])
 		[<Ok>, (False, "No order 10")] = remove_orders(2, slots=[5, 10])
@@ -865,7 +865,7 @@ class ClientConnection(Connection):
 	def get_orderdesc_ids(self, iter=False):
 		"""\
 		Get orderdesc ids from the server,
-		
+
 		# Get all order description ids (plus modification times)
 		[(25, 10029436), ...] = get_orderdesc_ids()
 
@@ -876,9 +876,9 @@ class ClientConnection(Connection):
 
 		if iter:
 			return self.IDIter(self, objects.OrderDesc_GetID)
-			
+
 		p = objects.OrderDesc_GetID(self.no, -1, 0, -1)
-		
+
 		self._send(p)
 		if self._noblock():
 			self._append(self._get_idsequence, self.no, iter)
@@ -889,7 +889,7 @@ class ClientConnection(Connection):
 	def get_orderdescs(self, *args, **kw):
 		"""\
 		Get order descriptions from the server. 
-		
+
 		Note: When the connection gets an order which hasn't yet been
 		described it will automatically get an order description for that
 		order, you don't need to do this manually.
@@ -899,7 +899,7 @@ class ClientConnection(Connection):
 		[<orddesc id=5>] = get_orderdescs(id=5)
 		[<orddesc id=5>] = get_orderdescs(ids=[5])
 		[(False, "No desc 5")] = get_orderdescs([5])
-		
+
 		# Get the order description for id 5 and 10
 		[<orddesc id=5>, (False, "No desc 10")] = get_orderdescs([5, 10])
 		[<orddesc id=5>, (False, "No desc 10")] = get_orderdescs(ids=[5, 10])
@@ -932,7 +932,7 @@ class ClientConnection(Connection):
 	def get_board_ids(self, iter=False):
 		"""\
 		Get board ids from the server,
-		
+
 		# Get all board ids (plus modification times)
 		[(25, 10029436), ...] = get_board_ids()
 
@@ -943,9 +943,9 @@ class ClientConnection(Connection):
 
 		if iter:
 			return self.IDIter(self, objects.Board_GetID)
-			
+
 		p = objects.Board_GetID(self.no, -1, 0, -1)
-		
+
 		self._send(p)
 		if self._noblock():
 			self._append(self._get_idsequence, self.no, iter)
@@ -962,7 +962,7 @@ class ClientConnection(Connection):
 		[<board id=25>] = get_boards(id=25)
 		[<board id=25>] = get_boards(ids=[25])
 		[(False, "No such board")] = get_boards([id])
-		
+
 		# Get the boards with ids=25, 36
 		[<board id=25>, (False, "No board")] = get_boards([25, 36])
 		[<board id=25>, (False, "No board")] = get_boards(ids=[25, 36])
@@ -996,7 +996,7 @@ class ClientConnection(Connection):
 		[<msg id=2 slot=5>] = get_messages(2, slot=5)
 		[<msg id=2 slot=5>] = get_messages(2, slots=[5])
 		[(False, "No such 5")] = get_messages(2, [5])
-		
+
 		# Get the messages in slots 5 and 10 from board 2
 		[<msg id=2 slot=5>, (False, "No such 10")] = get_messages(2, [5, 10])
 		[<msg id=2 slot=5>, (False, "No such 10")] = get_messages(2, slots=[5, 10])
@@ -1036,24 +1036,24 @@ class ClientConnection(Connection):
 		[(False, "Insert failed")] = insert_message(bid, slot, [Message Object])
 		"""
 		self._common()
-		
+
 		o = None
 		if isinstance(message, objects.Message) or isinstance(message, objects.Message_Insert):
 			o = message
 			o._type = objects.Message_Insert.no
 			o.sequence = self.no
-		else:	
+		else:
 			o = apply(objects.Message_Insert, (self.no, bid, slot, message,)+args, kw)
-			
+
 		self._send(o)
 
 		if self._noblock():
 			self._append(self._okfail, self.no)
 			return None
-		
+
 		# and wait for a response
 		return self._okfail(self.no)
-		
+
 	def remove_messages(self, oid, *args, **kw):
 		"""\
 		Removes messages from an board,
@@ -1063,7 +1063,7 @@ class ClientConnection(Connection):
 		[<Ok>] = remove_messages(2, slot=5)
 		[<Ok>] = remove_messages(2, slots=[5])
 		[(False, "Insert failed")] = remove_messages(2, [5])
-		
+
 		# Remove the messages in slots 5 and 10 from board 2
 		[<Ok>, (False, "No such 10")] = remove_messages(2, [10, 5])
 		[<Ok>, (False, "No such 10")] = remove_messages(2, slots=[10, 5])
@@ -1092,7 +1092,7 @@ class ClientConnection(Connection):
 	def get_resource_ids(self, iter=False):
 		"""\
 		Get resource ids from the server,
-		
+
 		# Get all resource ids (plus modification times)
 		[(25, 10029436), ...] = get_resource_ids()
 
@@ -1103,9 +1103,9 @@ class ClientConnection(Connection):
 
 		if iter:
 			return self.IDIter(self, objects.Resource_GetID)
-			
+
 		p = objects.Resource_GetID(self.no, -1, 0, -1)
-		
+
 		self._send(p)
 		if self._noblock():
 			self._append(self._get_idsequence, self.no, iter)
@@ -1122,7 +1122,7 @@ class ClientConnection(Connection):
 		[<board id=25>] = get_resources(id=25)
 		[<board id=25>] = get_resources(ids=[25])
 		[(False, "No such board")] = get_resources([id])
-		
+
 		# Get the resources with ids=25, 36
 		[<board id=25>, (False, "No board")] = get_resources([25, 36])
 		[<board id=25>, (False, "No board")] = get_resources(ids=[25, 36])
@@ -1150,7 +1150,7 @@ class ClientConnection(Connection):
 	def get_category_ids(self, iter=False):
 		"""\
 		Get category ids from the server,
-		
+
 		# Get all category ids (plus modification times)
 		[(25, 10029436), ...] = get_category_ids()
 
@@ -1161,9 +1161,9 @@ class ClientConnection(Connection):
 
 		if iter:
 			return self.IDIter(self, objects.Category_GetID)
-			
+
 		p = objects.Category_GetID(self.no, -1, 0, -1)
-		
+
 		self._send(p)
 		if self._noblock():
 			self._append(self._get_idsequence, self.no, iter)
@@ -1180,7 +1180,7 @@ class ClientConnection(Connection):
 		[<cat id=5>] = get_categories(id=5)
 		[<cat id=5>] = get_categories(ids=[5])
 		[(False, "No such 5")] = get_categories([5])
-		
+
 		# Get the information for category 5 and 10
 		[<cat id=5>, (False, "No such 10")] = get_categories([5, 10])
 		[<cat id=5>, (False, "No such 10")] = get_categories(ids=[5, 10])
@@ -1219,7 +1219,7 @@ class ClientConnection(Connection):
 		<Fail> = insert_category([Category Object])
 		"""
 		self._common()
-		
+
 		d = None
 		if isinstance(args[0], objects.Category) or isinstance(args[0], objects.Category_Add):
 			d = args[0]
@@ -1227,9 +1227,9 @@ class ClientConnection(Connection):
 			d._type = objects.Category_Add.no
 
 			d.sequence = self.no
-		else:	
+		else:
 			d = apply(objects.Category_Add, (self.no,)+args, kw)
-			
+
 		self._send(d)
 
 		if self._noblock():
@@ -1247,7 +1247,7 @@ class ClientConnection(Connection):
 		[<ok>] = remove_categories(id=25)
 		[<ok>] = remove_categories(ids=[25])
 		[<ok>] = remove_categories([id])
-		
+
 		# Get the categories with ids=25, 36
 		[<ok>, <ok>] = remove_categories([25, 36])
 		[<ok>, <ok>] = remove_categories(ids=[25, 36])
@@ -1259,7 +1259,7 @@ class ClientConnection(Connection):
 				ids = a
 			else:
 				id = a
-		
+
 		if id != None:
 			ids = [id]
 
@@ -1275,7 +1275,7 @@ class ClientConnection(Connection):
 	def get_design_ids(self, iter=False):
 		"""\
 		Get design ids from the server,
-		
+
 		# Get all design ids (plus modification times)
 		[(25, 10029436), ...] = get_design_ids()
 
@@ -1286,9 +1286,9 @@ class ClientConnection(Connection):
 
 		if iter:
 			return self.IDIter(self, objects.Design_GetID)
-			
+
 		p = objects.Design_GetID(self.no, -1, 0, -1)
-		
+
 		self._send(p)
 		if self._noblock():
 			self._append(self._get_idsequence, self.no, iter)
@@ -1305,7 +1305,7 @@ class ClientConnection(Connection):
 		[<des id=5>] = get_designs(id=5)
 		[<des id=5>] = get_designs(ids=[5])
 		[(False, "No such 5")] = get_designs([5])
-		
+
 		# Get the information for design 5 and 10
 		[<des id=5>, (False, "No such 10")] = get_designs([5, 10])
 		[<des id=5>, (False, "No such 10")] = get_designs(ids=[5, 10])
@@ -1344,7 +1344,7 @@ class ClientConnection(Connection):
 		<Fail> = insert_design([Design Object])
 		"""
 		self._common()
-		
+
 		d = None
 		if isinstance(args[0], objects.Design) or isinstance(args[0], objects.Design_Add):
 			d = args[0]
@@ -1352,9 +1352,9 @@ class ClientConnection(Connection):
 			d._type = objects.Design_Add.no
 
 			d.sequence = self.no
-		else:	
+		else:
 			d = apply(objects.Design_Add, (self.no,)+args, kw)
-			
+
 		self._send(d)
 
 		if self._noblock():
@@ -1371,7 +1371,7 @@ class ClientConnection(Connection):
 		<Fail> = change_design([Design Object])
 		"""
 		self._common()
-		
+
 		d = None
 		if isinstance(args[0], objects.Design) or isinstance(args[0], objects.Design_Add):
 			d = args[0]
@@ -1379,9 +1379,9 @@ class ClientConnection(Connection):
 			d._type = objects.Design_Add.no
 
 			d.sequence = self.no
-		else:	
+		else:
 			d = apply(objects.Design_Add, (self.no,)+args, kw)
-			
+
 		self._send(d)
 
 		if self._noblock():
@@ -1399,7 +1399,7 @@ class ClientConnection(Connection):
 		[<ok>] = remove_designs(id=25)
 		[<ok>] = remove_designs(ids=[25])
 		[<ok>] = remove_designs([id])
-		
+
 		# Get the designs with ids=25, 36
 		[<ok>, <ok>] = remove_designs([25, 36])
 		[<ok>, <ok>] = remove_designs(ids=[25, 36])
@@ -1411,7 +1411,7 @@ class ClientConnection(Connection):
 				ids = a
 			else:
 				id = a
-		
+
 		if id != None:
 			ids = [id]
 
@@ -1427,7 +1427,7 @@ class ClientConnection(Connection):
 	def get_component_ids(self, iter=False):
 		"""\
 		Get component ids from the server,
-		
+
 		# Get all component ids (plus modification times)
 		[(25, 10029436), ...] = get_component_ids()
 
@@ -1438,9 +1438,9 @@ class ClientConnection(Connection):
 
 		if iter:
 			return self.IDIter(self, objects.Component_GetID)
-			
+
 		p = objects.Component_GetID(self.no, -1, 0, -1)
-		
+
 		self._send(p)
 		if self._noblock():
 			self._append(self._get_idsequence, self.no, iter)
@@ -1457,7 +1457,7 @@ class ClientConnection(Connection):
 		[<com id=5>] = get_components(id=5)
 		[<com id=5>] = get_components(ids=[5])
 		[(False, "No such 5")] = get_components([5])
-		
+
 		# Get the descriptions for components 5 and 10
 		[<com id=5>, (False, "No such 10")] = get_components([5, 10])
 		[<com id=5>, (False, "No such 10")] = get_components(ids=[5, 10])
@@ -1491,7 +1491,7 @@ class ClientConnection(Connection):
 	def get_property_ids(self, iter=False):
 		"""\
 		Get property ids from the server,
-		
+
 		# Get all property ids (plus modification times)
 		[(25, 10029436), ...] = get_property_ids()
 
@@ -1502,9 +1502,9 @@ class ClientConnection(Connection):
 
 		if iter:
 			return self.IDIter(self, objects.Property_GetID)
-			
+
 		p = objects.Property_GetID(self.no, -1, 0, -1)
-		
+
 		self._send(p)
 		if self._noblock():
 			self._append(self._get_idsequence, self.no, iter)
@@ -1521,7 +1521,7 @@ class ClientConnection(Connection):
 		[<pro id=5>] = get_properties(id=5)
 		[<pro id=5>] = get_properties(ids=[5])
 		[(False, "No such 5")] = get_properties([5])
-		
+
 		# Get the descriptions for properties 5 and 10
 		[<pro id=5>, (False, "No such 10")] = get_properties([5, 10])
 		[<pro id=5>, (False, "No such 10")] = get_properties(ids=[5, 10])
@@ -1561,7 +1561,7 @@ class ClientConnection(Connection):
 		[<pro id=5>] = get_players(id=5)
 		[<pro id=5>] = get_players(ids=[5])
 		[(False, "No such 5")] = get_players([5])
-		
+
 		# Get the descriptions for players 5 and 10
 		[<pro id=5>, (False, "No such 10")] = get_players([5, 10])
 		[<pro id=5>, (False, "No such 10")] = get_players(ids=[5, 10])
