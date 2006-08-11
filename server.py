@@ -8,7 +8,7 @@ import traceback
 import objects
 constants = objects.constants
 
-from common import Connection
+from common import Connection, BUFFER_SIZE
 
 socket_error = (socket.error,)
 socket_fatal = (IOError,)
@@ -22,23 +22,21 @@ class ServerConnection(Connection):
 
 		self.poll = self.initalpoll
 
-	def fileno(self):
-		return self.s.fileno()
-
 	def initalpoll(self):
 		"""\
 		Checks to see if any packets are on the line
 		"""
 		print "Inital Poll"
-		self.buffer += self.s.recv(6)
+		buffer = self.buffered['bytes-received']
+		buffer.write(self.s.recv(BUFFER_SIZE))
 
-		if self.buffer.startswith("TP"):
+		if buffer.peek(2) == "TP":
 			if self.debug:
 				print "Got a normal tp connection..."
 			self.poll = self.tppoll
 			return self.poll()
 
-		if self.buffer[-17:].startswith("POST /"):
+		if buffer.peek(17).startswith("POST /"):
 			if self.debug:
 				print "Got a http connection..."
 			self.s.recv(len(self.buffer)) # Clear all the already recived data...
@@ -46,11 +44,15 @@ class ServerConnection(Connection):
 			return self.poll()
 
 		# We have gotten to much data, we need to close this connection now
-		if len(self.buffer) > 18:
+		if buffer.left() > 18:
 			raise IOError("No valid connection header found...")
 
 	def httppoll(self):
 		print "HTTP Poll"
+		buffer = self.buffered['bytes-received']
+		buffer.write(self.s.recv(BUFFER_SIZE))
+
+		# FIXME: This is broken
 		if self.buffer.endswith("\r\n\r\n"):
 			if self.debug:
 				print "Finished the http headers..."
@@ -66,10 +68,8 @@ class ServerConnection(Connection):
 			self.poll = self.tppoll
 			return self.poll()
 
-		self.buffer += self.s.recv(1)
-
 		# We have gotten to much data, we need to close this connection now
-		if len(self.buffer) > 1024:
+		if buffer.left() > 1024:
 			raise IOError("HTTP Request was to large!")
 
 	def tppoll(self):
@@ -131,6 +131,55 @@ class ServerConnection(Connection):
 		self._send(objects.OK(p.sequence, "PONG!"))
 		return True
 
+class SSLSocket(object):
+	def __init__(self, s, pem):
+		global socket_error, socket_fatal
+		try:
+			import OpenSSL.crypto
+			import OpenSSL.SSL as SSL
+
+			context = SSL.Context(SSL.SSLv23_METHOD)
+			context.set_verify(SSL.VERIFY_NONE, lambda x: True)
+			context.use_certificate(OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem))
+			context.use_privatekey(OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, pem))
+
+			self.s = SSL.Connection(context, s)
+
+			socket_error = tuple([SSL.WantReadError] + list(socket_error))
+			socket_error = tuple([SSL.WantWriteError] + list(socket_error))
+			socket_fatal = tuple([SSL.Error] + list(socket_fatal))
+
+			print "Found pyopenssl"
+			return
+		except ImportError, e:
+			print "Unable to import pyopenssl"
+
+		try:
+			from tempfile import NamedTemporaryFile
+			import M2Crypto
+			import M2Crypto.SSL as SSL
+
+			context = SSL.Context('sslv23')
+			context.set_verify(SSL.verify_none, 4, lambda x: True)
+
+			f = NamedTemporaryFile(mode='w+b')
+			f.write(pem); f.flush()
+			context.load_cert(f.name)
+			f.close()
+			self.s = SSL.Connection(context, s)
+
+			socket_fatal = tuple([SSL.SSLError] + list(socket_fatal))
+			return
+		except ImportError, e:
+			print "Unable to import M2Crypto"
+		raise ImportError("Unable to find SSL library")
+
+	def __getattr__(self, key):
+		return getattr(self.s, key)
+
+	def __str__(self):
+		return object.__str__(self)
+
 class Server:
 	"""\
 	Select based, single threaded, polling server.
@@ -138,7 +187,6 @@ class Server:
 	handler = ServerConnection
 
 	def __init__(self, address, port=None, sslport=None, ports=None, sslports=None):
-		global socket_error, socket_fatal
 		if ports is None:
 			ports = []
 		if not port is None:
@@ -184,54 +232,9 @@ ARYMcm9vdEBsZXN0ZXIuggEAMAwGA1UdEwQFMAMBAf8wDQYJKoZIhvcNAQEEBQAD
 QQBkj8SEY4RAm9WRDtPJ8qPgmIHeiiwDKsJup1ixsbiQOAV7zG/pMCYM4VWVhmR+
 trYiuEhD5HiV/W6DM4WBMg+5
 -----END CERTIFICATE-----"""
-
-				SSLFound = False
-				while True:
-					try:
-						import OpenSSL.crypto
-						import OpenSSL.SSL as SSL
-						SSLFound = True
-	
-						context = SSL.Context(SSL.SSLv23_METHOD)
-						context.set_verify(SSL.VERIFY_NONE, lambda x: True)
-						context.use_certificate(OpenSSL.crypto.load_certificate(OpenSSL.crypto.FILETYPE_PEM, pem))
-						context.use_privatekey(OpenSSL.crypto.load_privatekey(OpenSSL.crypto.FILETYPE_PEM, pem))
-	
-						s = SSL.Connection(context, s)
-	
-						socket_error = tuple([SSL.WantReadError] + list(socket_error))
-						socket_error = tuple([SSL.WantWriteError] + list(socket_error))
-						socket_fatal = tuple([SSL.Error] + list(socket_fatal))
-						break
-					except ImportError, e:
-						print "Unable to import pyopenssl"
-	
-					try:
-						from StringIO import StringIO
-						from tempfile import NamedTemporaryFile
-						import M2Crypto
-						import M2Crypto.SSL as SSL
-						SSLFound = True
-	
-						context = SSL.Context('sslv23')
-						context.set_verify(SSL.verify_none, 4, lambda x: True)
-	
-						f = NamedTemporaryFile(mode='w+b')
-						f.write(pem); f.flush()
-						context.load_cert(f.name)
-						f.close()
-						s = SSL.Connection(context, s)
-	
-	#					socket_error = tuple([SSL.WantReadError] + list(socket_error))
-	#					socket_error = tuple([SSL.WantWriteError] + list(socket_error))
-						socket_fatal = tuple([SSL.SSLError] + list(socket_fatal))
-						break
-					except ImportError, e:
-						print "Unable to import M2Crypto"
-					
-					break
-
-				if not SSLFound:
+				try:
+					s = SSLSocket(s, pem)
+				except ImportError:
 					print "Unable to find a SSL library which I can use :/"
 					continue
 
@@ -242,24 +245,39 @@ trYiuEhD5HiV/W6DM4WBMg+5
 
 			self.s.append(s)
 
-		self.connections = []
-		
+		self.connections = {}
+
 	def serve_forever(self):
+		poller = select.poll()
+		for s in self.s:
+			poller.register(s, select.POLLIN)
+			self.connections[s.fileno()] = s
+
 		oldready = []
 		while True:
 			# Check if there is any socket to accept or with data
-			try:
-				ready, trash, errors = select.select(self.s + self.connections,[],self.connections,0.1)
-			except select.error:
-				continue
+			ready = []
+			errors = []
+			for fileno, event in poller.poll(100):
+				print "Event", fileno, event
+				if event & select.POLLIN:
+					ready.append(self.connections[fileno])
+				if event & (select.POLLERR|select.POLLHUP|select.POLLNVAL) > 0:
+					errors.append(self.connections[fileno])
+
+			print ready, oldready, errors, "(", self.connections, ")"
 
 			for s in ready+oldready:
 				if s in self.s:
 					# Accept a new connection
 					n, address = s.accept()
 					print "Accepting connection from %s on %s" % (address, s.getsockname())
-					self.connections.append(self.handler(n, address, debug=self.debug))
+
+					connection = self.handler(n, address, debug=self.debug)
+					poller.register(connection, select.POLLIN|select.POLLERR|select.POLLHUP|select.POLLNVAL)
+					self.connections[connection.fileno()] = connection
 				else:
+					# Poll the connection as it's ready
 					try:
 						s.poll()
 						if s in oldready:
@@ -275,11 +293,17 @@ trYiuEhD5HiV/W6DM4WBMg+5
 			for s in errors:
 				print "Removing", s
 				try:
-					self.connections.remove(s)
 					s.s.close()
 				except Exception, e:
-					print "Error removing socket", s, e
-	
+					print "Unable to close socket", e
+
+				try:
+					poller.unregister(s)
+				except Exception, e:
+					print "Unable to unregister socket", e
+
+				del self.connections[s.fileno()]
+
 if __name__ == "__main__":
 	port = 6924
 	while True:

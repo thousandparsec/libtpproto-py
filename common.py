@@ -1,6 +1,8 @@
 
 # Python imports
 import socket
+import select
+import time
 
 # Local imports
 import xstruct
@@ -29,16 +31,74 @@ class SSLWrapper:
 	def recv(self, amount):
 		return self.s.read(amount)
 
+from StringIO import StringIO
+class StringQueue(StringIO):
+	def __init__(self, *args, **kw):
+		StringIO.__init__(self, *args, **kw)
+		self._read_pos  = 0
+		self._write_pos = 0
+
+	def left(self):
+		return self._write_pos - self._read_pos
+
+	def read(self, *args, **kw):
+		self.seek(self._read_pos)
+		try:
+			return StringIO.read(self, *args, **kw)
+		finally:
+			self._read_pos = self.tell()
+			if self._read_pos > 1024*8:
+				self.trim()
+
+	def truncate(self, size=None):
+		if size is None:
+			size = self._read_pos
+
+		StringIO.truncate(self, size)
+
+		self._read_pos = 0
+		self._write_pos = 0
+
+	def trim(self):
+		# Read the remaining stuff
+		self.seek(self._read_pos)
+		waiting = StringIO.read(self)
+		self.truncate(0)
+		self.write(waiting)
+
+	def write(self, *args, **kw):
+		self.seek(self._write_pos)
+		try:
+			return StringIO.write(self, *args, **kw)
+		finally:
+			self._write_pos = self.tell()
+
+	def peek(self, amount=None):
+		self.seek(self._read_pos)
+		if amount is None:
+			return StringIO.read(self)
+		else:
+			return StringIO.read(self, amount)
+
+	def seekto(self, s):
+		"""\
+		Seek forward until an a string is found. 
+		Return None if not found.
+		"""
+		pass
+
+BUFFER_SIZE = 4096
+
 class Connection:
 	"""\
 	Base class for Thousand Parsec protocol connections.
 	Methods common to both server and client connections
 	go here.
 	"""
-
 	def __init__(self):
-		self.buffer = ""
 		self.buffered = {}
+		self.buffered['bytes-received'] = StringQueue()
+		self.buffered['bytes-tosend']   = StringQueue()
 		# This is a storage for out of sequence packets
 		self.buffered['receive'] = {}
 
@@ -49,9 +109,18 @@ class Connection:
 		Sets up the socket for a connection.
 		"""
 		self.s = s
+		self.s.setblocking(False)
 
 		self.setblocking(nb)
 		self.debug = debug
+
+	def fileno(self):
+		"""\
+		Returns the file descriptor number.
+		"""
+		if not hasattr(self, "_fileno"):
+			self._fileno = self.s.fileno()
+		return self._fileno
 
 	def setblocking(self, nb):
 		"""\
@@ -61,12 +130,9 @@ class Connection:
 			# Check we arn't waiting on anything
 			if len(self.nb) > 0:
 				raise IOError("Still waiting on non-blocking commands!")
-				
-			self.s.setblocking(1)
-			del self.nb
 
+			del self.nb
 		elif nb and not self._noblock():
-			self.s.setblocking(0)
 			self.nb = []
 
 	def pump(self):
@@ -80,6 +146,7 @@ class Connection:
 		if not noblock:
 			self.setblocking(1)
 
+		self._send()
 		self._recv(-1)
 
 		if not noblock:
@@ -93,17 +160,29 @@ class Connection:
 		"""
 		return hasattr(self, 'nb')
 
-	def _send(self, p):
+	def _send(self, p=None):
 		"""\
 		*Internal*
 
 		Sends a single TP packet to the socket.
 		"""
-		s = self.s.send
-		if self.debug:
-			green("Sending: %s (%s)\n" % (repr(p), p.sequence))
-			green("Sending: %s \n" % xstruct.hexbyte(str(p)))
-		s(str(p))
+		buffer = self.buffered['bytes-tosend']
+
+		if not p is None:
+			if self.debug:
+				green("Sending: %s (%s)\n" % (repr(p), p.sequence))
+
+			buffer.write(str(p))
+
+		try:
+			sent = self.s.send(buffer.peek(BUFFER_SIZE))
+		except socket.error, e:
+			sent = 0
+
+		if self.debug and sent > 0:
+			green("Sending: %s \n" % xstruct.hexbyte(buffer.peek(sent)))
+
+		buffer.read(sent)
 
 	def _recv(self, sequence):
 		"""\
@@ -112,93 +191,66 @@ class Connection:
 		Reads a single TP packet with correct sequence number from the socket.
 		"""
 		if not hasattr(sequence, '__getitem__'):
-			sequences = [sequence]
+			sequences = set([sequence])
 		else:
-			sequences = sequence
-		
-		# FIXME: Need to make this more robust for bad packets
-		def r(*args):
-			try:
-				data = self.s.recv(*args)
-				if len(data) == 0:
-					raise IOError("Socket has been terminated.")
-				return data
-			except socket.error, e:
-				return ""
+			sequences = set(sequence)
 
+		r = self.s.recv
+		buffer = self.buffered['bytes-received']
 		buffered = self.buffered['receive']
 		size = objects.Header.size
-		p = None
 
-		while p == None:
-			for sequence in sequences:
-				if buffered.has_key(sequence) and len(buffered[sequence]) > 0:
-					break
-			
-			if buffered.has_key(sequence) and len(buffered[sequence]) > 0:
-				p = buffered[sequence][0]
-			
+		while True:
+			# Pump the outgoing queue to
+			self._send()
+
+			for ready in sequences.intersection(buffered.keys()):
+				if len(buffered[ready]) == 0:
+					del buffered[ready]
+					continue
+
+				p = buffered[ready][0]
 				try:
 					p.process(p._data)
-					del buffered[sequence][0]
-					
+					del buffered[ready][0]
+					if self.debug:
+						red("Receiving: (%s) %s\n" % (p.sequence, repr(p)))
+					return p
 				except objects.DescriptionError:
 					self._description_error(p)
-					p = None
 				except Exception, e:
 					self._error(p)
-					p = None
-					del buffered[sequence][0]
+					del buffered[ready][0]
 
-				for k in buffered.keys():
-					if len(buffered[k]) == 0:
-						del buffered[k]
-				continue
-				
-			# Get the data on the line
-			if len(self.buffer) < size:
-				self.buffer += r(size-len(self.buffer))
+			# Recieve any data from the wire
+			try:
+				buffer.write(r(BUFFER_SIZE))
+			except socket.error, e:
+				if not self._noblock():
+					time.sleep(0.1)
+				print "Error", e
 
-			# This will only ever occur on a non-blocking connection
-			if len(self.buffer) < size:
-				if self._noblock():
-					return None
-				else:
-					print "Ekk! Not enough data on a blocking connection..."
-					continue
+			if buffer.left() >= size:
+				q = objects.Header(buffer.peek(size))
 
-			h = self.buffer[:size]
-			if self.debug:
-				red("Receiving: %s" % xstruct.hexbyte(h))
-			
-			q = objects.Header(h)	
-			if q.length > 1024*1024:
-				raise IOError("Packet was to large!")
-			
-			if len(self.buffer) < size+q.length:
-				self.buffer += r(size+q.length-len(self.buffer))
+				# Check the maximum size
+				if q.length > 1024*1024:
+					raise IOError("Packet was to large!")
 
-			# This will only ever occur on a non-blocking connection
-			if len(self.buffer) < size+q.length:
-				if self._noblock():
-					return None
-				else:
-					print "Ekk! Not enough data on a blocking connection..."
-					continue
-				
-			if self.debug:
-				red("%s \n" % xstruct.hexbyte(self.buffer[size:size+q.length]))
-			
-			q._data, self.buffer = self.buffer[size:size+q.length], self.buffer[size+q.length:]
-			
-			if not buffered.has_key(q.sequence):
-				buffered[q.sequence] = []	
-			buffered[q.sequence].append(q)
+				fsize = size+q.length
+				d = buffer.peek(fsize)
+				if len(d) == fsize:
+					red("Receiving: %s \n" % xstruct.hexbyte(d))
+					q._data = d[size:]
 
-		if self.debug:
-			red("Receiving: %s (%s)\n" % (repr(p), p.sequence))
+					buffer.read(fsize)
 
-		return p
+					if not buffered.has_key(q.sequence):
+						buffered[q.sequence] = []
+					buffered[q.sequence].append(q)
+
+			if self._noblock():
+				return None
 
 	def _description_error(self, packet):
 		"""\

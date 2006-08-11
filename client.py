@@ -282,6 +282,8 @@ class ClientConnection(Connection):
 		# We have to wait on multiple packets
 		self.buffered['store'][no] = []
 
+		print "Packets to get", p.number
+
 		if self._noblock():
 			# Do the commands in non-blocking mode
 			self._next(self._get_finish, no)
@@ -382,8 +384,8 @@ class ClientConnection(Connection):
 
 		On a blocking connection the IDIter will wait till the information is
 		ready.
-		"""	
-		def __init__(self, connection, type, amount=10):
+		"""
+		def __init__(self, connection, type, amount=30):
 			"""\
 			IDIter(connection, type, amount=10)
 
