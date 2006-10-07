@@ -1,0 +1,11 @@
+Source: libtpproto-py
+Section: games
+Priority: optional
+Maintainer: Tim Ansell <tim@thousandparsec.net>
+Standards-Version: 3.6.1
+
+Package: python-tpproto
+Architecture: any
+Depends: python (>= 2.2)
+Recommends: python-tpclient, tpclient-pywx
+Description: A client for the space empire building game framework Thousand Parsec.
