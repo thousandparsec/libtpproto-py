@@ -121,6 +121,7 @@ class Connection:
 		"""\
 		Returns the file descriptor number.
 		"""
+		# This is cached so our fileno doesn't go away when the socket dies..
 		if not hasattr(self, "_fileno"):
 			self._fileno = self.s.fileno()
 		return self._fileno
@@ -159,7 +160,7 @@ class Connection:
 		"""\
 		*Internal*
 
-		Returns if the connection is polling.
+		Returns if the connection is blocking.
 		"""
 		return hasattr(self, 'nb')
 
@@ -180,6 +181,7 @@ class Connection:
 		try:
 			sent = self.s.send(buffer.peek(BUFFER_SIZE))
 		except socket.error, e:
+			print "Send Socket Error", e
 			sent = 0
 
 		if self.debug and sent > 0:
@@ -232,9 +234,9 @@ class Connection:
 			try:
 				buffer.write(r(BUFFER_SIZE))
 			except socket.error, e:
+				print "Read Socket Error", e
 				if not self._noblock():
 					time.sleep(0.1)
-				print "Error", e
 
 			if buffer.left() >= size:
 				q = objects.Header(buffer.peek(size))
