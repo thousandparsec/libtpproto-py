@@ -151,7 +151,7 @@ class Connection:
 			self.setblocking(1)
 
 		self._send()
-		self._recv(-1)
+		self._recv()
 
 		if not noblock:
 			self.setblocking(0)
@@ -189,7 +189,7 @@ class Connection:
 
 		buffer.read(sent)
 
-	def _recv(self, sequence):
+	def _recv(self, sequence=-1):
 		"""\
 		*Internal*
 
@@ -200,7 +200,6 @@ class Connection:
 		else:
 			sequences = set(sequence)
 
-		r = self.s.recv
 		buffer = self.buffered['bytes-received']
 		frames = self.buffered['frames-received']
 		size = objects.Header.size
@@ -232,26 +231,29 @@ class Connection:
 
 			# Recieve any data from the wire
 			try:
-				buffer.write(r(BUFFER_SIZE))
+				data = self.s.recv(BUFFER_SIZE)
+				if data == '':
+					raise IOError("Socket.recv returned no data, connection must have been closed...")
+
+				buffer.write(data)
 			except socket.error, e:
 				print "Read Socket Error", e
 				if not self._noblock():
 					time.sleep(0.1)
 
-			if buffer.left() >= size:
+			# Parse any frames we have received
+			while buffer.left() >= size:
 				q = objects.Header(buffer.peek(size))
 
-				# Check the maximum size
-				if q.length > 1024*1024:
-					raise IOError("Packet was to large!")
-
 				fsize = size+q.length
-				d = buffer.peek(fsize)
-				if len(d) == fsize:
-					red("Receiving: %s \n" % xstruct.hexbyte(d))
-					q._data = d[size:]
+				if buffer.left() < fsize:
+					break
 
-					buffer.read(fsize)
+				d = buffer.peek(fsize)
+				red("Receiving: %s \n" % xstruct.hexbyte(d))
+				q._data = d[size:]
+
+				buffer.read(fsize)
 
 				if not frames.has_key(q.sequence):
 					frames[q.sequence] = []
