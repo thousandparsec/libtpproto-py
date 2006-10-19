@@ -82,7 +82,6 @@ class ServerConnection(Connection):
 
 		sequences = self.buffered['frames-received'].keys()
 		sequences.sort()
-		print "tppoll", sequences
 		for sequence in sequences:
 			p = self._recv(sequence)
 
@@ -93,13 +92,11 @@ class ServerConnection(Connection):
 
 			bases = [p.__class__]
 			while len(bases) > 0:
-				print bases
-
 				c = bases.pop(0)
 				function = "On" + c.__name__
-				print function
 
 				if hasattr(self, function):
+					print function
 					try:
 						success = getattr(self, function)(p)
 					except:
@@ -259,14 +256,12 @@ trYiuEhD5HiV/W6DM4WBMg+5
 			ready = []
 			errors = []
 			for fileno, event in poller.poll(100):
-				print "Event", fileno, event
 				if event & select.POLLIN:
 					ready.append(self.connections[fileno])
 				if event & (select.POLLERR|select.POLLHUP|select.POLLNVAL) > 0:
 					errors.append(self.connections[fileno])
 
-			print ready, oldready, errors, "(", self.connections, ")"
-
+			#print ready, oldready, errors, "(", self.connections, ")"
 			for s in ready+oldready:
 				if s in self.s:
 					# Accept a new connection
