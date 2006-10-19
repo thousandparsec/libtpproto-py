@@ -87,6 +87,10 @@ class StringQueue(StringIO):
 		"""
 		pass
 
+	def __str__(self):
+		return "<StringQueue left(%i)>" % self.left()
+	__repr__ = __str__
+
 BUFFER_SIZE = 4096
 
 class Connection:
