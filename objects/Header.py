@@ -74,7 +74,7 @@ class Header(object):
 		elif len(extra) != 0:
 			raise ValueError("Invalid input string")
 
-	def __str__(self):
+	def __repr__(self):
 		"""\
 		Return a reconisable string.
 		"""

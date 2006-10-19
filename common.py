@@ -174,7 +174,7 @@ class Connection:
 
 		if not p is None:
 			if self.debug:
-				green("Sending: %s (%s)\n" % (repr(p), p.sequence))
+				green("Sending: %r\n" % p)
 
 			buffer.write(str(p))
 
@@ -221,7 +221,7 @@ class Connection:
 					p.process(p._data)
 					del frames[ready][0]
 					if self.debug:
-						red("Receiving: (%s) %s\n" % (p.sequence, repr(p)))
+						red("Receiving: %r\n" % p)
 					return p
 				except objects.DescriptionError:
 					self._description_error(p)
