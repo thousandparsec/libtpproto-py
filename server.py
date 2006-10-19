@@ -80,7 +80,7 @@ class ServerConnection(Connection):
 		except socket_error, e:
 			print self, e
 
-		sequences = self.buffered['receive'].keys()
+		sequences = self.buffered['frames-received'].keys()
 		sequences.sort()
 		print "tppoll", sequences
 		for sequence in sequences:

@@ -103,8 +103,7 @@ class Connection:
 		self.buffered = {}
 		self.buffered['bytes-received'] = StringQueue()
 		self.buffered['bytes-tosend']   = StringQueue()
-		# This is a storage for out of sequence packets
-		self.buffered['receive'] = {}
+		self.buffered['frames-received'] = {}
 
 	def setup(self, s, nb=False, debug=False):
 		"""\
@@ -201,22 +200,25 @@ class Connection:
 
 		r = self.s.recv
 		buffer = self.buffered['bytes-received']
-		buffered = self.buffered['receive']
+		frames = self.buffered['frames-received']
 		size = objects.Header.size
 
 		while True:
 			# Pump the outgoing queue to
 			self._send()
 
-			for ready in sequences.intersection(buffered.keys()):
-				if len(buffered[ready]) == 0:
-					del buffered[ready]
+			# Return any frames we have received
+			for ready in sequences.intersection(frames.keys()):
+				# Cleanup any empty buffers
+				if len(frames[ready]) == 0:
+					del frames[ready]
 					continue
 
-				p = buffered[ready][0]
+				# Return the first frame
+				p = frames[ready][0]
 				try:
 					p.process(p._data)
-					del buffered[ready][0]
+					del frames[ready][0]
 					if self.debug:
 						red("Receiving: (%s) %s\n" % (p.sequence, repr(p)))
 					return p
@@ -224,7 +226,7 @@ class Connection:
 					self._description_error(p)
 				except Exception, e:
 					self._error(p)
-					del buffered[ready][0]
+					del frames[ready][0]
 
 			# Recieve any data from the wire
 			try:
@@ -249,9 +251,9 @@ class Connection:
 
 					buffer.read(fsize)
 
-					if not buffered.has_key(q.sequence):
-						buffered[q.sequence] = []
-					buffered[q.sequence].append(q)
+				if not frames.has_key(q.sequence):
+					frames[q.sequence] = []
+				frames[q.sequence].append(q)
 
 			if self._noblock():
 				return None
