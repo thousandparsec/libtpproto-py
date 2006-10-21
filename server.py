@@ -244,6 +244,15 @@ trYiuEhD5HiV/W6DM4WBMg+5
 
 		self.connections = {}
 
+	def poll(self):
+		"""\
+		This function is called in the serve_forever loop.
+
+		If data is coming in then it is called every time data is ready to be read.
+		Otherwise it should be called at roughly every 100ms.
+		"""
+		pass
+
 	def serve_forever(self):
 		poller = select.poll()
 		for s in self.s:
@@ -252,16 +261,20 @@ trYiuEhD5HiV/W6DM4WBMg+5
 
 		oldready = []
 		while True:
-			# Check if there is any socket to accept or with data
 			ready = []
 			errors = []
-			for fileno, event in poller.poll(100):
+
+			# Check if there is any socket to accept or with data
+			events = poller.poll(100)
+			for fileno, event in events:
 				if event & select.POLLIN:
 					ready.append(self.connections[fileno])
 				if event & (select.POLLERR|select.POLLHUP|select.POLLNVAL) > 0:
 					errors.append(self.connections[fileno])
 
-			#print ready, oldready, errors, "(", self.connections, ")"
+			self.poll()
+
+			# Poll any ready sockets..
 			for s in ready+oldready:
 				if s in self.s:
 					# Accept a new connection
