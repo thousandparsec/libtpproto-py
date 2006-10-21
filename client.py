@@ -268,7 +268,8 @@ class ClientConnection(Connection):
 
 		if isinstance(p, objects.Fail):
 			# The whole command failed :(
-			return [(False, p.s)]
+			return (False, p.s)
+#			return [(False, p.s)]
 		elif isinstance(p, type):
 			# Must only be one, so return
 			if not callback is None:
