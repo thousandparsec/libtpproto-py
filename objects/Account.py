@@ -10,9 +10,10 @@ class Account(Processed):
 		* A String, the password
 		* A String, the email address
 		* A String, a comment
-	"""
 
-	no = 1000
+		FIXME: * A String, the game (some servers may support multiple games on one server)
+	"""
+	no = 62
 	struct = "SSSS"
 
 	def __init__(self, sequence, username, password, email, comment):
