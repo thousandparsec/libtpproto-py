@@ -12,6 +12,11 @@ from support.output import *
 
 _continue = []
 
+try:
+	set()
+except NameError:
+	from sets import Set as set
+
 class l(list):
 	def __str__(self):
 		return "[%s]" % ", ".join([str(i) for i in self])
