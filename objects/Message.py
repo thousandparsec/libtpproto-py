@@ -4,6 +4,7 @@ from warnings import warn
 from xstruct import pack
 
 from Header import Processed
+import GenericRS
 
 class Message(Processed):
 	"""\
@@ -21,6 +22,9 @@ class Message(Processed):
 
 	def __init__(self, sequence, id, slot, types, subject, body, turn, references):
 		Processed.__init__(self, sequence)
+
+		if not isinstance(references, GenericRS.References):
+			references = GenericRS.References(references)
 
 		# Length is:
 		#
@@ -50,6 +54,6 @@ class Message(Processed):
 
 	def __str__(self):
 		output = Processed.__str__(self)
-		output += pack(self.struct, self.id, self.slot, [], self.subject, self.body, self.turn, self.references)
+		output += pack(self.struct, self.id, self.slot, [], self.subject, self.body, self.turn, self.references.references)
 
 		return output
