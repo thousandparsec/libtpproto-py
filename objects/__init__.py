@@ -14,6 +14,9 @@ Processed = Processed
 SetVersion = SetVersion
 GetVersion = GetVersion
 
+from objects.Redirect import Redirect
+Redirect = Redirect
+
 # Special Description Stuff
 from objects.Description import DescriptionError, Describable, Description
 DescriptionError = DescriptionError
