@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 
-from distutils.core import setup
-
 from tp.netlib import version
 version = "%s.%s.%s" % version
-
-import os.path
-import os
 
 from setuptools import setup
 
@@ -39,5 +34,3 @@ Includes support for:
 		],
 	namespace_packages = ['tp'],
 )
-
-
