@@ -35,3 +35,4 @@
 (^|/)build$
 (^|/)dist$
 (^|/)MANIFEST$
+(^|/)libtpproto_py.egg-info$
