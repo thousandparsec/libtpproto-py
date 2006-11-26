@@ -1,6 +1,5 @@
 
-release:
-	rm -rf dist
+release: clean
 	python setup.py sdist --formats=gztar,zip
 	python setup.py bdist --formats=rpm,wininst
 	cp dist/* ../web/downloads/py-netlib
@@ -9,3 +8,4 @@ release:
 clean:
 	rm -rf dist
 	rm -rf build
+	rm -rf libtpproto_py.egg-info/

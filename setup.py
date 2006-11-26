@@ -2,40 +2,42 @@
 
 from distutils.core import setup
 
-from __init__ import version
+from tp.netlib import version
 version = "%s.%s.%s" % version
 
 import os.path
 import os
 
-if not hasattr(os, "link"):
-	import shutil
-	os.link = shutil.copyfile
+from setuptools import setup
 
-if os.path.exists('CVS'):
-	base = ['LICENSE', 'COPYING']
-	for file in base:
-		if os.path.exists(file):
-			os.unlink(file)
-		print "Getting %s" % file
-		os.link(os.path.join('..', file), file)
-		
-setup(name="libtpproto-py",
-	version=version,
-	license="GPL",
-	description="Network library for Thousand Parsec",
-	author="Tim Ansell",
+setup(
+	name		="libtpproto-py",
+	version		=version,
+	license		="GPL",
+	description	="Network library for Thousand Parsec",
+	long_description="""\
+A library of code for both Servers and Clients to support the Thousand Parsec 
+protocol. 
+
+Includes support for:
+	* Both non-blocking and blocking usage
+	* Version 3 protocol
+	* HTTP/HTTPS Tunneling
+	* Generic Reference System
+""",
+	author		="Tim Ansell",
 	author_email="tim@thousandparsec.net",
-	url="http://www.thousandparsec.net",
+	url			="http://www.thousandparsec.net",
+	keywords	="thousand parsec space network empire building strategy game",
+
 	packages=[ \
-		'tp',
 		'tp.netlib',
 		'tp.netlib.objects',
 		'tp.netlib.objects.ObjectExtra',
 		'tp.netlib.objects.OrderExtra',
 		'tp.netlib.support',
 		],
-	package_dir = {'tp.netlib': '', 'tp': 'empty'}
+	namespace_packages = ['tp'],
 )
 
 

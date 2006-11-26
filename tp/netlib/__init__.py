@@ -16,5 +16,4 @@ import objects
 from objects import constants
 
 import GenericRS
-
 sys.path.pop(0)

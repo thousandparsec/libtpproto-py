@@ -1,5 +1,0 @@
-include README
-include LICENSE
-include COPYING
-include AUTHORS
-prune Makefile
