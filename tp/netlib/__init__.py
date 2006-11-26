@@ -4,6 +4,7 @@ from os import path
 sys.path.insert(0, path.dirname(__file__))
 
 from version import version
+__version__ = version
 
 from client import ClientConnection, failed
 from server import Server, ServerConnection

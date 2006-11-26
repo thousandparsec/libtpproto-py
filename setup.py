@@ -25,12 +25,13 @@ Includes support for:
 	url			="http://www.thousandparsec.net",
 	keywords	="thousand parsec space network empire building strategy game",
 
+	namespace_packages = ['tp'],
 	packages=[ \
+		'tp',
 		'tp.netlib',
 		'tp.netlib.objects',
 		'tp.netlib.objects.ObjectExtra',
 		'tp.netlib.objects.OrderExtra',
 		'tp.netlib.support',
 		],
-	namespace_packages = ['tp'],
 )
