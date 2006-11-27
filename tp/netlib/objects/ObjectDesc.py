@@ -83,7 +83,9 @@ def descriptions():
 		except NameError, e:
 			try:
 				import sys
-				sys.frozen
+				if sys.frozen == "macosx_app":
+					raise AttributeError("macosx_app")
+				print sys.frozen
 				import carchive
 				this = carchive.CArchive(sys.executable).openEmbeddedZlib("out1.pyz")
 				_descriptions = import_subtype("tp.netlib.objects.ObjectExtra", installer=this.contents())
