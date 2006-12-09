@@ -283,7 +283,7 @@ class ClientConnection(Connection):
 		# We have to wait on multiple packets
 		self.buffered['store'][no] = []
 
-		print "Packets to get", p.number
+		#print "Packets to get", p.number
 
 		if self._noblock():
 			# Do the commands in non-blocking mode

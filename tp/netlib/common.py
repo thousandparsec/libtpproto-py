@@ -242,7 +242,7 @@ class Connection:
 
 				buffer.write(data)
 			except socket.error, e:
-				print "Read Socket Error", e
+				#print "Read Socket Error", e
 				if not self._noblock():
 					time.sleep(0.1)
 
