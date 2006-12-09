@@ -107,7 +107,7 @@ class IDSequence(Processed):
 
 	These IDs are not guaranteed to be in any order. 	
 	"""
-	struct = "jj[IQ]"
+	struct = "jj[IT]"
 
 	def __init__(self, sequence, key, left, ids):
 		Processed.__init__(self, sequence)

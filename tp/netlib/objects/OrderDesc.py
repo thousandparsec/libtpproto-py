@@ -144,7 +144,7 @@ class OrderDesc(Description):
 		Description: How much beer to drink.
 	"""
 	no = 9
-	struct="I SS [SIS] Q"
+	struct="I SS [SIS] T"
 
 	def __init__(self, sequence, \
 			id, name, description, \

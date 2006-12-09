@@ -13,7 +13,7 @@ class Board(Processed):
 		* UInt32, Number of messages on the Board.
 	"""
 	no = 17
-	struct = "ISSIQ"
+	struct = "ISSIT"
 
 	def __init__(self, sequence, id, name, description, number, modify_time):
 		Processed.__init__(self, sequence)

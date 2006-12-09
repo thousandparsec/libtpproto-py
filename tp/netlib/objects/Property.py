@@ -20,7 +20,7 @@ class Property(Processed):
 			* 0x000001 - Hidden, do not display this property - it is only use in calculations
 	"""
 	no = 59
-	struct = "IQ[I]ISSSSS"
+	struct = "IT[I]ISSSSS"
 
 	def __init__(self, sequence, id, modify_time, categories, rank, name, display_name, description, calculate, requirements):
 		Processed.__init__(self, sequence)

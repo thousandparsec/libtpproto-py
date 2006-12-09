@@ -12,7 +12,7 @@ class Category(Processed):
 		* a String, description of the category
 	"""
 	no = 42
-	struct = "IpSS"
+	struct = "ITSS"
 
 	def __init__(self, sequence, id, modify_time, name, description):
 		Processed.__init__(self, sequence)

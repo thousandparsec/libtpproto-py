@@ -7,22 +7,22 @@ from ObjectDesc import descriptions
 class Object(Describable):
 	"""\
 	The Object packet consists of:
-		 4 * a UInt32, object ID
-		 4 * a UInt32, object type
-		   * a String, name of object
-		 8 * a UInt64, size of object (diameter)
-		24 * 3 by Int64, position of object
-		24 * 3 by Int64, velocity of object
-		   * a list of UInt32, object IDs of objects contained in the current object
-		   * a list of UInt32, order types that the player can send to this object
-		 4 * a UInt32, number of orders currently on this object
-		   * a UInt64, the last modified time
-		16 * 2 by UInt32 of padding, for future expansion of common attributes
-		   * extra data, as defined by each object type
+		* a UInt32, object ID
+		* a UInt32, object type
+		* a String, name of object
+		* a UInt64, size of object (diameter)
+		* 3 by Int64, position of object
+		* 3 by Int64, velocity of object
+		* a list of UInt32, object IDs of objects contained in the current object
+		* a list of UInt32, order types that the player can send to this object
+		* a UInt32, number of orders currently on this object
+		* a UInt64, the last modified time
+		* 2 by UInt32 of padding, for future expansion of common attributes
+		* extra data, as defined by each object type
 	"""
 
 	no = 7
-	struct = "IIS Q 3q 3q [I] [I] I Q 8x"
+	struct = "IIS Q 3q 3q [I] [I] I T 8x"
 
 	def __init__(self, sequence, \
 			id, otype, name, \
@@ -65,7 +65,8 @@ class Object(Describable):
 				if extra != None:
 					self.extra = extra
 
-		struct = "IIS Q 3q 3q [I] [I] I Q 8x"
+		# FIXME: Whats this doing here?
+		struct = "IIS Q 3q 3q [I] [I] I T 8x"
 		self.length = \
 			4 + 4 + \
 			4 + len(name) + \

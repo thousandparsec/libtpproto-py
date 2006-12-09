@@ -18,7 +18,7 @@ class Component(Processed):
 			* a String, NCL "Property Value" function
 	"""
 	no = 55
-	struct = "IQ[I]SSS[IS]"
+	struct = "IT[I]SSS[IS]"
 
 	def __init__(self, sequence, id, modify_time, categories, name, description, requirements, properties):
 		Processed.__init__(self, sequence)

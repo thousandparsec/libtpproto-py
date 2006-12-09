@@ -23,7 +23,7 @@ class Design(Processed):
 			* a String, property display string
 	"""
 	no = 48
-	struct = "jp[I]SSjj[II]S[IS]"
+	struct = "jT[I]SSjj[II]S[IS]"
 
 	def __init__(self, sequence, id, modify_time, categories, name, desc, used, owner, components, feedback, properties):
 		Processed.__init__(self, sequence)
