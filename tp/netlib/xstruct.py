@@ -315,8 +315,10 @@ def pack_time(t, type='I'):
 	"""
 	if t is None:
 		t = -1
-	else:
+	elif isinstance(t, datetime):
 		t = time.mktime(t.timetuple())
+	elif not isinstance(t, (int, long)):
+		raise TypeError("Not a valid type for pack_time")
 	s = pack("!"+type, t)
 	return s
 
