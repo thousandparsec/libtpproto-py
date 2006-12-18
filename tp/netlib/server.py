@@ -310,7 +310,10 @@ trYiuEhD5HiV/W6DM4WBMg+5
 				except Exception, e:
 					print "Unable to unregister socket", e
 
-				del self.connections[s.fileno()]
+				try:
+					del self.connections[s.fileno()]
+				except KeyError, e:
+					print e
 
 if __name__ == "__main__":
 	port = 6924
