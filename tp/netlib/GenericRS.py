@@ -6,9 +6,11 @@ class References(dict):
 		self.dirty = True
 
 	def types(self):
-		if self.dirty:
-			self.__types = zip(*self.references)[0]
-		return self.__types
+		if len(self.references) > 0:
+			if self.dirty:
+				self.__types = zip(*self.references)[0]
+			return self.__types
+		return []
 	types = property(types)
 
 	def __len__(self):
