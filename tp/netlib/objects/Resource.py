@@ -17,7 +17,7 @@ class Resource(Processed):
 		* a UInt64, the last modified time of this resource description
 	"""
 	no = 23
-	struct = "ISSSSSIIQ"
+	struct = "ISSSSSIIT"
 
 	def __init__(self, sequence, id, \
 			name_singular, name_plural, \
@@ -39,6 +39,10 @@ class Resource(Processed):
 		self.name_singular, self.name_plural = name_singular, name_plural
 		self.unit_singular, self.unit_plural = unit_singular, unit_plural
 		self.description, self.weight, self.size, self.modify_time = description, weight, size, modify_time
+
+	def name(self):
+		return self.name_singular
+	name = property(name)
 	
 	def __str__(self):
 		output = Processed.__str__(self)
