@@ -1,0 +1,7 @@
+This is a customized version of the original pyZeroconf from 
+	http://sourceforge.net/projects/pyzeroconf
+with the following patches
+	http://sourceforge.net/tracker/index.php?func=detail&aid=1600775&group_id=100909&atid=628622
+	http://sourceforge.net/tracker/index.php?func=detail&aid=1174796&group_id=100909&atid=628622
+
+It has also been changed to be single threaded instead of requiring a seperate thread for everything.

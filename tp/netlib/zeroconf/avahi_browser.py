@@ -1,4 +1,5 @@
 import os, sys
+import traceback
 
 try:
 	import avahi, avahi.ServiceTypeDatabase
@@ -16,11 +17,13 @@ service_browsers = {}
 service_type_db = avahi.ServiceTypeDatabase.ServiceTypeDatabase()
 service_seen = {}
 
-class ZeroConfBrowser:
+from browse import ZeroConfBrowser as ZeroConfBrowserBase
+
+class ZeroConfBrowser(ZeroConfBrowserBase):
 	######################################
 	# Helper functions
 	######################################
-	def protoname(self,protocol):
+	def protoname(self, protocol):
 		if protocol == avahi.PROTO_INET:
 			return "IPv4"
 		if protocol == avahi.PROTO_INET6:
@@ -71,15 +74,8 @@ class ZeroConfBrowser:
 			details = self.pair_to_dict(avahi.txt_array_to_string_array(txt))
 		else:
 			details = []
-
-		key = "%s-%s-%s" % (name, stype, protocol)
-		global service_seen
-		args = ((host, address), port, stype, name, self.protoname(protocol), details)
-		if not service_seen.has_key(key):
-			self.ServerFound(*args)
-		else:
-			self.ServerRefresh(*args)	
-		service_seen[key] = args
+		
+		self.ServiceFound(name, stype.split('.')[0][1:], (host, address, port), details, details)
 
 	def new_service(self, interface, protocol, name, stype, domain, flags):
 		"""\
@@ -92,12 +88,7 @@ class ZeroConfBrowser:
 		"""\
 		Called when a service disappears.
 		"""
-		print interface, protocol, name, stype, domain, flags
-
-		key = "%s-%s-%s" % (name, stype, protocol)
-		global service_seen
-		if service_seen.has_key(key):
-			self.ServerGone(*service_seen[key])
+		self.ServiceGone(name, stype.split('.')[0][1:], None)
 
 	def new_domain(self, interface, protocol, domain, flags):
 		"""\
@@ -125,7 +116,7 @@ class ZeroConfBrowser:
 					),  avahi.DBUS_INTERFACE_SERVICE_TYPE_BROWSER)
 		except DBusException, e:
 			print e
-			sys.exit(0)
+			traceback.print_exc()
 
 		for stype in ['_tp', '_tps', '_tphttp', '_tphttps']:
 			stype = stype+'._tcp'
@@ -138,7 +129,7 @@ class ZeroConfBrowser:
 			service_browsers[(interface, protocol, stype, domain)] = b
 
 	def __init__(self):
-		self.services_browsed = {}
+		ZeroConfBrowserBase.__init__(self)
 
 		self.bus = dbus.SystemBus()
 		self.server = dbus.Interface(self.bus.get_object(avahi.DBUS_NAME, avahi.DBUS_PATH_SERVER), avahi.DBUS_INTERFACE_SERVER)
@@ -153,24 +144,6 @@ class ZeroConfBrowser:
 	def run(self):
 		mainloop = gobject.MainLoop()
 		mainloop.run()
-
-	def ServerFound(*args):
-		"""\
-		Called when a new server is found.
-		"""
-		print "ServerFound", args
-
-	def ServerRefresh(*args):
-		"""\
-		Called when we get updated information about a server.
-		"""
-		print "ServerRefresh", args
-
-	def ServerGone(*args):
-		"""\
-		Called when a server goes away.
-		"""
-		print "ServerGone", args
 
 def main():
 	a = ZeroConfBrowser()
