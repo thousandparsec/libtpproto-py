@@ -1,11 +1,7 @@
 import os, sys
 import traceback
 
-try:
-	import avahi, avahi.ServiceTypeDatabase
-except ImportError, e:
-	print e
-	sys.exit(1)
+import avahi, avahi.ServiceTypeDatabase
 
 import gobject 
 import dbus

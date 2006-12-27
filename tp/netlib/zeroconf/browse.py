@@ -32,8 +32,6 @@ class Game(object):
 
 		Returns true is that was the last location.
 		"""
-		print "remove", type, addr
-		print self.locations
 		if self.locations.has_key(type):
 			if addr is None:
 				del self.locations[type]
