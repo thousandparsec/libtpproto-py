@@ -58,8 +58,17 @@ class Game(object):
 			return self.optional[key]
 		raise AttributeError("No such attribute %s" % key)
 
+class Browser(object):
+	def GameFound(self, game):
+		print "Found new game", game
 
-class ZeroConfBrowser(object):
+	def GameUpdate(self, game):
+		print "Updated old game", game
+
+	def GameGone(self, game):
+		print "Game disappeared", game
+
+class ZeroConfBrowser(Browser):
 	def __init__(self):
 		self.games = {}
 
