@@ -4,7 +4,6 @@ import urllib
 
 from browse import Browser, Game
 metaserver = "http://metaserver.thousandparsec.net/"
-metaserver = "http://localhost/metaserver/"
 
 def getpacket(data):
 	header, data = data[:objects.Header.size], data[objects.Header.size:]
