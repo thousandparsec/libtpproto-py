@@ -20,9 +20,15 @@ class MetaServerBrowser(Browser):
 		self.waittill = 0
 		self.games = {}
 
+		self._exit = False
+
+	def exit(self):
+		self._exit = True
 
 	def run(self):
-		while True:
+		print "metaserver_browse", self
+
+		while not self._exit:
 			now = time.time()
 			print self.waittill, now
 			if self.waittill < now:
@@ -73,7 +79,7 @@ class MetaServerBrowser(Browser):
 						raise TypeError("The metaserver returned an incorrect response (expected Failure or Sequence)...") 
 
 				self.waittill = now + self.timeout
-			time.sleep(min(10, self.waittill - time.time()))
+			time.sleep(min(1, self.waittill - time.time()))
 
 def main():
 	a = MetaServerBrowser()

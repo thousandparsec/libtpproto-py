@@ -141,6 +141,9 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 		self.bus = dbus.SystemBus()
 		self.server = dbus.Interface(self.bus.get_object(avahi.DBUS_NAME, avahi.DBUS_PATH_SERVER), avahi.DBUS_INTERFACE_SERVER)
 
+	def run(self):
+		print "avahi_browse", self
+
 		# Explicitly browse .local
 		self.browse_domain(avahi.IF_UNSPEC, avahi.PROTO_UNSPEC, "local")
 
@@ -148,9 +151,11 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 		db = dbus.Interface(self.bus.get_object(avahi.DBUS_NAME, self.server.DomainBrowserNew(avahi.IF_UNSPEC, avahi.PROTO_UNSPEC, "", avahi.DOMAIN_BROWSER_BROWSE, dbus.UInt32(0))), avahi.DBUS_INTERFACE_DOMAIN_BROWSER)
 		db.connect_to_signal('ItemNew', self.new_domain)
 
-	def run(self):
-		mainloop = gobject.MainLoop()
-		mainloop.run()
+#		mainloop = gobject.MainLoop()
+#		mainloop.run()
+
+	def exit(self):
+		pass
 
 def main():
 	a = ZeroConfBrowser()

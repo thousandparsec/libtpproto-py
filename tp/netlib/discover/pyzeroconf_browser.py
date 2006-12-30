@@ -15,6 +15,9 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 
 		zeroconf = Zeroconf.Zeroconf("0.0.0.0")
 		self.browser = Zeroconf.ServiceBrowser(zeroconf, self.types, self)
+	
+	def exit(self):
+		globals()['_GLOBAL_DONE'] = True
 
 	def removeService(self, server, type, name):
 		name = name[:-len(type)-1]
@@ -38,8 +41,6 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 			print e
 			traceback.print_exc()
 			globals()['_GLOBAL_DONE'] = True
-	
-
 
 def main():
 	a = ZeroConfBrowser()

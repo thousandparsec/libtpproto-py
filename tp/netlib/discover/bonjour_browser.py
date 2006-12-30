@@ -74,6 +74,10 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 
 	def __init__(self):
 		ZeroConfBrowserBase.__init__(self)
+		self._exit = False
+	
+	def exit(self):
+		self._exit = True
 
 	def run(self):
 		serviceRefs = {}
@@ -96,13 +100,12 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 			serviceRefs[fd] = serviceRef
 
 		# Get socket descriptor and loop					 
-		while 1:
-			ret = select.select(serviceRefs.keys(),[],[])
+		while not self._exit:
+			ret = select.select(serviceRefs.keys(),[],[], 0.5)
 			for fd in ret[0]:
 				ret = bonjour.DNSServiceProcessResult(serviceRefs[fd])
 				if ret != bonjour.kDNSServiceErr_NoError:
 					print "ret = %d; exiting" % ret
-					
 
 		# Deallocate the service discovery ref
 		bonjour.DNSServiceRefDeallocate(serviceRef)
