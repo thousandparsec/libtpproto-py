@@ -43,6 +43,13 @@ class Game(object):
 
 		return len(self.locations) == 0
 
+	preference = ("tps", "tp", "tphttps", "tphttp")
+	def bestLocation(self):
+		for type in self.preference:
+			if self.locations.has_key(type):
+				return (type, self.locations[type][0])
+		return None
+
 	def updateOptional(self, optional):
 		self.optional.update(optional)
 
