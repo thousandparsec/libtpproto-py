@@ -89,7 +89,7 @@ __all__ = ["Zeroconf", "ServiceInfo", "ServiceBrowser"]
 
 # hook for threads
 
-globals()['_GLOBAL_DONE'] = 0
+globals()['_GLOBAL_DONE'] = True
 
 # Some timing constants
 
@@ -974,7 +974,7 @@ class ServiceBrowser(object):
 		self.done = 1
 
 	def run(self, force=False):
-		while True:
+		while globals()['_GLOBAL_DONE']:
 			event = None
 			now = currentTimeMillis()
 

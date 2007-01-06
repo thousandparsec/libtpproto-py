@@ -99,7 +99,6 @@ class ClientConnection(Connection):
 			hoststring = hoststring[2:]
 
 		if hoststring.startswith("http://") or hoststring.startswith("https://"):
-
 			import urllib
 			opener = None
 
