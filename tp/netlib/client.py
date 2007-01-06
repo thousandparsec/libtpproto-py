@@ -94,6 +94,9 @@ class ClientConnection(Connection):
 		"""
 		hoststring = host
 		self.proxy = None
+		
+		if hoststring.startswith("tphttp://") or hoststring.startswith("tphttps://"):
+			hoststring = hoststring[2:]
 
 		if hoststring.startswith("http://") or hoststring.startswith("https://"):
 
