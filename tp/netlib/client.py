@@ -47,8 +47,10 @@ Non-Blocking Example Usage:
 
 # Python Imports
 import encodings.idna
+import re
 import socket
 import types
+import urllib
 
 # Local imports
 import xstruct
@@ -69,6 +71,46 @@ def failed(object):
 	return False
 
 sequence_max = 4294967296
+
+def url2bits(line):
+	urlspliter = r'(.*?://)?(((.*):(.*)@)|(.*)@)?(.*?)(:(.*?))?(/.*?)?$'
+	groups = re.compile(urlspliter, re.M).search(line).groups()
+	
+	proto = groups[0]
+
+	if not groups[3] is None:
+		username = groups[3]
+	elif not groups[5] is None:
+		username = groups[5]
+	else:
+		username = None
+
+	server = groups[6]
+	port = groups[8]
+
+	password = groups[4]
+	if not password is None:
+		if password[-1] is '@':
+			password = password[:-1]
+
+	game = groups[9]
+	if not game is None:
+		game = urllib.unquote_plus(game)
+		if game[0] == '/':
+			game = game[1:]
+		if len(game) == 0:
+			game = None
+
+	if proto is None:
+		one = server
+	else:
+		one = "%s%s" % (proto, server)
+
+	if not port is None:
+		one = "%s:%s" % (one, port)
+
+	return (one, username, game, password)
+
 
 class ClientConnection(Connection):
 	"""\
