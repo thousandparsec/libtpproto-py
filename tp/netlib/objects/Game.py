@@ -41,7 +41,7 @@ class Game(Processed):
 
 		# Length is:
 		#
-		self.length = 4 + \
+		self.length = \
 				4 + len(name) + \
 				4 + len(key) + \
 				4 + len(server) + \

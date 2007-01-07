@@ -9,7 +9,6 @@ def getpacket(data):
 	header, data = data[:objects.Header.size], data[objects.Header.size:]
 	p = objects.Header(header)
 	p.process(data[:p.length])
-
  	return p, data[p.length:]
 
 from tp.netlib import objects
@@ -30,7 +29,6 @@ class MetaServerBrowser(Browser):
 
 		while not self._exit:
 			now = time.time()
-			print self.waittill, now
 			if self.waittill < now:
 				data = urllib.urlopen(metaserver, urllib.urlencode({'action': 'get'})).read()
 				if data[:4] == "TP03":
