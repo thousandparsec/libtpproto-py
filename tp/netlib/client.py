@@ -117,7 +117,7 @@ class ClientConnection(Connection):
 	Class for a connection from the client side.
 	"""
 
-	def __init__(self, host=None, port=None, nb=0, debug=0):
+	def __init__(self, host=None, port=None, nb=0, debug=False):
 		Connection.__init__(self)
 
 		self.buffered['undescribed'] = {}
@@ -128,7 +128,7 @@ class ClientConnection(Connection):
 
 		self.__desc = False
 
-	def setup(self, host, port=None, nb=0, debug=0, proxy=None):
+	def setup(self, host, port=None, nb=0, debug=False, proxy=None):
 		"""\
 		*Internal*
 

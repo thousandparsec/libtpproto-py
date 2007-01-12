@@ -184,11 +184,12 @@ class Connection:
 
 			buffer.write(str(p))
 
+		sent = 0
 		try:
-			sent = self.s.send(buffer.peek(BUFFER_SIZE))
+			if len(buffer) > 0:
+				sent = self.s.send(buffer.peek(BUFFER_SIZE))
 		except socket.error, e:
 			print "Send Socket Error", e
-			sent = 0
 
 		if self.debug and sent > 0:
 			green("Sending: %s \n" % xstruct.hexbyte(buffer.peek(sent)))
@@ -256,7 +257,8 @@ class Connection:
 					break
 
 				d = buffer.peek(fsize)
-				red("Receiving: %s \n" % xstruct.hexbyte(d))
+				if self.debug:
+					red("Receiving: %s \n" % xstruct.hexbyte(d))
 				q._data = d[size:]
 
 				buffer.read(fsize)
