@@ -57,7 +57,7 @@ class Game(object):
 		self.required.update(required)
 
 	def __getattr__(self, key):
-		if hasattr(self, key):
+		if key in self.__dict__:
 			return self.__dict__[key]
 		if self.required.has_key(key):
 			return self.required[key]
