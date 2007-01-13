@@ -1,5 +1,6 @@
 import os, sys
 import traceback
+import time
 
 import avahi, avahi.ServiceTypeDatabase
 
@@ -151,11 +152,18 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 		db = dbus.Interface(self.bus.get_object(avahi.DBUS_NAME, self.server.DomainBrowserNew(avahi.IF_UNSPEC, avahi.PROTO_UNSPEC, "", avahi.DOMAIN_BROWSER_BROWSE, dbus.UInt32(0))), avahi.DBUS_INTERFACE_DOMAIN_BROWSER)
 		db.connect_to_signal('ItemNew', self.new_domain)
 
-#		mainloop = gobject.MainLoop()
-#		mainloop.run()
+		self.mainloop = gobject.MainLoop()
+		gcontext = self.mainloop.get_context()
+		while not self.mainloop is None:
+			if gcontext.pending():
+				gcontext.iteration()
+			else:
+				time.sleep(0.01)
+			
 
 	def exit(self):
-		pass
+		self.mainloop.quit()
+		self.mainloop = None
 
 def main():
 	a = ZeroConfBrowser()
