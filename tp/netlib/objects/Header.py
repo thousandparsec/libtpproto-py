@@ -74,6 +74,17 @@ class Header(object):
 		elif len(extra) != 0:
 			raise ValueError("Invalid input string")
 
+	def __eq__(self, other):
+		if type(self) == type(other):
+			for key in self.__dict__.keys():
+				if key.startswith('_'):
+					continue
+
+				if getattr(other, key, None) != self.__dict__[key]:
+					return False
+			return True
+		return False
+
 	def __repr__(self):
 		"""\
 		Return a reconisable string.
