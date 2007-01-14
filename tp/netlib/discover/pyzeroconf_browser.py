@@ -16,23 +16,27 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 		zeroconf = Zeroconf.Zeroconf("0.0.0.0")
 		self.browser = Zeroconf.ServiceBrowser(zeroconf, self.types, self)
 	
-	def exit(self):
-		globals()['_GLOBAL_DONE'] = True
-
 	def removeService(self, server, type, name):
 		name = name[:-len(type)-1]
 		self.ServiceGone(name, type.split('.')[0][1:], None)
 
 	def addService(self, server, type, name):
 		# Request more information about the service
-		info = server.getServiceInfo(type, name)
-		name = name[:-len(type)-1]
-		if not info is None:
-			self.ServiceFound(name, type.split('.')[0][1:], \
-				(info.getServer()[:-1], str(socket.inet_ntoa(info.getAddress())), info.getPort()), \
-				info.getProperties(), info.getProperties())
-		else:
+	
+		i = 0
+		while i < 15:
+			info = server.getServiceInfo(type, name)
+			fname = name[:-len(type)-1]
+
+			print name, fname, info.getServer(), dir(info)
+			if not info is None:
+				self.ServiceFound(fname, type.split('.')[0][1:], \
+					(info.getServer()[:-1], str(socket.inet_ntoa(info.getAddress())), info.getPort()), \
+					info.getProperties(), info.getProperties())
+				break
 			print "Unable to get service info for %s (%s) :(" % (name, type)
+			i+=1
+
 
 	def run(self):
 		try:
@@ -41,6 +45,9 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 			print e
 			traceback.print_exc()
 			globals()['_GLOBAL_DONE'] = True
+
+	def exit(self):
+		globals()['_GLOBAL_DONE'] = True
 
 def main():
 	a = ZeroConfBrowser()

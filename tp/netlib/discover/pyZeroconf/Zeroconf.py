@@ -89,7 +89,7 @@ __all__ = ["Zeroconf", "ServiceInfo", "ServiceBrowser"]
 
 # hook for threads
 
-globals()['_GLOBAL_DONE'] = True
+globals()['_GLOBAL_DONE'] = False
 
 # Some timing constants
 
@@ -974,7 +974,7 @@ class ServiceBrowser(object):
 		self.done = 1
 
 	def run(self, force=False):
-		while globals()['_GLOBAL_DONE']:
+		while not globals()['_GLOBAL_DONE']:
 			event = None
 			now = currentTimeMillis()
 
@@ -1164,7 +1164,6 @@ class ServiceInfo(object):
 		last = now + timeout
 		result = 0
 		try:
-			#print "request '%s'" % self.name
 			zeroconf.addListener(self, DNSQuestion(self.name, _TYPE_ANY, _CLASS_IN))
 			while self.server is None or self.address is None or self.text is None:
 				if last <= now:
@@ -1223,7 +1222,7 @@ class Zeroconf(object):
 	def __init__(self, bindaddress=None):
 		"""Creates an instance of the Zeroconf class, establishing
 		multicast communications, listening and reaping threads."""
-		globals()['_GLOBAL_DONE'] = 0
+		globals()['_GLOBAL_DONE'] = False
 		if bindaddress is None:
 			self.intf = socket.gethostbyname(socket.gethostname())
 		else:
@@ -1245,13 +1244,14 @@ class Zeroconf(object):
 			#
 			pass
 		self.socket.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_TTL, 255)
-		self.socket.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_LOOP, 1)
+		self.socket.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_LOOP, True)
 		try:
 			self.socket.bind(self.group)
 		except socket.error:
 			# Some versions of linux raise an exception even though
 			# the SO_REUSE* options have been set, so ignore it
 			#
+			traceback.print_exc()
 			pass
 		self.socket.setsockopt(socket.SOL_IP, socket.IP_MULTICAST_IF, socket.inet_aton(self.intf) + socket.inet_aton('0.0.0.0')) 
 		self.socket.setsockopt(socket.SOL_IP, socket.IP_ADD_MEMBERSHIP, socket.inet_aton(_MDNS_ADDR) + socket.inet_aton('0.0.0.0'))
@@ -1433,6 +1433,7 @@ class Zeroconf(object):
 		"""Deal with incoming response packets.  All answers
 		are held in the cache, and listeners are notified."""
 		now = currentTimeMillis()
+
 		for record in msg.answers:
 			expired = record.isExpired(now)
 			if record in self.cache.entries():
@@ -1459,7 +1460,7 @@ class Zeroconf(object):
 			out = DNSOutgoing(_FLAGS_QR_RESPONSE | _FLAGS_AA, 0)
 			for question in msg.questions:
 				out.addQuestion(question)
-		
+
 		for question in msg.questions:
 			if question.type == _TYPE_PTR:
 				if question.name == "_services._dns-sd._udp.local.":
@@ -1505,17 +1506,18 @@ class Zeroconf(object):
 		#temp = DNSIncoming(out.packet())
 		try:
 			bytes_sent = self.socket.sendto(out.packet(), 0, (addr, port))
+			if bytes_sent != len(out.packet()):
+				pass # FIXME: Should error here
 		except (IOError, socket.error), e:
+			# Ignore this, it may be a temporary loss of network connection
 			traceback.print_exc()
 			print e
-			# Ignore this, it may be a temporary loss of network connection
-			pass
 
 	def close(self):
 		"""Ends the background threads, and prevent this instance from
 		servicing further queries."""
-		if globals()['_GLOBAL_DONE'] == 0:
-			globals()['_GLOBAL_DONE'] = 1
+		if globals()['_GLOBAL_DONE'] == False:
+			globals()['_GLOBAL_DONE'] = True
 			self.unregisterAllServices()
 			self.socket.setsockopt(socket.SOL_IP, socket.IP_DROP_MEMBERSHIP, socket.inet_aton(_MDNS_ADDR) + socket.inet_aton('0.0.0.0'))
 			self.socket.close()

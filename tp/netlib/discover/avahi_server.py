@@ -122,7 +122,7 @@ def main():
 	game2 = Game("testing 2")
 	game2.updateRequired({'tp': '0.3', 'server': 'None', 'sertype':'Avahi Testing Script', 'rule': "Testing Avahi!", 'rulever': 'None'})
 	game2.addLocation("tp",  ("mithro.local", "10.1.1.1", 8080))
-#	game2.addLocation("tp",  ("mithro.local", "10.1.1.1", 443))
+#	game2.addLocation("tp",  ("mithro.local", "10.1.1.1", 443)) -- Can't have to services on the same name and type
 	game2.addLocation("tps", ("mithro.local", "10.1.1.1", 90))
 
 	a = ZeroConfServer()
