@@ -99,17 +99,153 @@ class StringQueue(StringIO):
 
 BUFFER_SIZE = 4096
 
-class Connection:
+class ConnectionCommon:
 	"""\
 	Base class for Thousand Parsec protocol connections.
 	Methods common to both server and client connections
 	go here.
 	"""
 	def __init__(self):
+		self.debug = False
+
 		self.buffered = {}
+		self.buffered['frames-received'] = {}
+		self.buffered['frames-tosend']   = []
+
+	def _recvBytes(self, size, peek=False):
+		pass
+
+	def _sendBytes(self, bytes=''):
+		pass
+
+	def _sendFrame(self, frame=None):
+		"""\
+		Write a single TP packet to the socket.
+		"""
+		buffer = self.buffered['frames-tosend']
+		if not frame is None:
+			if self.debug:
+				green("Sending: %r \n" % frame)
+				
+			buffer.append(frame)
+
+		while len(buffer) > 0:
+			data = str(buffer[0])
+
+			amount = self._sendBytes(data)
+			if amount < len(data):
+				return
+
+			buffer.pop(0)
+		else:
+			self._sendBytes()
+
+	def _processBytes(self):
+		size = objects.Header.size
+		frames = self.buffered['frames-received']
+
+		# Get the header
+		data = self._recvBytes(size, peek=True)
+		if len(data) < size:
+			return
+		q = objects.Header(data)
+
+		# Get the body
+		data = self._recvBytes(size+q.length, peek=True)
+		if len(data) < size+q.length:
+			return
+		q._data = data[size:]
+
+		# Remove all the extra bytes...
+		self._recvBytes(size+q.length)
+
+		# Store the frames
+		if not frames.has_key(q.sequence):
+			frames[q.sequence] = []
+		frames[q.sequence].append(q)
+
+	def _processFrame(self, sequences):
+		frames = self.buffered['frames-received']
+
+		# Return any frames we have received
+		for ready in frames.keys():
+			# Cleanup any empty buffers
+			if len(frames[ready]) == 0:
+				del frames[ready]
+				continue
+
+			# Return the first frame
+			p = frames[ready][0]
+			try:
+				if p.__class__ == objects.Header:
+					p.process(p._data)
+					if self.debug:
+						red("Receiving: %r\n" % p)
+
+				if p.sequence in sequences:
+					del frames[ready][0]
+					return p
+			except objects.DescriptionError:
+				self._description_error(p)
+			except Exception, e:
+				self._error(p)
+				del frames[ready][0]
+
+
+	def _recvFrame(self, sequence=-1):
+		"""\
+		Reads a single TP packet with correct sequence number from the socket.
+		"""
+		if not hasattr(sequence, '__getitem__'):
+			sequences = set([sequence])
+		else:
+			sequences = set(sequence)
+
+		frames = self.buffered['frames-received']
+		size = objects.Header.size
+
+		# Pump the output queue
+		self._sendFrame()
+		# Split the bytes to frames
+		self._processBytes()
+		# Try and get any frames
+		return self._processFrame(sequences)
+			
+
+	def _description_error(self, packet):
+		"""\
+		Called when we get a packet which hasn't be described.
+
+		The packet will be of type Header ready to be morphed by calling
+		process as follows,
+
+		p.process(p._data)
+		"""
+		raise objects.DescriptionError("Can not deal with an undescribed packet.")
+
+	def _version_error(self, h):
+		"""\
+		Called when a packet of the wrong version is found.
+
+		The function should either raise the error or return a
+		packet with the correct version.
+		"""
+		print "Version Error"
+		return objects.Header(h, h[:4])
+
+	def _error(self, packet):
+		raise
+
+class Connection(ConnectionCommon):
+	"""\
+	Base class for Thousand Parsec protocol connections.
+	Methods common to both server and client connections
+	go here.
+	"""
+	def __init__(self):
+		ConnectionCommon.__init__(self)
 		self.buffered['bytes-received'] = StringQueue()
 		self.buffered['bytes-tosend']   = StringQueue()
-		self.buffered['frames-received'] = {}
 
 	def setup(self, s, nb=False, debug=False):
 		"""\
@@ -122,6 +258,55 @@ class Connection:
 
 		self.setblocking(nb)
 		self.debug = debug
+
+	def _recvBytes(self, size, peek=False):
+		"""\
+		Receive a bunch of bytes onto the socket.
+		"""
+		buffer = self.buffered['bytes-received']
+
+		try:
+			data = self.s.recv(size)
+			if data == '':
+				raise IOError("Socket.recv returned no data, connection must have been closed...")
+
+			if self.debug and len(data) > 0:
+				red("Received: %s \n" % xstruct.hexbyte(data))
+
+			buffer.write(data)
+		except socket.error, e:
+			print "Recv Socket Error", e
+			if not self._noblock():
+				time.sleep(0.1)
+		
+		if len(buffer) < size:
+			return ''
+		else:
+			return [buffer.read, buffer.peek][peek](size)
+
+	def _sendBytes(self, bytes=''):
+		"""\
+		Send a bunch of bytes onto the socket.
+		"""
+		buffer = self.buffered['bytes-tosend']
+
+		# Add the bytes to the buffer
+		buffer.write(bytes)
+
+		sent = 0
+		try:
+			if len(buffer) > 0:
+				sent = self.s.send(buffer.peek(BUFFER_SIZE))
+		except socket.error, e:
+			print "Send Socket Error", e
+			if not self._noblock():
+				time.sleep(0.1)
+
+		if self.debug and sent > 0:
+			green("Sending: %s \n" % xstruct.hexbyte(buffer.peek(sent)))
+
+		buffer.read(sent)
+		return sent
 
 	def fileno(self):
 		"""\
@@ -176,25 +361,7 @@ class Connection:
 
 		Sends a single TP packet to the socket.
 		"""
-		buffer = self.buffered['bytes-tosend']
-
-		if not p is None:
-			if self.debug:
-				green("Sending: %r\n" % p)
-
-			buffer.write(str(p))
-
-		sent = 0
-		try:
-			if len(buffer) > 0:
-				sent = self.s.send(buffer.peek(BUFFER_SIZE))
-		except socket.error, e:
-			print "Send Socket Error", e
-
-		if self.debug and sent > 0:
-			green("Sending: %s \n" % xstruct.hexbyte(buffer.peek(sent)))
-
-		buffer.read(sent)
+		self._sendFrame(p)
 
 	def _recv(self, sequence=-1):
 		"""\
@@ -202,97 +369,10 @@ class Connection:
 
 		Reads a single TP packet with correct sequence number from the socket.
 		"""
-		if not hasattr(sequence, '__getitem__'):
-			sequences = set([sequence])
-		else:
-			sequences = set(sequence)
-
-		buffer = self.buffered['bytes-received']
-		frames = self.buffered['frames-received']
-		size = objects.Header.size
-
 		while True:
-			# Pump the outgoing queue to
-			self._send()
-
-			# Return any frames we have received
-			for ready in sequences.intersection(frames.keys()):
-				# Cleanup any empty buffers
-				if len(frames[ready]) == 0:
-					del frames[ready]
-					continue
-
-				# Return the first frame
-				p = frames[ready][0]
-				try:
-					p.process(p._data)
-					del frames[ready][0]
-					if self.debug:
-						red("Receiving: %r\n" % p)
-					return p
-				except objects.DescriptionError:
-					self._description_error(p)
-				except Exception, e:
-					self._error(p)
-					del frames[ready][0]
-
-			# Recieve any data from the wire
-			try:
-				data = self.s.recv(BUFFER_SIZE)
-				if data == '':
-					raise IOError("Socket.recv returned no data, connection must have been closed...")
-
-				buffer.write(data)
-			except socket.error, e:
-				#print "Read Socket Error", e
-				if not self._noblock():
-					time.sleep(0.1)
-
-			# Parse any frames we have received
-			while buffer.left() >= size:
-				q = objects.Header(buffer.peek(size))
-
-				fsize = size+q.length
-				if buffer.left() < fsize:
-					break
-
-				d = buffer.peek(fsize)
-				if self.debug:
-					red("Receiving: %s \n" % xstruct.hexbyte(d))
-				q._data = d[size:]
-
-				buffer.read(fsize)
-
-				if not frames.has_key(q.sequence):
-					frames[q.sequence] = []
-				frames[q.sequence].append(q)
-
-			if self._noblock():
-				return None
-
-	def _description_error(self, packet):
-		"""\
-		Called when we get a packet which hasn't be described.
-
-		The packet will be of type Header ready to be morphed by calling
-		process as follows,
-
-		p.process(p._data)
-		"""
-		raise objects.DescriptionError("Can not deal with an undescribed packet.")
-
-	def _version_error(self, h):
-		"""\
-		Called when a packet of the wrong version is found.
-
-		The function should either raise the error or return a
-		packet with the correct version.
-		"""
-		print "Version Error"
-		return objects.Header(h, h[:4])
-
-	def _error(self, packet):
-		raise
+			r = self._recvFrame(sequence)
+			if r != None or self._noblock():
+				return r
 
 	############################################
 	# Non-blocking helpers
