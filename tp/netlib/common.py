@@ -44,7 +44,7 @@ class StringQueue(StringIO):
 		self._write_pos = 0
 
 	def left(self):
-		return self._write_pos - self._read_pos
+		return int(self._write_pos - self._read_pos)
 	__len__ = left
 
 	def read(self, *args, **kw):
