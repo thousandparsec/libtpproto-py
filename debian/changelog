@@ -1,5 +1,6 @@
-libtpproto-py (0.1.1-darcs+200608281150) dapper; urgency=low
+libtpproto-py (0.2.1-1) unstable; urgency=low
 
-  * Release 0.1.1 from darcs on Mon, 28 Aug 2006 11:50:38 +0930.
+  * Initial release.
+  * Packaging based on pyparallel 0.2-5
 
- -- Tim Ansell <tim@thousandparsec.net>  Mon, 28 Aug 2006 11:50:38 +0930
+ -- Paul Hampson <Paul.Hampson@Pobox.com>  Thu, 18 Jan 2007 16:44:53 +1100
