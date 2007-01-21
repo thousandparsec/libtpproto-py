@@ -291,8 +291,11 @@ trYiuEhD5HiV/W6DM4WBMg+5
 						if s in oldready:
 							oldready.remove(s)
 					except socket_error, e:
-						print e
-						oldready.append(s)
+						if s in oldready:
+							oldready.remove(s)
+							errors.append(s)
+						else:
+							oldready.append(s)
 					except socket_fatal, e:
 						print "fatal fallout", s, e
 						errors.append(s)
