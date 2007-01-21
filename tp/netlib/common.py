@@ -230,7 +230,8 @@ class ConnectionCommon:
 		The function should either raise the error or return a
 		packet with the correct version.
 		"""
-		print "Version Error"
+		if self.debug:
+			print "Version Error"
 		return objects.Header(h, h[:4])
 
 	def _error(self, packet):
@@ -275,7 +276,8 @@ class Connection(ConnectionCommon):
 
 			buffer.write(data)
 		except socket.error, e:
-			print "Recv Socket Error", e
+			if self.debug:
+				print "Recv Socket Error", e
 			if not self._noblock():
 				time.sleep(0.1)
 		
@@ -298,7 +300,8 @@ class Connection(ConnectionCommon):
 			if len(buffer) > 0:
 				sent = self.s.send(buffer.peek(BUFFER_SIZE))
 		except socket.error, e:
-			print "Send Socket Error", e
+			if self.debug:
+				print "Send Socket Error", e
 			if not self._noblock():
 				time.sleep(0.1)
 
