@@ -8,7 +8,7 @@ from setuptools import setup
 setup(
 	name		="libtpproto-py",
 	version		=version,
-	license		="GPL",
+	license		="LGPL",
 	description	="Network library for Thousand Parsec",
 	long_description="""\
 A library of code for both Servers and Clients to support the Thousand Parsec 
