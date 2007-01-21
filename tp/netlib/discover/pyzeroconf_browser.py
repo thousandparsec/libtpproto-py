@@ -13,8 +13,12 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 			types.append(stype+'._tcp.local.')
 		self.types = types		
 
-		zeroconf = Zeroconf.Zeroconf("0.0.0.0")
-		self.browser = Zeroconf.ServiceBrowser(zeroconf, self.types, self)
+		try:
+			zeroconf = Zeroconf.Zeroconf("0.0.0.0")
+			self.browser = Zeroconf.ServiceBrowser(zeroconf, self.types, self)
+		except socket.error, e:
+			print "Unable to create pyZeroconf Browser", e
+			self.browser = None
 	
 	def removeService(self, server, type, name):
 		name = name[:-len(type)-1]
@@ -40,11 +44,12 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 
 	def run(self):
 		try:
-			self.browser.run()
+			if self.browser != None:
+				self.browser.run()
 		except Exception, e:
 			print e
 			traceback.print_exc()
-			globals()['_GLOBAL_DONE'] = True
+		globals()['_GLOBAL_DONE'] = True
 
 	def exit(self):
 		globals()['_GLOBAL_DONE'] = True
