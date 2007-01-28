@@ -32,7 +32,6 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 			info = server.getServiceInfo(type, name)
 			fname = name[:-len(type)-1]
 
-			print name, fname, info.getServer(), dir(info)
 			if not info is None:
 				self.ServiceFound(fname, type.split('.')[0][1:], \
 					(info.getServer()[:-1], str(socket.inet_ntoa(info.getAddress())), info.getPort()), \

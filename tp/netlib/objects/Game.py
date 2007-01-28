@@ -88,7 +88,8 @@ class Game(Processed):
 				value = option[1]
 				if len(value) == 0:
 					value = option[2]
-				setattr(self, Game.options[option[0]], value)
+				setattr(self, Game.options[option[0]][0], value)
+
 	def _optional_get(self):
 		optional = []
 		for key, (short, long, comment) in Game.options.items():
