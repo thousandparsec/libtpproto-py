@@ -1,5 +1,6 @@
 
 import traceback, socket
+
 from pyZeroconf import Zeroconf
 
 from browse import ZeroConfBrowser as ZeroConfBrowserBase
@@ -51,7 +52,7 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 		globals()['_GLOBAL_DONE'] = True
 
 	def exit(self):
-		globals()['_GLOBAL_DONE'] = True
+		setattr(Zeroconf, '_GLOBAL_DONE', True)
 
 def main():
 	a = ZeroConfBrowser()

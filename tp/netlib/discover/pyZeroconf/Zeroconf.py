@@ -960,7 +960,8 @@ class ServiceBrowser(object):
 					callback = lambda x: self.listener.removeService(x, record.name, record.alias)
 					self.list.append(callback)
 					return
-			except KeyError:
+			except KeyError, e:
+				print e
 				if not expired:
 					self.services[record.alias.lower()] = record
 					callback = lambda x: self.listener.addService(x, record.name, record.alias)
@@ -1003,7 +1004,10 @@ class ServiceBrowser(object):
 	
 			#print self.nextTime, self.engineTime, now
 			#print self.nextTime-now, self.engineTime-now
-			time.sleep((min(self.nextTime, self.engineTime)-now))
+			try:
+				time.sleep((min(self.nextTime, self.engineTime)-now))
+			except IOError, e:
+				pass
 
 class ServiceInfo(object):
 	"""Service information"""
@@ -1337,7 +1341,6 @@ class Zeroconf(object):
 				del self.servicetypes[info.type]
 		except:
 			traceback.print_exc()
-			pass
 		now = currentTimeMillis()
 		nextTime = now
 		i = 0
@@ -1421,7 +1424,6 @@ class Zeroconf(object):
 			self.listeners.remove(listener)
 		except:
 			traceback.print_exc()
-			pass
 
 	def updateRecord(self, now, rec):
 		"""Used to notify listeners of new information that has updated
@@ -1511,7 +1513,6 @@ class Zeroconf(object):
 		except (IOError, socket.error), e:
 			# Ignore this, it may be a temporary loss of network connection
 			traceback.print_exc()
-			print e
 
 	def close(self):
 		"""Ends the background threads, and prevent this instance from
@@ -1535,10 +1536,14 @@ class Zeroconf(object):
 		now = currentTimeMillis()
 		if self.enginewait < now or force:
 			self.enginewait = self.engine.run()
+			if self.enginewait is None:
+				return None
 			self.enginewait += now
 
 		if self.reaperwait < now or force:
 			self.reaperwait = self.reaper.run()
+			if self.reaperwait is None:
+				return None
 			self.reaperwait += now
 	
 		return min(self.enginewait, self.reaperwait)
