@@ -40,3 +40,4 @@
 (^|/)build-stamp$
 (^|/)debian/copyright$
 (^|/)debian/.*compat$
+(^|/)html($|/)
