@@ -1,78 +1,45 @@
 Intro
 ==============================================
-This provides all the neccessary objects to
-talk to a Thousand Parsec server.
+This provides all the necessary objects to talk to the Thousand Parsec protocol. 
 
 Support Libraries
 ==============================================
-For basic Thousand Parsec functionality no extra
-Python libraries are needed. 
+For basic Thousand Parsec functionality no extra Python libraries are needed. 
 
-It is recommened to install either if you are 
-running a server,
+It is recommened to install either if you are running a server,
 	python-pyopenssl
 	m2crypto
-or one of the following if you are running a
-client,
+or one of the following if you are running a client,
 	python-pyopenssl
 	m2crypto
 	TLS Lite
 
-Installing these libraries will imporve SSL support.
+Installing these libraries will improve SSL support.
 
-Clients will not be able to connect to TLS enabled
-Thousand Parsec servers (but it should be able to connect 
-to SSL3 and SSL2 servers) without one of these 
+Clients will not be able to connect to TLS enabled Thousand Parsec servers (but
+it should be able to connect to SSL3 and SSL2 servers) without one of these
 libraries.
 
-Servers will not be able to serve SSL connections 
-(or tunnel HTTPS connections) without one of these
-libraries.
-
-Directory Structure
-==============================================
-./tests
-	Contains tests for the library and to test
-	clients and servers.
-./tests/python
-	Tests for the library.
-./tests/client
-	A server which can be used to test clients
-	against.
-./tests/server
-	A client which can be used to test servers
-	against.
-./support
-	Support classes for library.
-./objects
-	Frame object classes.
+Servers will not be able to serve SSL connections (or tunnel HTTPS connections)
+without one of these libraries.
 
 Library
 ==============================================
-The library can run in either non-blocking or
-blocking mode.
+The library can run in either non-blocking or blocking mode.
 
-In blocking mode operations preformed on the
-connection will wait for the results to
-become avalible before returning. It will
-never return None.
+In blocking mode operations preformed on the connection will wait for the
+results to become available before returning. It will never return None.
 
-In non-blocking mode operations preformed on
-the connection will return nothing. The
-connection must be until the result is obtained.
-It is safe to preform more operations on the
-connection before the connection has returned
-the result, no answer will be lost.
+In non-blocking mode operations preformed on the connection will return nothing.
+The connection must be until the result is obtained.  It is safe to preform more
+operations on the connection before the connection has returned the result, no
+answer will be lost.
 
-Poll will return None until the complete
-response is avalible. Poll will return the
-answers in the same order that the actions
-where preformed. 
+Poll will return None until the complete response is available. Poll will return
+the answers in the same order that the actions where preformed. 
 
-If you want to wait for an action to complete
-you can use wait which will wait untill the
-result if ready and return it. Wait will
-never return None.
+If you want to wait for an action to complete you can use wait which will wait
+until the result if ready and return it. Wait will never return None.
 
 Blocking Example Usage:
 
