@@ -26,15 +26,49 @@ class NotImplimented(Exception):
 
 class SSLWrapper:
 	def __init__(self, s):
-		self.s = socket.ssl(s)
+		self.base = s
+
+		try:
+			import OpenSSL.crypto
+			import OpenSSL.SSL as SSL
+
+			context = SSL.Context(SSL.SSLv23_METHOD)
+			context.set_verify(SSL.VERIFY_NONE, lambda a, b, c, d, e: True)
+
+			self.s = SSL.Connection(context, s)
+			self.s.set_connect_state()
+			self.socket_error = (SSL.WantReadError, SSL.WantWriteError,)
+
+			print "Found pyopenssl"
+			return
+		except ImportError, e:
+			print "Unable to import pyopenssl"
+
+		try:
+			self.s = socket.ssl(s)
+			self.socket_error = (IOError,)
+			print "Using crappy inbuilt SSL connection, be warned there can be no verification."
+		except ImportError, e:
+			raise IOError("Unable to find a working SSL library." + e)
 
 	def send(self, data):
 		no = 0
 		while no != len(data):
-			no += self.s.write(data)
+			try:
+				no += self.s.write(data)
+			except self.socket_error, e:
+				print "SSL send", e.__class__, e
+		return no
 
 	def recv(self, amount):
-		return self.s.read(amount)
+		try:
+			data = self.s.read(amount)
+			return data
+		except self.socket_error, e:
+			print "SSL recv", e.__class__, e
+
+	def setblocking(self, t):
+		self.base.setblocking(t)
 
 from StringIO import StringIO
 class StringQueue(StringIO):

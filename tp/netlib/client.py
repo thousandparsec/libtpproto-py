@@ -226,6 +226,7 @@ class ClientConnection(Connection):
 				raise socket.error, msg
 
 			if hoststring.startswith("tps://"):
+				print "Creating SSL wrapper...."
 				s = SSLWrapper(s)
 
 		self.hoststring = hoststring
