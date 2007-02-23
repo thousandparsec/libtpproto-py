@@ -45,10 +45,55 @@ class SSLWrapper:
 			print "Unable to import pyopenssl"
 
 		try:
+			from tlslite.api import TLSConnection
+
+			class tlslite_wrapper(object):
+				def __init__(self, s):
+					self.s = TLSConnection(s)
+					self.s.handshakeClientCert()
+
+					self.writing = None
+					self.reading = None
+
+				def write(self, data):
+					if self.writing is None:
+						self.writing = (len(data), self.s.writeAsync(data))
+
+					try:
+						self.writing[1].next()
+						return 0
+					except StopIteration:
+						pass
+
+					sent = self.writing[0]
+					self.writing = None
+					return sent
+
+				def read(self, amount):
+					d = None
+					while d == None:
+						try:
+							d = self.reading.next()
+						except (StopIteration, AttributeError):
+							self.reading = self.s.readAsync(amount)
+
+					try:
+						len(d)
+					except:
+						raise socket.error("No data ready to be read.")
+					return d
+
+			self.s = tlslite_wrapper(s)
+			self.socket_error = tuple()
+			return
+		except ImportError, e:
+			print "Unable to import tlslite"
+
+		try:
 			self.s = socket.ssl(s)
 			self.socket_error = (IOError,)
 			print "Using crappy inbuilt SSL connection, be warned there can be no verification."
-		except ImportError, e:
+		except ValueError, e:
 			raise IOError("Unable to find a working SSL library." + e)
 
 	def send(self, data):
