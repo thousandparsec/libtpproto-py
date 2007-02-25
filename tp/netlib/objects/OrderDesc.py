@@ -32,7 +32,7 @@ def descriptions(added=None):
 
 struct_map = {
 	ARG_ABS_COORD:	("qqq",			3),
-	ARG_TIME: 		("II",			1),
+	ARG_TIME: 		("II",			2),
 	ARG_OBJECT:		("I",			1),
 	ARG_PLAYER:		("II",			2),
 	ARG_REL_COORD:	("Iqqq",		3),
