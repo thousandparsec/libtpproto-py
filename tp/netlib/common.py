@@ -419,6 +419,9 @@ class Connection(ConnectionCommon):
 
 		Calling oob will also cause the connection to be pumped.
 		"""
+		if not hasattr(self, 's'):
+			return
+
 		noblock = self._noblock()
 		if not noblock:
 			self.setblocking(1)
