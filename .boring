@@ -38,6 +38,4 @@
 (^|/)libtpproto_py.egg-info$
 (^|/)_trial_temp$
 (^|/)build-stamp$
-(^|/)debian/copyright$
-(^|/)debian/.*compat$
 (^|/)html($|/)
