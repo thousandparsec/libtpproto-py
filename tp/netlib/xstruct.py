@@ -100,6 +100,8 @@ def pack(struct, *args):
 		elif char in 'Tt':
 			output += pack_time(args.pop(0), times[char])
 		elif char == 'S':
+			if not isinstance(args[0], (str, unicode)):
+				raise TypeError("Argument should be an string (to pack to S), not a %s" % (char, type(a)))
 			output += pack_string(args.pop(0))
 		elif char in string.digits:
 			# Get all the numbers
@@ -128,11 +130,18 @@ def pack(struct, *args):
 				args[0] = int(args[0])
 			
 			a = args.pop(0)
+
+			# Check the type of the argument
+			if not isinstance(a, (int, long)):
+				raise TypeError("Argument should be an int or long (to pack to %s), not a %s" % (char, type(a)))
+
 			if char in semi.keys():
 				if a == -1:
 					a = 2**semi[char][0]-1
 				
 				char = semi[char][1]
+			elif char.upper() == char and a < 0:
+				raise TypeError("Argument must be positive (to pack to %s) not %s" % (char, a))
 
 			try:
 				output += _pack("!"+char, a)
@@ -316,7 +325,7 @@ def pack_time(t, type='I'):
 	if t is None:
 		t = -1
 	elif isinstance(t, datetime):
-		t = time.mktime(t.timetuple())
+		t = long(time.mktime(t.timetuple()))
 	elif not isinstance(t, (int, long)):
 		raise TypeError("Not a valid type for pack_time")
 	s = pack("!"+type, t)
