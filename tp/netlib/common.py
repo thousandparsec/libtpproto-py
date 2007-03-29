@@ -248,6 +248,9 @@ class ConnectionCommon:
 
 		# Return any frames we have received
 		for ready in frames.keys():
+			if not frames.has_key(ready):
+				continue
+
 			# Cleanup any empty buffers
 			if len(frames[ready]) == 0:
 				del frames[ready]
