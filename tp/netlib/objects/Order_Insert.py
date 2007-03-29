@@ -8,4 +8,4 @@ class Order_Insert(Order):
 			id,	slot, type, \
 			*args, **kw):
 		self.no = 12
-		apply(Order.__init__, (self, sequence, id, slot, type, -1, [])+args, kw)
+		apply(Order.__init__, (self, sequence, id, slot, type,)+args, kw)

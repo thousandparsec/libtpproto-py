@@ -864,7 +864,7 @@ class ClientConnection(Connection):
 
 			o.sequence = self.no
 		else:
-			o = apply(objects.Order_Insert, (self.no, oid, slot, otype,)+args, kw)
+			o = apply(objects.Order_Insert, (self.no, oid, slot, otype, 0, [])+args, kw)
 
 		self._send(o)
 
