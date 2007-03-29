@@ -360,8 +360,6 @@ class Connection(ConnectionCommon):
 		except socket.error, e:
 			if self.debug:
 				print "Recv Socket Error", e
-			if not self._noblock():
-				time.sleep(0.1)
 		
 		if len(buffer) < size:
 			return ''
