@@ -105,6 +105,15 @@ class Object(Describable):
 				self.modify_time)
 		return output
 
+	def __repr__(self):
+		"""\
+		Return a reconisable string.
+		"""
+		return "<%s @ %s (seq: %i length: %i)>" % \
+			(self.__class__.__name__, hex(id(self)),
+				self.sequence, self.length)
+
+
 	def process_extra(self, extra):
 		pass
 
