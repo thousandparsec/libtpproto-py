@@ -78,7 +78,7 @@ class DynamicBaseOrder(Order):
 				setattr(self, name, args[0])
 			else:
 				if len(args) < size:
-					raise ValueError("Incorrect number of arguments")
+					raise ValueError("Incorrect number of arguments, the arguments required for %s (of type %s) are %s" % (name, type, struct))
 				#print "__init__", name, type, struct, size, args[0:size]
 				setattr(self, name, args[0:size])
 
