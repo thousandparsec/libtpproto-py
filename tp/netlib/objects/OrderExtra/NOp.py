@@ -29,6 +29,6 @@ class NOp(Order):
 		
 	def __str__(self):
 		output = Order.__str__(self)
-		output += pack(self.substruct, self.wait, maximum)
+		output += pack(self.substruct, self.wait, self.maximum)
 
 		return output
