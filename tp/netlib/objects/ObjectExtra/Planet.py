@@ -14,7 +14,7 @@ class Planet(Object):
 		* a UInt32, the maximum units of this resource remaining which are inaccessable
 	"""
 	subtype = 3
-	substruct = "j[jjj]"
+	substruct = "j[jjjj]"
 
 	def __init__(self, sequence, \
 			id, type, name, \
