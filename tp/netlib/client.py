@@ -238,7 +238,7 @@ class ClientConnection(Connection):
 
 	def _description_error(self, p):
 		# Need to figure out how to do non-blocking properly...
-		# Send a request for the description
+		#Send a request for the description
 		if not self.__desc:
 			q = objects.OrderDesc_Get(p.sequence-1, [p.type])
 			self._send(q)
@@ -246,7 +246,6 @@ class ClientConnection(Connection):
 			self.__desc = True
 
 		q = self._recv(p.sequence-1)
-
 		if q != None and isinstance(q, objects.Sequence):
 			q = self._recv(p.sequence-1)
 

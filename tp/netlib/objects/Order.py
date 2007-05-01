@@ -24,6 +24,8 @@ class Order(Describable):
 	no = 11
 	struct = "IjII [II]"
 
+	_name = "Unknown Order"
+
 	def __init__(self, sequence, \
 			id,	slot, type, turns, resources, \
 			*args, **kw):
@@ -53,6 +55,9 @@ class Order(Describable):
 				apply(self.__class__.__init__, args)
 
 				return
+			else:
+				self.type = type
+				raise DescriptionError(sequence, type)
 
 		self.length = \
 			4 + 4 + 4 + 4 + \

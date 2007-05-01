@@ -122,9 +122,7 @@ class Header(object):
 
 			if len(extra) != 0:
 				raise ValueError("Extra Data found;" + extra)
-
-		# Remove the process function
-		del self.__dict__["process"]
+		self.process = None
 
 	def data_set(self, data=None):
 		"""\
@@ -148,4 +146,3 @@ class Processed(Header):
 		
 		self._type = self.no
 		self.sequence = sequence
-	

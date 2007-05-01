@@ -247,7 +247,7 @@ class ConnectionCommon:
 		frames = self.buffered['frames-received']
 
 		# Return any frames we have received
-		for ready in frames.keys():
+		for ready in sequences:
 			if not frames.has_key(ready):
 				continue
 
@@ -259,22 +259,21 @@ class ConnectionCommon:
 			# Return the first frame
 			p = frames[ready][0]
 			try:
-				if p.__class__ == objects.Header:
+				if callable(p.process):
 					p.process(p._data)
 					if self.debug:
 						red("Receiving: %r\n" % p)
 
-				if p.sequence in sequences:
-					del frames[ready][0]
-					return p
+				del frames[ready][0]
+				return p
 			except objects.DescriptionError:
 				self._description_error(p)
+				continue
 			except Exception, e:
 				self._error(p)
 				del frames[ready][0]
 
-
-	def _recvFrame(self, sequence=-1):
+	def _recvFrame(self, sequence=[-1, 0]):
 		"""\
 		Reads a single TP packet with correct sequence number from the socket.
 		"""
