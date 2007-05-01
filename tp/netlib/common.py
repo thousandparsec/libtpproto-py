@@ -190,6 +190,7 @@ class ConnectionCommon:
 		self.buffered = {}
 		self.buffered['frames-received'] = {}
 		self.buffered['frames-tosend']   = []
+		self.buffered['frames-async']    = []
 
 	def _recvBytes(self, size, peek=False):
 		pass
@@ -273,7 +274,7 @@ class ConnectionCommon:
 				self._error(p)
 				del frames[ready][0]
 
-	def _recvFrame(self, sequence=[-1, 0]):
+	def _recvFrame(self, sequence):
 		"""\
 		Reads a single TP packet with correct sequence number from the socket.
 		"""
@@ -427,7 +428,12 @@ class Connection(ConnectionCommon):
 			self.setblocking(1)
 
 		self._send()
-		self._recv()
+		while True:
+			frame = self._recv(0)
+			if frame == None:
+				break
+
+			self.buffered['frames-async'].append(frame)
 
 		if not noblock:
 			self.setblocking(0)
@@ -448,7 +454,7 @@ class Connection(ConnectionCommon):
 		"""
 		self._sendFrame(p)
 
-	def _recv(self, sequence=-1):
+	def _recv(self, sequence):
 		"""\
 		*Internal*
 
