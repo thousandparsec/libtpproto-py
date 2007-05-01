@@ -9,7 +9,7 @@ class Move(Order):
 	subtype = 1
 	substruct = "qqq"
 
-	name = "Move"
+	_name = "Move"
 
 	# Arguments
 	names = [("pos", constants.ARG_ABS_COORD)]

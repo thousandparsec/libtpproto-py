@@ -9,7 +9,7 @@ class NOp(Order):
 	subtype = 0
 	substruct = "II"
 	
-	name = "NOp"
+	_name = "NOp"
 
 	# Arguments
 	names = [("wait", constants.ARG_TIME)]
