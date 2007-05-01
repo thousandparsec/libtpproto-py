@@ -1,4 +1,5 @@
 # Python Imports
+import errno
 import select
 import socket
 import sys
@@ -265,7 +266,13 @@ trYiuEhD5HiV/W6DM4WBMg+5
 			errors = []
 
 			# Check if there is any socket to accept or with data
-			events = poller.poll(100)
+			try:
+				events = poller.poll(100)
+			except select.error, e:
+				if e[0] == errno.EINTR:
+					continue
+				raise
+
 			for fileno, event in events:
 				if event & select.POLLIN:
 					ready.append(self.connections[fileno])
