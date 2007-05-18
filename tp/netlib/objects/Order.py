@@ -69,10 +69,8 @@ class Order(Describable):
 		self.turns = turns
 		self.resources = resources
 
-		if not descriptions().has_key(type):
-			if extra != None:
-				self.length += len(extra)
-				raise DescriptionError("No description for order type %s." % type)
+		if len(args) > 0:
+			self.process_extra(args)
 			
 	def __str__(self):
 		output = Describable.__str__(self)

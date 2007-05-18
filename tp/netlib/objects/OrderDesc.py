@@ -60,12 +60,15 @@ class DynamicBaseOrder(Order):
 
 	def __init__(self, sequence, \
 			id, type, slot, turns, resources, \
-			*args):
+			*args, **kw):
 		Order.__init__(self, sequence, \
-			id, type, slot, turns, resources)
+			id, type, slot, turns, resources, *args, **kw)
+
+	def process_extra(self, args):
+		print "process_extra", args
 
 		# Figure out if we are in single or multiple mode
-		short = len(args) == len(self.names)
+		short = (len(args) == len(self.names))
 
 		for name, type in self.names:
 			struct, size = struct_map[type]
@@ -98,6 +101,7 @@ class DynamicBaseOrder(Order):
 			struct, size = struct_map[type]
 			
 			attr = getattr(self, name)
+			print name, type, size, attr
 			if size == 1:
 				args.append(attr)
 			else:
