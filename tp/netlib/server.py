@@ -313,6 +313,10 @@ trYiuEhD5HiV/W6DM4WBMg+5
 					except socket_fatal, e:
 						print "fatal fallout", s, e
 						errors.append(s)
+					except Exception, e:
+						print "Ekk! uncaught exception, closing this connection..."
+						print e
+						errors.append(s)
 
 			# Cleanup any old sockets
 			for s in errors:
