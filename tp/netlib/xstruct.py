@@ -326,6 +326,10 @@ def pack_time(t, type='I'):
 		t = -1
 	elif isinstance(t, datetime):
 		t = long(time.mktime(t.timetuple()))
+	elif isinstance(t, float):
+		# FIXME: This should be a depreciated warning...
+		print "Warning! pack_time called with float"
+		t = long(t)
 	elif not isinstance(t, (int, long)):
 		raise TypeError("Not a valid type for pack_time")
 	s = pack("!"+type, t)
