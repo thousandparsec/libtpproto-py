@@ -100,7 +100,7 @@ class Header(object):
 		output = pack(Header.struct, self.protocol, self.sequence, self._type, self.length)
 		return output
 
-	def __process__(self, data):
+	def __process__(self, data, force=None):
 		"""\
 		Look at the packet type and morph this object into the
 		correct type.
@@ -111,7 +111,12 @@ class Header(object):
 				(self.length, len(data)) )
 		
 		# Mutate this class
-		self.__class__ = Header.mapping[self._type]
+		if force is None:
+			self.__class__ = Header.mapping[self._type]
+		else:
+			# FIXME: Some sanity checking here would be good...
+			self.__class__ = force
+
 		args, extra = unpack(self.struct, data)
 
 		# Do the class specific function
