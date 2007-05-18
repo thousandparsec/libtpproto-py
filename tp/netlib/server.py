@@ -274,7 +274,7 @@ trYiuEhD5HiV/W6DM4WBMg+5
 
 			# Check if there is any socket to accept or with data
 			try:
-				events = poller.poll(100)
+				events = poller.poll()
 			except select.error, e:
 				if e[0] == errno.EINTR:
 					continue
