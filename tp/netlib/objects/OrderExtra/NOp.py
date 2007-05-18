@@ -7,7 +7,7 @@ class NOp(Order):
 	A do no nothing order.
 	"""
 	subtype = 0
-	substruct = "II"
+	substruct = "Ij"
 	
 	_name = "NOp"
 
@@ -23,7 +23,7 @@ class NOp(Order):
 		Order.__init__(self, sequence, \
 					id, slot, type, turns, resources)
 
-		self.length += 4
+		self.length += 8
 		self.wait    = wait
 		self.maximum = maximum
 		
