@@ -81,11 +81,18 @@ class ServerConnection(Connection):
 		except socket_error, e:
 			print self, e
 
-		sequences = self.buffered['frames-received'].keys()
-		sequences.sort()
-		for sequence in sequences:
-			p = self._recv(sequence)
+		# FIXME: Possible denial of service attack...
+		# If this connection keeps getting data - none of the other connections get serviced...
+		# Fix:
+		#   Only get data from the socket once, service all data
+		#   Poll will go off with the data
+		checked = set()
+		while len(set(self.buffered['frames-received'].keys()).difference(checked)) > 0:
+			sequences = self.buffered['frames-received'].keys()
+			sequences.sort()
 
+			p = self._recv(sequences[0])
+			checked.add(p)
 			if not p:
 				continue
 
