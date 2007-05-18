@@ -185,7 +185,7 @@ class SSLSocket(object):
 	def __str__(self):
 		return object.__str__(self)
 
-class Server:
+class Server(object):
 	"""\
 	Select based, single threaded, polling server.
 	"""
@@ -315,6 +315,8 @@ trYiuEhD5HiV/W6DM4WBMg+5
 						errors.append(s)
 					except Exception, e:
 						print "Ekk! uncaught exception, closing this connection..."
+						type, val, tb = sys.exc_info()
+						print ''.join(traceback.format_exception(type, val, tb))
 						print e
 						errors.append(s)
 
