@@ -24,7 +24,7 @@ class l(list):
 class NotImplimented(Exception):
 	pass
 
-class SSLWrapper:
+class SSLWrapper(object):
 	def __init__(self, s):
 		self.base = s
 
@@ -178,7 +178,7 @@ class StringQueue(StringIO):
 
 BUFFER_SIZE = 4096
 
-class ConnectionCommon:
+class ConnectionCommon(object):
 	"""\
 	Base class for Thousand Parsec protocol connections.
 	Methods common to both server and client connections
