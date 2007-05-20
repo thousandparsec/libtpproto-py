@@ -1,7 +1,7 @@
 
 import sys
 
-def red(string, flush=1):
+def green(string, flush=1):
 	if sys.platform.startswith('linux'):
 		sys.stdout.write("[01;32m")
 	sys.stdout.write(string)
@@ -13,7 +13,7 @@ def red(string, flush=1):
 		except:
 			pass
 
-def green(string, flush=1):
+def red(string, flush=1):
 	if sys.platform.startswith('linux'):
 		sys.stdout.write("[01;31m")
 	sys.stdout.write(string)
