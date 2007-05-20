@@ -262,8 +262,9 @@ class ConnectionCommon(object):
 			try:
 				if callable(p.process):
 					p.process(p._data)
-					if self.debug:
-						red("Receiving: %r\n" % p)
+
+				if self.debug:
+					red("Receiving: %r\n" % p)
 
 				del frames[ready][0]
 				return p
