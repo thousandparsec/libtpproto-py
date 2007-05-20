@@ -1,8 +1,10 @@
 libtpproto-py (0.2.2-0) unstable; urgency=low
 
   * New upstream release
+  * Build-Depend-Indep on python-all, to ensure all supported python versions
+    are built
 
- -- Paul "TBBle" Hampson <Paul.Hampson@Pobox.com>  Sun, 20 May 2007 17:05:10 +1000
+ -- Paul "TBBle" Hampson <Paul.Hampson@Pobox.com>  Sun, 20 May 2007 17:06:16 +1000
 
 libtpproto-py (0.2.1-1) unstable; urgency=low
 
