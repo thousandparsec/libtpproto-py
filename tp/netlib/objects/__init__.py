@@ -294,7 +294,7 @@ from objects.Property_IDSequence import Property_IDSequence
 Property_IDSequence = Property_IDSequence
 mapping[Property_IDSequence.no] = Property_IDSequence
 
-#
+# Player frames
 from objects.Player_Get import Player_Get
 Player_Get = Player_Get
 mapping[Player_Get.no] = Player_Get
@@ -303,7 +303,11 @@ from objects.Player import Player
 Player = Player
 mapping[Player.no] = Player
 
-# Game
+# Game frames
 from objects.Game import Game
 Game = Game
 mapping[Game.no] = Game
+
+from objects.Games_Get import Games_Get
+Games_Get = Games_Get
+mapping[Games_Get.no] = Games_Get

@@ -624,6 +624,20 @@ class ClientConnection(Connection):
 		# and wait for a response
 		return self._okfail(self.no)
 
+	def games(self):
+		"""\
+		Get all games which are on a server.
+		"""
+		self._common()
+
+		self._send(objects.Games_Get(self.no))
+
+		if self._noblock():
+			self._append(self._get_header, objects.Game, self.no)
+			return None
+		else:
+			return self._get_header(objects.Game, self.no)
+
 	def features(self):
 		"""\
 		Gets the features the Thousand Parsec Server supports.
