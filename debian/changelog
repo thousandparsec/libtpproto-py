@@ -3,8 +3,11 @@ libtpproto-py (0.2.2-0) unstable; urgency=low
   * New upstream release
   * Build-Depend-Indep on python-all, to ensure all supported python versions
     are built
+     - Fix installation of tp/__init__.py to work with all runtimes
+  * Remove workaround for setup.cfg's presence
+  * Remove workaround for test.py being installed
 
- -- Paul "TBBle" Hampson <Paul.Hampson@Pobox.com>  Sun, 20 May 2007 17:06:16 +1000
+ -- Paul "TBBle" Hampson <Paul.Hampson@Pobox.com>  Sun, 20 May 2007 17:16:30 +1000
 
 libtpproto-py (0.2.1-1) unstable; urgency=low
 
