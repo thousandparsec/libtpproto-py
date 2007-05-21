@@ -48,31 +48,23 @@ class Header(object):
 	class VersionError(Exception):
 		pass
 
-	def __init__(self, s, protocol=None):
+	def __init__(self, protocol, sequence, type, length):
 		"""\
 		Create a new header object.
 
 		It takes a string which contains the "header" data.
 		"""
-		self.process = self.__process__
-	
-		if protocol == None:
-			protocol = version
-	
-		output, extra = unpack(Header.struct, s)
-		self.protocol, self.sequence, self._type, self.length = output
+		self.protocol = protocol
+		self.sequence = sequence
+		self._type    = type
+		self.length   = length
 
-		# Sanity Checks
-		if self.protocol != protocol:
-			if self.protocol[:2] == "TP":
-				raise self.VersionError("Wrong version %s\n" % self.protocol)
-			else:
-				raise ValueError("Invalid creation string\n%s\n" % hexbyte(s))
-
-		if self.length != 0 and len(extra) == self.length:
-			self.process(extra)
-		elif len(extra) != 0:
-			raise ValueError("Invalid input string")
+		# Upgrade the class to the real type
+		if self.__class__ == Header:
+			try:
+				self.__class__ = self.mapping[type]
+			except KeyError, e:
+				raise ValueError("Unknown packet type %i." % type)
 
 	def __eq__(self, other):
 		if type(self) == type(other):
@@ -100,34 +92,17 @@ class Header(object):
 		output = pack(Header.struct, self.protocol, self.sequence, self._type, self.length)
 		return output
 
-	def __process__(self, data, force=None):
+	def fromstr(cls, data):
 		"""\
 		Look at the packet type and morph this object into the
 		correct type.
 		"""
-		# Make sure the data is correct length
-		if len(data) != self.length:
-			raise ValueError("Data not the correct length, Required: %s Got: %s" % \
-				(self.length, len(data)) )
-		
-		# Mutate this class
-		if force is None:
-			self.__class__ = Header.mapping[self._type]
-		else:
-			# FIXME: Some sanity checking here would be good...
-			self.__class__ = force
+		args, extra = unpack(Header.struct, data)
+		if len(extra) > 0:
+			raise ValueError('Got too much data! %s bytes remaining' % len(extra))
 
-		args, extra = unpack(self.struct, data)
-
-		# Do the class specific function
-		if hasattr(self, "process_extra"):
-			apply(self.__init__, (self.sequence,) + args, {'extra':extra})
-		else:
-			apply(self.__init__, (self.sequence,) + args)
-
-			if len(extra) != 0:
-				raise ValueError("Extra Data found;" + extra)
-		self.process = None
+		return cls(*args)
+	fromstr = classmethod(fromstr)
 
 	def data_set(self, data=None):
 		"""\
@@ -145,9 +120,12 @@ class Processed(Header):
 	"""
 
 	def __init__(self, sequence):
+		Header.__init__(self, version, sequence, self.no, -1)
 		
-		if not hasattr(self, "protocol"):
-			self.protocol = version
-		
-		self._type = self.no
-		self.sequence = sequence
+	def __process__(self, data):
+		args, leftover = unpack(self.struct, data)
+		if len(leftover) > 0:
+			raise ValueError("Extra Data found:" + extra)
+
+		self.__init__(self.sequence, *args)
+

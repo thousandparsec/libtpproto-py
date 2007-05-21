@@ -240,7 +240,7 @@ class ClientConnection(Connection):
 		# Need to figure out how to do non-blocking properly...
 		#Send a request for the description
 		if not self.__desc:
-			q = objects.OrderDesc_Get(p.sequence-1, [p.type])
+			q = objects.OrderDesc_Get(p.sequence-1, [p._subtype])
 			self._send(q)
 
 			self.__desc = True
@@ -877,7 +877,7 @@ class ClientConnection(Connection):
 
 			o.sequence = self.no
 		else:
-			o = apply(objects.Order_Insert, (self.no, oid, slot, otype, 0, [])+args, kw)
+			o = objects.Order_Insert(self.no, oid, slot, otype, 0, [], *args)
 
 		self._send(o)
 

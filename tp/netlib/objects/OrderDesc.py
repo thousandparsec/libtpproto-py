@@ -58,17 +58,15 @@ class DynamicBaseOrder(Order):
 
 	__metaclass__ = ClassNicePrint
 
-	def __init__(self, sequence, \
-			id, type, slot, turns, resources, \
-			*args, **kw):
-		Order.__init__(self, sequence, \
-			id, type, slot, turns, resources, *args, **kw)
-
-	def process_extra(self, args):
-		print "process_extra", args
+	def __init__(self, sequence, id, type, slot, turns, resources, *args, **kw):
+		Order.__init__(self, sequence, id, type, slot, turns, resources)
 
 		# Figure out if we are in single or multiple mode
+		# Short mode:     NOp(*args, (0, 1))
+		# Multiple Mode:  NOp(*args, 0, 1)
 		short = (len(args) == len(self.names))
+
+		print self.__class__, args
 
 		for name, type in self.names:
 			struct, size = struct_map[type]
@@ -77,21 +75,14 @@ class DynamicBaseOrder(Order):
 				size = 1
 
 			if size == 1:
-				#print "__init__", name, type, struct, size, args[0]
 				setattr(self, name, args[0])
 			else:
 				if len(args) < size:
 					raise ValueError("Incorrect number of arguments, the arguments required for %s (of type %s) are %s" % (name, type, struct))
-				#print "__init__", name, type, struct, size, args[0:size]
-				setattr(self, name, args[0:size])
+				setattr(self, name, args[:size])
 
 			args = args[size:]
 	
-			# FIXME: Need to figure out a better way to do this...
-			if type in (ARG_TIME, ARG_OBJECT):
-				if getattr(self, name) == 4294967295:
-					setattr(self, name, -1)
-
 		# FIXME: Need to figure out the length a better way
 		self.length = len(self.__str__()) - Header.size
 
@@ -105,10 +96,10 @@ class DynamicBaseOrder(Order):
 			if size == 1:
 				args.append(attr)
 			else:
-				args = args + list(attr)
+				args += list(attr)
 
 		output = Order.__str__(self)
-		output += apply(pack, [self.substruct,] + args)
+		output += pack(self.substruct, *args)
 		return output
 
 	def __repr__(self):

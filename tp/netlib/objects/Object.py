@@ -20,12 +20,13 @@ class Object(Describable):
 		* 2 by UInt32 of padding, for future expansion of common attributes
 		* extra data, as defined by each object type
 	"""
-
 	no = 7
 	struct = "IIS Q 3q 3q [I] [I] I T 8x"
 
+	_name = "Unknown Object"
+
 	def __init__(self, sequence, \
-			id, otype, name, \
+			id, subtype, name, \
 			size, \
 			posx, posy, posz, \
 			velx, vely, velz, \
@@ -36,37 +37,6 @@ class Object(Describable):
 			*args, **kw):
 		Describable.__init__(self, sequence)
 
-#		print "Object.__init__", order_number, modify_time
-
-		if kw.has_key('extra'):
-			extra = kw['extra']
-		else:
-			extra = None
-
-		# Upgrade the class to the real type
-		if self.__class__ == Object:
-			if descriptions().has_key(otype):
-				self.__class__ = descriptions()[otype]
-
-				if extra != None or len(args) > 0:
-					if extra != None:
-						if len(self.substruct) > 0:
-							args, leftover = unpack(self.substruct, extra)
-						else:
-							args = ()
-
-				args = (self, sequence, id, otype, name, size, posx, posy, posz, 
-						velx, vely, velz, contains, order_types, order_number, modify_time) + args
-
-				apply(self.__class__.__init__, args)
-				return
-			else:
-				# FIXME: Should throw a description error
-				if extra != None:
-					self.extra = extra
-
-		# FIXME: Whats this doing here?
-		struct = "IIS Q 3q 3q [I] [I] I T 8x"
 		self.length = \
 			4 + 4 + \
 			4 + len(name) + \
@@ -75,22 +45,43 @@ class Object(Describable):
 			4 + len(order_types)*4 + \
 			4 + 8 + 8
 
-		self.id = id
-		self.otype = otype
-		self.name = name
-		self.size = size
-		self.pos = (posx, posy, posz)
-		self.vel = (velx, vely, velz)
-		self.contains = contains
-		self.order_types = order_types
+		self.id           = id
+		self._subtype     = subtype
+		self.name         = name
+		self.size         = size
+		self.pos          = (posx, posy, posz)
+		self.vel          = (velx, vely, velz)
+		self.contains     = contains
+		self.order_types  = order_types
 		self.order_number = order_number
-		self.modify_time = modify_time
+		self.modify_time  = modify_time
+
+		if self.__class__ == Object:
+			try:
+				if kw.has_key('force'):
+					cls = kw['force']
+				else:
+					cls = descriptions()[subtype]
+				self.__class__ = cls
+
+				if len(args) > 0:
+					self.__init__(sequence, \
+									id, subtype, name, \
+									size, \
+									posx, posy, posz, \
+									velx, vely, velz, \
+									contains, \
+									order_types, \
+									order_number, \
+									modify_time, *args)
+			except KeyError, e:
+				raise DescriptionError(sequence, subtype)
 
 	def __str__(self):
 		output = Describable.__str__(self)
 		output += pack(self.struct, \
 				self.id, \
-				self.otype, \
+				self._subtype, \
 				self.name, \
 				self.size, \
 				self.pos[0], \
@@ -112,8 +103,3 @@ class Object(Describable):
 		return "<%s @ %s (seq: %i length: %i)>" % \
 			(self.__class__.__name__, hex(id(self)),
 				self.sequence, self.length)
-
-
-	def process_extra(self, extra):
-		pass
-

@@ -9,7 +9,7 @@ class Fleet(Object):
 	A fleet has an owner, Int32 Player ID.
 	"""
 	subtype = 4
-	substruct = "I[II]I"
+	substruct = "j[II]I"
 
 	def __init__(self, sequence, \
 			id, type, name, \
@@ -34,9 +34,6 @@ class Fleet(Object):
 		self.length += 4 + 4 + len(ships) * 8 + 4
 
 		self.owner = owner
-		# FIXME: Hack
-		if self.owner == 4294967295:
-			self.owner = -1
 		self.ships = ships
 		self.damage = damage
 

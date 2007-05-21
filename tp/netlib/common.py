@@ -228,7 +228,7 @@ class ConnectionCommon(object):
 		data = self._recvBytes(size, peek=True)
 		if len(data) < size:
 			return
-		q = objects.Header(data)
+		q = objects.Header.fromstr(data)
 
 		# Get the body
 		data = self._recvBytes(size+q.length, peek=True)
@@ -260,8 +260,9 @@ class ConnectionCommon(object):
 			# Return the first frame
 			p = frames[ready][0]
 			try:
-				if callable(p.process):
-					p.process(p._data)
+				if hasattr(p, '_data'):
+					p.__process__(p._data)
+					del p._data
 
 				if self.debug:
 					red("Receiving: %r\n" % p)
@@ -313,9 +314,7 @@ class ConnectionCommon(object):
 		The function should either raise the error or return a
 		packet with the correct version.
 		"""
-		if self.debug:
-			print "Version Error"
-		return objects.Header(h, h[:4])
+		raise
 
 	def _error(self, packet):
 		raise
@@ -359,8 +358,9 @@ class Connection(ConnectionCommon):
 
 			buffer.write(data)
 		except socket.error, e:
-			if self.debug:
-				print "Recv Socket Error", e
+			pass
+#			if self.debug:
+#				print "Recv Socket Error", e
 		
 		if len(buffer) < size:
 			return ''
