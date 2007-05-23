@@ -66,8 +66,6 @@ class DynamicBaseOrder(Order):
 		# Multiple Mode:  NOp(*args, 0, 1)
 		short = (len(args) == len(self.names))
 
-		print self.__class__, args
-
 		for name, type in self.names:
 			struct, size = struct_map[type]
 
@@ -92,7 +90,6 @@ class DynamicBaseOrder(Order):
 			struct, size = struct_map[type]
 			
 			attr = getattr(self, name)
-			print name, type, size, attr
 			if size == 1:
 				args.append(attr)
 			else:
@@ -202,7 +199,7 @@ class OrderDesc(Description):
 		DynamicOrder.names = []
 		DynamicOrder.subtype = self.id
 	
-		DynamicOrder.struct = ""
+		DynamicOrder.substruct = ""
 		for name, type, desc in self.arguments:
 			struct, size = struct_map[type]
 
