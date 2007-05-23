@@ -98,7 +98,7 @@ class ServerConnection(Connection):
 
 			success = False
 
-			bases = [p.__class__]
+			bases = [objects.Header.mapping[p._type]]
 			while len(bases) > 0:
 				c = bases.pop(0)
 				function = "On" + c.__name__
