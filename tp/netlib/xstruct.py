@@ -75,80 +75,89 @@ def hexbyte(string):
 		s += " "
 	return s
 
-def pack(struct, *args):
+def pack(sstruct, *aargs):
 	"""\
 	Takes a structure string and the arguments to pack in the format
 	specified by string.
 	"""
-	args = list(args)
-	output = ""
+	struct  = sstruct
+	args    = list(aargs)
+	args_no = len(aargs)
 
-	while len(struct) > 0:
-		char = struct[0]
-		struct = struct[1:]
-		
-		if char == ' ' or char == '!':
-			continue
-		elif char == '{':
-			# Find the closing brace
-			substruct, struct = string.split(struct, '}', maxsplit=1)
-			output += pack_list('L', substruct, args.pop(0))
-		elif char == '[':
-			# Find the closing brace
-			substruct, struct = string.split(struct, ']', maxsplit=1)
-			output += pack_list('I', substruct, args.pop(0))
-		elif char in 'Tt':
-			output += pack_time(args.pop(0), times[char])
-		elif char == 'S':
-			if not isinstance(args[0], (str, unicode)):
-				raise TypeError("Argument should be an string (to pack to S), not a %s" % (char, type(a)))
-			output += pack_string(args.pop(0))
-		elif char in string.digits:
-			# Get all the numbers
-			substruct = char
-			while struct[0] in string.digits:
-				substruct += struct[0]
-				struct = struct[1:]
-			# And the value the number applies to
-			substruct += struct[0]
+	output = ""
+	try:
+		while len(struct) > 0:
+			char = struct[0]
 			struct = struct[1:]
 			
-			number = int(substruct[:-1])
-			if substruct[-1] == 's':
-				output += _pack("!"+substruct, args.pop(0))
-			elif substruct[-1] == 'x':
-				output += "\0" * number
-			else:
-				# Get the correct number of arguments
-				new_args = []
-				while len(new_args) < number:
-					new_args.append(args.pop(0))
-					
-				output += apply(_pack, ["!"+substruct,] + new_args)
-		else:
-			if char in smallints and isinstance(args[0], long):
-				args[0] = int(args[0])
-			
-			a = args.pop(0)
-
-			# Check the type of the argument
-			if not isinstance(a, (int, long)):
-				raise TypeError("Argument should be an int or long (to pack to %s), not a %s" % (char, type(a)))
-
-			if char in semi.keys():
-				if a == -1:
-					a = 2**semi[char][0]-1
+			if char == ' ' or char == '!':
+				continue
+			elif char == '{':
+				# Find the closing brace
+				substruct, struct = string.split(struct, '}', maxsplit=1)
+				output += pack_list('L', substruct, args.pop(0))
+			elif char == '[':
+				# Find the closing brace
+				substruct, struct = string.split(struct, ']', maxsplit=1)
+				output += pack_list('I', substruct, args.pop(0))
+			elif char in 'Tt':
+				output += pack_time(args.pop(0), times[char])
+			elif char == 'S':
+				if not isinstance(args[0], (str, unicode)):
+					raise TypeError("Argument should be an string (to pack to S), not a %s" % (char, type(a)))
+				output += pack_string(args.pop(0))
+			elif char in string.digits:
+				# Get all the numbers
+				substruct = char
+				while struct[0] in string.digits:
+					substruct += struct[0]
+					struct = struct[1:]
+				# And the value the number applies to
+				substruct += struct[0]
+				struct = struct[1:]
 				
-				char = semi[char][1]
-			elif char.upper() == char and a < 0:
-				raise TypeError("Argument must be positive (to pack to %s) not %s" % (char, a))
+				number = int(substruct[:-1])
+				if substruct[-1] == 's':
+					output += _pack("!"+substruct, args.pop(0))
+				elif substruct[-1] == 'x':
+					output += "\0" * number
+				else:
+					# Get the correct number of arguments
+					new_args = []
+					while len(new_args) < number:
+						new_args.append(args.pop(0))
+						
+					output += apply(_pack, ["!"+substruct,] + new_args)
+			else:
+				if char in smallints and isinstance(args[0], long):
+					args[0] = int(args[0])
+				
+				a = args.pop(0)
 
-			try:
-				output += _pack("!"+char, a)
-			except _error, e:
-				print "Struct", char, "Args '%s'" % (a,)
-				raise
-			
+				# Check the type of the argument
+				if not isinstance(a, (int, long)):
+					raise TypeError("Argument should be an int or long (to pack to %s), not a %s" % (char, type(a)))
+
+				if char in semi.keys():
+					if a == -1:
+						a = 2**semi[char][0]-1
+					
+					char = semi[char][1]
+				elif char.upper() == char and a < 0:
+					raise TypeError("Argument must be positive (to pack to %s) not %s" % (char, a))
+
+				try:
+					output += _pack("!"+char, a)
+				except _error, e:
+					print "Struct", char, "Args '%s'" % (a,)
+					raise
+	
+	except TypeError, e:
+		traceback = sys.exc_info()[2]
+		while not traceback.tb_next is None:
+			traceback = traceback.tb_next
+		raise TypeError, "%s argument was the cause ('%s' %s), %s" % (len(aargs)-len(args)-1, sstruct, repr(aargs)[1:-1], e), traceback
+		
 	return output
 
 
