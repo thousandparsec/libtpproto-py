@@ -24,7 +24,7 @@ class Describable(Processed):
 		# Unpack the second lot of data
 		moreargs, leftover = unpack(self.substruct, leftover)
 		if len(leftover) > 0:
-			raise ValueError("Extra Data found:" + extra)
+			raise ValueError("Data: %s Structure: %s Extra Data found: %s" % (repr(data), self.substruct, repr(leftover)))
 
 		self.__init__(self.sequence, *(args + moreargs))
 
@@ -38,3 +38,4 @@ class Description(Processed):
 	def __init__(self, sequence, id):
 		Processed.__init__(self, sequence)
 		self.id = id
+
