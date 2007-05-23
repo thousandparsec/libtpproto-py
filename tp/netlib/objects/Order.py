@@ -20,7 +20,7 @@ class Order(Describable):
 		* extra data, as defined by each order type
 	"""
 	no = 11
-	struct = "IjII [II]"
+	struct = "IjIj [II]"
 
 	_name = "Unknown Order"
 
