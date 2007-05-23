@@ -99,8 +99,21 @@ class DynamicBaseOrder(Order):
 				args += list(attr)
 
 		output = Order.__str__(self)
-		output += pack(self.substruct, *args)
-		return output
+		try:
+			output += pack(self.substruct, *args)
+			return output
+		except TypeError, e:
+			s = str(e)
+
+			causedby = '%s %s' % self.names[int(s[:s.find(' ')])]
+			being    = getattr(self, name)
+
+			traceback = sys.exc_info()[2]
+			while not traceback.tb_next is None:
+				traceback = traceback.tb_next
+
+			raise TypeError, '%s was %s\n%s' % (causedby, being, e), traceback
+
 
 	def __repr__(self):
 		return "<netlib.objects.OrderExtra.DynamicOrder - %s @ %s>" % (self._name, hex(id(self)))
