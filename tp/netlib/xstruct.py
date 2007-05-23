@@ -149,15 +149,19 @@ def pack(sstruct, *aargs):
 				try:
 					output += _pack("!"+char, a)
 				except _error, e:
+					# FIXME: Should do something better here!
 					print "Struct", char, "Args '%s'" % (a,)
 					raise
 	
-	except TypeError, e:
+	except (TypeError, _error), e:
 		traceback = sys.exc_info()[2]
 		while not traceback.tb_next is None:
 			traceback = traceback.tb_next
 		raise TypeError, "%s argument was the cause ('%s' %s), %s" % (len(aargs)-len(args)-1, sstruct, repr(aargs)[1:-1], e), traceback
-		
+	
+	if len(args) > 0:
+		raise TypeError("Had too many arguments! Still got the following remaining %r" % args)
+	
 	return output
 
 
