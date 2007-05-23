@@ -202,6 +202,7 @@ class OrderDesc(Description):
 		DynamicOrder.names = []
 		DynamicOrder.subtype = self.id
 	
+		DynamicOrder.struct = ""
 		for name, type, desc in self.arguments:
 			struct, size = struct_map[type]
 
