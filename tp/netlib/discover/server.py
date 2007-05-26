@@ -51,7 +51,7 @@ class ZeroConfServer(object):
 		"""\
 		ServiceRemove(name, type, addr, tpproto, required, optional)
 
-		type in ['tp', 'tps', 'tphttp', 'tphttps']
+		type in ['tp', 'tps', 'tp+http', 'tp+https']
 		addr is (dns, ip, port)
 		
 		Called to remove an old service.
@@ -62,7 +62,7 @@ class ZeroConfServer(object):
 		"""\
 		ServiceAdd(name, type, addr, tpproto, required, optional)
 
-		type in ['tp', 'tps', 'tphttp', 'tphttps']
+		type in ['tp', 'tps', 'tp+http', 'tp+https']
 		addr is (dns, ip, port)
 		
 		Required Parameters:

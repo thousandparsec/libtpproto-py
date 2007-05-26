@@ -43,7 +43,7 @@ class Game(object):
 
 		return len(self.locations) == 0
 
-	preference = ("tps", "tp", "tphttps", "tphttp")
+	preference = ("tps", "tp", "tp+https", "tp+http")
 	def bestLocation(self):
 		for type in self.preference:
 			if self.locations.has_key(type):

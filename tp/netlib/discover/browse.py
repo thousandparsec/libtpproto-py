@@ -17,7 +17,7 @@ class ZeroConfBrowser(Browser):
 		"""\
 		ServiceFound(name, type, addr, tpproto, required, optional)
 
-		type in ['tp', 'tps', 'tphttp', 'tphttps']
+		type in ['tp', 'tps', 'tp+http', 'tp+https']
 		addr is (dns, ip, port)
 		
 		Required Parameters:
@@ -64,7 +64,7 @@ class ZeroConfBrowser(Browser):
 
 		GameGone(name, type, addr)
 
-		type in ['tp', 'tps', 'tphttp', 'tphttps']
+		type in ['tp', 'tps', 'tp+http', 'tp+https']
 		addr is (dns, ip, port)
 		"""
 

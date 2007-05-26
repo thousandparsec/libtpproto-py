@@ -10,7 +10,7 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 		ZeroConfBrowserBase.__init__(self)
 
 		types = []
-		for stype in ['_tp', '_tps', '_tphttp', '_tphttps']:
+		for stype in ['_tp', '_tps', '_tp+http', '_tp+https']:
 			types.append(stype+'._tcp.local.')
 		self.types = types		
 

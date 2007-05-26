@@ -15,6 +15,7 @@ service_type_db = avahi.ServiceTypeDatabase.ServiceTypeDatabase()
 service_seen = {}
 
 from server import ZeroConfServer as ZeroConfServerBase
+from threading import Thread
 
 class ZeroConfServer(ZeroConfServerBase):
 	def check():
