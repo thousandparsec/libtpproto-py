@@ -1,5 +1,7 @@
 
-class ZeroConfServer(object):
+from game import Game
+
+class Server(object):
 	def __init__(self):
 		self.games = {}
 
@@ -17,10 +19,6 @@ class ZeroConfServer(object):
 			raise SyntaxException("Game with that name already exists!")
 		
 		self.games[game.name] = game
-		
-		for type in game.locations.keys():
-			for location in game.locations[type]:
-				self.ServiceAdd(game.name, type, location, game.required, game.optional)
 
 	def GameUpdate(self, game):
 		"""\
@@ -42,10 +40,27 @@ class ZeroConfServer(object):
 			raise SyntaxException("Game with that name does not exist!")
 
 		oldgame = self.games[game.name]
+		del self.games[game.name]
+		return oldgame
+
+class ZeroConfServer(Server):
+	def __init__(self):
+		self.games = {}
+
+	def GameAdd(self, game):
+		Server.GameAdd(self, game)
 		for type in game.locations.keys():
 			for location in game.locations[type]:
+				self.ServiceAdd(game.name, type, location, game.required, game.optional)
+
+	def GameRemove(self, game):
+		"""\
+		Remove a game which is being advertised by ZeroConf.
+		"""
+		oldgame = Server.GameRemove(self, game)
+		for type in oldgame.locations.keys():
+			for location in oldgame.locations[type]:
 				self.ServiceRemove(game.name, type, location)
-		del self.games[game.name]
 
 	def ServiceRemove(self, name, type, addr):
 		"""\
