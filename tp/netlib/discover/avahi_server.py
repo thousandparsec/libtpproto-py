@@ -39,7 +39,7 @@ class ZeroConfServer(ZeroConfServerBase):
 		self.server = dbus.Interface(bus.get_object(avahi.DBUS_NAME, avahi.DBUS_PATH_SERVER), avahi.DBUS_INTERFACE_SERVER)
 
 	def ServiceRemove(self, name, type, addr):
-		print "ServiceRemove"
+		#print "ServiceRemove"
 		key = (name, type, addr)
 		if key in self.groups:
 			group = self.groups[key]
@@ -47,7 +47,7 @@ class ZeroConfServer(ZeroConfServerBase):
 			group.Reset()
 
 	def ServiceAdd(self, name, type, addr, required, optional):
-		print "ServiceAdd"
+		#print "ServiceAdd"
 
 		stype = "_%s._tcp" % type
 
@@ -55,15 +55,15 @@ class ZeroConfServer(ZeroConfServerBase):
 		group = dbus.Interface(dbus.SystemBus().get_object(avahi.DBUS_NAME, entrygroup), avahi.DBUS_INTERFACE_ENTRY_GROUP)
 
 		def entry_group_state_changed(state, hrm, self=self, entrygroup=entrygroup):
-			print "entry_group_state_changed...."
-			print state, hrm, self, entrygroup
+			#print "entry_group_state_changed...."
+			#print state, hrm, self, entrygroup
 			group = dbus.Interface(dbus.SystemBus().get_object(avahi.DBUS_NAME, self.server.EntryGroupNew()), avahi.DBUS_INTERFACE_ENTRY_GROUP)
 			self.entry_group_state_changed(group, state)
 		group.connect_to_signal('StateChanged', entry_group_state_changed)
 
-		print "Adding service '%s' of type '%s' ..." % (name, stype)
+		#print "Adding service '%s' of type '%s' ..." % (name, stype)
 		txt = self.dict_to_pair(required) + self.dict_to_pair(optional)
-		print txt, addr, avahi.string_array_to_txt_array(txt)
+		#print txt, addr, avahi.string_array_to_txt_array(txt)
 		group.AddService(avahi.IF_UNSPEC, avahi.PROTO_UNSPEC, 0,
 			name, stype, "", "", dbus.UInt16(addr[2]), 
 			avahi.string_array_to_txt_array(txt))
@@ -72,7 +72,7 @@ class ZeroConfServer(ZeroConfServerBase):
 		self.groups[(name, type, addr)] = group
 
 	def entry_group_state_changed(self, group, state):
-		print "entry_group_state_changed..."
+		#print "entry_group_state_changed..."
 		if state == avahi.ENTRY_GROUP_ESTABLISHED:
 			print group, "Service established."
 		elif state == avahi.ENTRY_GROUP_COLLISION:
@@ -97,7 +97,7 @@ class ZeroConfServer(ZeroConfServerBase):
 	######################################
 
 	def run(self):
-		print "avahi_browse", self
+		#print "avahi_browse", self
 
 		self.mainloop = gobject.MainLoop()
 		gcontext = self.mainloop.get_context()
