@@ -74,7 +74,7 @@ def import_subtype(p, py2exe=None, installer=None):
 	return subtypes
 
 _descriptions = None
-def descriptions():
+def descriptions(added=None):
 	global _descriptions
 
 	if _descriptions == None:
@@ -91,5 +91,8 @@ def descriptions():
 				_descriptions = import_subtype("tp.netlib.objects.ObjectExtra", installer=this.contents())
 			except AttributeError, e:
 				_descriptions = import_subtype(edir(__file__))
+	
+	if added != None:
+		_descriptions[ added.subtype ] = added
 	
 	return _descriptions

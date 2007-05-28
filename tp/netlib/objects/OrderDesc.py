@@ -9,11 +9,11 @@ from ObjectDesc import *
 _descriptions = None
 def descriptions(added=None):
 	global _descriptions
- 
+
 	if _descriptions == None:
 		try:
 			_descriptions = import_subtype(edir(__file__), py2exe=__loader__)
-		except NameError:
+		except NameError, e:
 			try:
 				import sys
 				if sys.frozen == "macosx_app":
@@ -22,7 +22,7 @@ def descriptions(added=None):
 				import carchive
 				this = carchive.CArchive(sys.executable).openEmbeddedZlib("out1.pyz")
 				_descriptions = import_subtype("tp.netlib.objects.OrderExtra", installer=this.contents())
-			except AttributeError:
+			except AttributeError, e:
 				_descriptions = import_subtype(edir(__file__))
 	
 	if added != None:
@@ -216,4 +216,3 @@ class OrderDesc(Description):
 		descriptions(self.build())
 		
 __all__ = ["descriptions", "OrderDesc"]
-

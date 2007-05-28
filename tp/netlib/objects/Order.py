@@ -53,7 +53,6 @@ class Order(Describable):
 			except KeyError, e:
 				raise DescriptionError(sequence, subtype)
 
-
 	def __str__(self):
 		output = Describable.__str__(self)
 		output += pack(self.struct, self.id, self.slot, self._subtype, self.turns, self.resources)

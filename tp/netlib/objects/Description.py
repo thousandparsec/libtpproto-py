@@ -39,3 +39,4 @@ class Description(Processed):
 		Processed.__init__(self, sequence)
 		self.id = id
 
+
