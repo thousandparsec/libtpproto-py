@@ -36,8 +36,13 @@ class Planet(Object):
 			order_number, \
 			modify_time)
 
-		self.length += 4 + 4 + 12 * len(resources)
+		self.length += 4 + 4 + 16 * len(resources)
 		self.owner = owner
+
+		for r in resources:
+			if len(r) != 4:
+				raise TypeError("Resources should be 4 length, <id> <surface> <minable> <inaccess>")
+
 		self.resources = resources
 	
 	def __str__(self):
