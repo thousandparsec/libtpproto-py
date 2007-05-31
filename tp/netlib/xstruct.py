@@ -65,14 +65,17 @@ def hexbyte(string):
 	"""\
 	Takes a string and prints out the bytes in hex.
 	"""
+#	return repr(string)
 	s = ""
 	for i in string:
-		s += str(hex(ord(i)))
 		if (ord(i) >= ord('A') and ord(i) <= ord('z')) \
 			or (ord(i) >= ord('0') and ord(i) <= ord('9')) \
 			or (ord(i) == ord(" ")):
-			s += "(%s)" % i
-		s += " "
+			s += "%s" % i
+		else:
+			s += "\\x%02x" % ord(i)
+
+#		s += " "
 	return s
 
 def pack(sstruct, *aargs):
