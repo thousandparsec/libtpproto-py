@@ -12,7 +12,7 @@ class Game(object):
 	def __str__(self):
 		s = "<Game '%s' \n" % self.name
 		for type in self.locations.keys():
-			s+= "\t%s\t@ " % type
+			s+= "\t%s\t@ " % (type+'\t', type)[len(type) > 7]
 			for addr in self.locations[type]:
 				s+= "%s (%s) p %s, " % addr
 			s = s[:-2] + "\n"
