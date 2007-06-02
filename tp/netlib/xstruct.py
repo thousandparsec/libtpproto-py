@@ -106,8 +106,8 @@ def pack(sstruct, *aargs):
 			elif char in 'Tt':
 				output += pack_time(args.pop(0), times[char])
 			elif char == 'S':
-				if not isinstance(args[0], (str, unicode)):
-					raise TypeError("Argument should be an string (to pack to S), not a %s" % (char, type(a)))
+				if not isinstance(args[0], (str, unicode, buffer)):
+					raise TypeError("Argument should be an string (to pack to %s), not a %s" % (char, type(args[0])))
 				output += pack_string(args.pop(0))
 			elif char in string.digits:
 				# Get all the numbers
@@ -160,7 +160,7 @@ def pack(sstruct, *aargs):
 		traceback = sys.exc_info()[2]
 		while not traceback.tb_next is None:
 			traceback = traceback.tb_next
-		raise TypeError, "%s argument was the cause ('%s' %s), %s" % (len(aargs)-len(args)-1, sstruct, repr(aargs)[1:-1], e), traceback
+		raise TypeError, "%i argument was the cause ('%s' %s)\n\t%s" % (len(aargs)-len(args)-1, sstruct, repr(aargs)[1:-1], str(e).replace('\n', '\n\t')), traceback
 	
 	if len(args) > 0:
 		raise TypeError("Had too many arguments! Still got the following remaining %r" % args)
