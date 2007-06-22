@@ -15,7 +15,6 @@ service_type_db = avahi.ServiceTypeDatabase.ServiceTypeDatabase()
 service_seen = {}
 
 from server import ZeroConfServer as ZeroConfServerBase
-from threading import Thread
 
 class ZeroConfServer(ZeroConfServerBase):
 	def check():
@@ -86,7 +85,7 @@ class ZeroConfServer(ZeroConfServerBase):
 	def dict_to_pair(self, l):
 		res = []
 		for key, value in l.items():
-			if len(value) < 1:
+			if value is None:
 				res.append(key)
 			else:
 				res.append("%s=%s" % (key, value))
@@ -98,7 +97,6 @@ class ZeroConfServer(ZeroConfServerBase):
 
 	def run(self):
 		#print "avahi_browse", self
-
 		self.mainloop = gobject.MainLoop()
 		gcontext = self.mainloop.get_context()
 
@@ -110,8 +108,9 @@ class ZeroConfServer(ZeroConfServerBase):
 				time.sleep(0.01)
 
 	def exit(self):
-		self.mainloop.quit()
-		self.mainloop = None
+		if hasattr(self, 'mainloop'):
+			self.mainloop.quit()
+			self.mainloop = None
 
 def main():
 	from game import Game

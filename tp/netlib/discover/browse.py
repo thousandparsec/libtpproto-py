@@ -10,6 +10,13 @@ class Browser(object):
 
 from game import Game
 class ZeroConfBrowser(Browser):
+	ZeroconfMap = {
+		'tp'  : 'tp',
+		'tps' : 'tps',
+		'tp-http' : 'tp+http', 
+		'tp-https': 'tp+https'
+		}
+
 	def __init__(self):
 		self.games = {}
 
@@ -37,6 +44,8 @@ class ZeroConfBrowser(Browser):
 
 		Called when a new server is found.
 		"""
+		type = self.ZeroconfMap[type]
+
 		required_keys = ['tp', 'server', 'sertype', 'rule', 'rulever']
 		for r in required_keys:
 			if not r in required:
@@ -67,6 +76,7 @@ class ZeroConfBrowser(Browser):
 		type in ['tp', 'tps', 'tp+http', 'tp+https']
 		addr is (dns, ip, port)
 		"""
+		type = self.ZeroconfMap[type]	
 
 		if not self.games.has_key(name):
 			# FIXME: Should print error

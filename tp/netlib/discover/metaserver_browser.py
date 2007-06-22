@@ -7,8 +7,8 @@ metaserver = "http://metaserver.thousandparsec.net/"
 
 def getpacket(data):
 	header, data = data[:objects.Header.size], data[objects.Header.size:]
-	p = objects.Header(header)
-	p.process(data[:p.length])
+	p = objects.Header.fromstr(header)
+	p.__process__(data[:p.length])
  	return p, data[p.length:]
 
 from tp.netlib import objects

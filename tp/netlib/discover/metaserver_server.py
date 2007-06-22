@@ -34,12 +34,11 @@ class MetaServerServer(Server):
 		del self.games[game.name]
 		self.games.remove(game)
 
-
 	def exit(self):
 		self._exit = True
 
 	def run(self):
-		print "metaserver_browse", self
+		print "metaserver_server", self
 
 		while not self._exit:
 			now = time.time()
@@ -53,12 +52,16 @@ class MetaServerServer(Server):
 					for n, v in game.optional.items():
 						param[n] = v
 
+					i = 0
 					for type, locations in game.locations.items():
-						for i, location in enumerate(locations):
+						for location in locations:
 							param['type%i' % i] = type
 							param['dns%i'  % i] = location[0]
 							param['ip%i'   % i] = location[1]
 							param['port%i' % i] = location[2]
+							i += 1
+
+					print param
 
 					data = urllib.urlopen(metaserver, urllib.urlencode(param)).read()
 					print data

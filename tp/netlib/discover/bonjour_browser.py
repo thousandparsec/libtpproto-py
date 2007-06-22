@@ -81,7 +81,7 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 
 	def run(self):
 		serviceRefs = {}
-		for stype in ['_tp', '_tps', '_tp+http', '_tp+https']:
+		for stype in ['_tp', '_tps', '_tp-http', '_tp-https']:
 			stype = stype+'._tcp'
 			print "registering for", stype
 			# Allocate a service discovery ref and browse for the specified service type

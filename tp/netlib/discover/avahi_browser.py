@@ -126,7 +126,7 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 			print e
 			traceback.print_exc()
 
-		for stype in ['_tp', '_tps', '_tp+http', '_tp+https']:
+		for stype in ['_tp', '_tps', '_tp-http', '_tp-https']:
 			stype = stype+'._tcp'
 			b = dbus.Interface( \
 					self.bus.get_object(avahi.DBUS_NAME, \

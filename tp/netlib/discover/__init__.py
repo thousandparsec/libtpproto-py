@@ -36,6 +36,7 @@ except ImportError, e:
 			print e
 
 from metaserver_browser import MetaServerBrowser as RemoteBrowser
+from metaserver_server  import MetaServerServer  as RemoteServer
 
 if __name__ == '__main__':
 	a = LocalBrowser()

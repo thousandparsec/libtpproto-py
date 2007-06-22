@@ -10,7 +10,7 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 		ZeroConfBrowserBase.__init__(self)
 
 		types = []
-		for stype in ['_tp', '_tps', '_tp+http', '_tp+https']:
+		for stype in ['_tp', '_tps', '_tp-http', '_tp-https']:
 			types.append(stype+'._tcp.local.')
 		self.types = types		
 
@@ -40,7 +40,6 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 				break
 			print "Unable to get service info for %s (%s) :(" % (name, type)
 			i+=1
-
 
 	def run(self):
 		try:

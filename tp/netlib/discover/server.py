@@ -51,6 +51,7 @@ class ZeroConfServer(Server):
 		Server.GameAdd(self, game)
 		for type in game.locations.keys():
 			for location in game.locations[type]:
+				type = type.replace('+', '-')
 				self.ServiceAdd(game.name, type, location, game.required, game.optional)
 
 	def GameRemove(self, game):
@@ -60,6 +61,7 @@ class ZeroConfServer(Server):
 		oldgame = Server.GameRemove(self, game)
 		for type in oldgame.locations.keys():
 			for location in oldgame.locations[type]:
+				type = type.replace('+', '-')
 				self.ServiceRemove(game.name, type, location)
 
 	def ServiceRemove(self, name, type, addr):
