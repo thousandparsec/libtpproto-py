@@ -4,10 +4,10 @@ import urllib
 
 from server import Server, Game
 metaserver = "http://metaserver.thousandparsec.net/"
-metaserver = "http://localhost/"
 
 class MetaServerServer(Server):
-	def __init__(self, timeout=60*10):
+	def __init__(self, metaserver=metaserver, timeout=60*10):
+		self.server  = metaserver
 		self.timeout = timeout
 		self.waittill = 0
 		self.games = {}
@@ -63,14 +63,17 @@ class MetaServerServer(Server):
 
 					print param
 
-					data = urllib.urlopen(metaserver, urllib.urlencode(param)).read()
+					data = urllib.urlopen(self.server, urllib.urlencode(param)).read()
 					print data
 
 				self.waittill = now + self.timeout
-			time.sleep(min(60, self.waittill - time.time()))
+			try:
+				time.sleep(min(60, self.waittill - time.time()))
+			except OSError, e:
+				print e, self.waittill - time.time()
 
 def main():
-	a = MetaServerServer()
+	a = MetaServerServer('localhost')
 
 	g = Game('testing!')
 	g.updateRequired({'key': 'abc', 'tp': '0.3', 'server': 'bazillion!', 'sertype': 'none!', 'rule':'Testing', 'rulever': '0.0.1'})
