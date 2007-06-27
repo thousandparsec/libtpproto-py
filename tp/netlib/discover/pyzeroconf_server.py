@@ -23,7 +23,7 @@ class ZeroConfServer(ZeroConfServerBase):
 		ZeroConfServerBase.__init__(self)
 
 		self.services = {}
-		self.server = Zeroconf.Zeroconf("202.20.67.199")
+		self.server = Zeroconf.Zeroconf("0.0.0.0")
 
 	def ServiceRemove(self, name, type, addr):
 		print "ServiceRemove", name, type, addr
