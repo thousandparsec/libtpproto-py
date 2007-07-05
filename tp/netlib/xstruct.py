@@ -153,7 +153,7 @@ def pack(sstruct, *aargs):
 					output += _pack("!"+char, a)
 				except _error, e:
 					# FIXME: Should do something better here!
-					print "Struct", char, "Args '%s'" % (a,)
+					#print "Struct", char, "Args '%s'" % (a,)
 					raise
 	
 	except (TypeError, _error), e:
@@ -225,6 +225,8 @@ def unpack(struct, s):
 				substruct = "!"+char
 
 			size = _calcsize(substruct)
+			if size > len(s):
+				raise TypeError("Not enough data for %s, needed %s bytes got %r (%s bytes)" % (substruct[1:], size, s, len(s)))
 
 			try:
 				data = _unpack(substruct, s[:size])
