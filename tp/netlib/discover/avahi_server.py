@@ -19,8 +19,8 @@ from server import ZeroConfServer as ZeroConfServerBase
 class ZeroConfServer(ZeroConfServerBase):
 	def check():
 		bus = dbus.SystemBus()
-		server = dbus.Interface(bus.get_object(avahi.DBUS_NAME, avahi.DBUS_PATH_SERVER), avahi.DBUS_INTERFACE_SERVER)
 		try:
+			server = dbus.Interface(bus.get_object(avahi.DBUS_NAME, avahi.DBUS_PATH_SERVER), avahi.DBUS_INTERFACE_SERVER)
 			print "avahi version", server.GetVersionString()
 		except dbus.DBusException, e:
 			print e
