@@ -214,6 +214,10 @@ def unpack(struct, s):
 			struct = struct[1:]
 			
 			size = _calcsize(substruct)
+			size = _calcsize(substruct)
+			if size > len(s):
+				raise TypeError("Not enough data for %s, needed %s bytes got %r (%s bytes)" % (substruct[1:], size, s, len(s)))
+
 			data = _unpack("!"+substruct, s[:size])
 			s = s[size:]
 
@@ -272,7 +276,11 @@ def unpack_list(length_struct, struct, s):
 
 	list = []
 	for i in range(0, length):
-		output, s = unpack(struct, s)
+		try:
+			output, s = unpack(struct, s)
+		except TypeError, e:
+			raise TypeError("Problem unpacking list item (index %s): %s" % (i, e))
+
 		if len(output) == 1:
 			list.append(output[0])
 		else:
@@ -305,9 +313,16 @@ def unpack_string(s):
 		return "", s
 	
 	# Remove the length
-	(l, ), s = unpack("I", s)
+	try:
+		(l, ), s = unpack("I", s)
+	except TypeError, e:
+		raise TypeError("Problem unpacking length of string: %s" % e)
+
 	if l > 0:
 		# Get the string, (we don't need the null terminator so nuke it)
+		if len(s) < l:
+			raise TypeError("Not enough data for string, length said %s bytes got %r (%s bytes)" % (l, s, len(s)))
+
 		output = s[:l]
 		s = s[l:]
 		
@@ -329,7 +344,11 @@ def unpack_time(s, type='I'):
 
 	Returns the datetime object and any remaining data.
 	"""
-	(l,), s = unpack("!"+type, s)
+	try:
+		(l,), s = unpack("!"+type, s)
+	except TypeError, e:
+		raise TypeError("Problem unpacking time: %s" % e)
+
 	if l < 0:
 		return None
 	return datetime.fromtimestamp(l), s
