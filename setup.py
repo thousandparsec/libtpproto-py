@@ -1,10 +1,7 @@
 #!/usr/bin/env python
 
-import pkg_resources
-pkg_resources.require('libtpproto-py')
-
 from tp.netlib import version
-version = "%s.%s.%s" % version
+version = "%s.%s.%s" % version[0:3]
 
 from setuptools import setup
 
