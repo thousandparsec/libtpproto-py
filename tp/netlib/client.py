@@ -522,7 +522,7 @@ class ClientConnection(Connection):
 
 		# Send a connect packet
 		from version import version
-		p = objects.Connect(self.no, ("libtpproto-py/%i.%i.%i " % version) + str)
+		p = objects.Connect(self.no, ("libtpproto-py/%i.%i.%i " % version[:3]) + str)
 		self._send(p)
 
 		if self._noblock():
