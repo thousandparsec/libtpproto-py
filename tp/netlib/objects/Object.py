@@ -100,6 +100,8 @@ class Object(Describable):
 		"""\
 		Return a reconisable string.
 		"""
+		return "<%s @ %s>" % \
+			(self.__class__.__name__, self.id)
 		return "<%s @ %s (seq: %i length: %i)>" % \
 			(self.__class__.__name__, hex(id(self)),
 				self.sequence, self.length)
