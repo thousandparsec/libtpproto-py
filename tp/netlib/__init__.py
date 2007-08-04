@@ -3,8 +3,9 @@ import sys
 from os import path
 sys.path.insert(0, path.dirname(__file__))
 
-from version import version
-__version__ = version
+from version import version, installpath
+__version__  = version
+__installpath__ = installpath
 
 from client import ClientConnection, failed
 from server import Server, ServerConnection
