@@ -9,7 +9,7 @@ class TimeRemaining(Processed):
 		* UInt32, Seconds left till the turn ends.
 	"""
 	no = 15
-	struct = "I"
+	struct = "j"
 
 	def __init__(self, sequence, time):
 		Processed.__init__(self, sequence)
