@@ -25,9 +25,9 @@ class Describable(Processed):
 		try:
 			moreargs, leftover2 = unpack(self.substruct, leftover)
 			if len(leftover2) > 0:
-				raise ValueError("\nError when processing %s.\nExtra data found: %r \nStructure: %s, Data: %r" % (self.__class__, leftover2, self.substruct, leftover))
+				raise ValueError("\nError when processing %s.\nClass Structure: %s, Given Data: %r\nExtra data found: %r " % (self.__class__, self.substruct, leftover, leftover2))
 		except TypeError, e:
-			raise ValueError("\nError when processing %s.\nNot enough data found: %s\nStructure: %s, Data: %r" % (self.__class__, e, self.substruct, leftover))
+			raise ValueError("\nError when processing %s.\nClass Structure: %s, Given Data: %r\nNot enough data found: %s" % (self.__class__, self.substruct, leftover, e))
 
 		self.__init__(self.sequence, *(args + moreargs))
 
