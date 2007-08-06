@@ -30,7 +30,7 @@ def descriptions(added=None):
 	
 	return _descriptions
 
-struct_map = {
+ARG_STRUCTMAP = {
 	ARG_ABS_COORD:	("qqq",			3),
 	ARG_TIME: 		("Ij",			2),
 	ARG_OBJECT:		("I",			1),
@@ -58,6 +58,9 @@ class DynamicBaseOrder(Order):
 
 	__metaclass__ = ClassNicePrint
 
+	ARG_STRUCTMAP = ARG_STRUCTMAP
+	ARG_NAMEMAP   = ARG_NAMEMAP
+
 	def __init__(self, sequence, id, type, slot, turns, resources, *args, **kw):
 		Order.__init__(self, sequence, id, type, slot, turns, resources)
 
@@ -67,7 +70,7 @@ class DynamicBaseOrder(Order):
 		short = (len(args) == len(self.names))
 
 		for name, type in self.names:
-			struct, size = struct_map[type]
+			struct, size = ARG_STRUCTMAP[type]
 
 			if short:
 				size = 1
@@ -87,7 +90,7 @@ class DynamicBaseOrder(Order):
 	def __str__(self):
 		args = []
 		for name, type in self.names:
-			struct, size = struct_map[type]
+			struct, size = ARG_STRUCTMAP[type]
 			
 			attr = getattr(self, name)
 			if size == 1:
@@ -201,7 +204,7 @@ class OrderDesc(Description):
 	
 		DynamicOrder.substruct = ""
 		for name, type, desc in self.arguments:
-			struct, size = struct_map[type]
+			struct, size = ARG_STRUCTMAP[type]
 
  			DynamicOrder.names.append((name, type))
 			DynamicOrder.substruct += struct
