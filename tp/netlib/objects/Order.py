@@ -58,3 +58,10 @@ class Order(Describable):
 		output += pack(self.struct, self.id, self.slot, self._subtype, self.turns, self.resources)
 		return output
 
+	def __repr__(self):
+		"""\
+		Return a reconisable string.
+		"""
+		return "<Order - %s @ %s (seq: %i length: %i)>" % \
+			(self.__class__.__name__, hex(id(self)), self.sequence, self.length)
+
