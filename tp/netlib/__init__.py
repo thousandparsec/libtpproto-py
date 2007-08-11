@@ -3,9 +3,10 @@ import sys
 from os import path
 sys.path.insert(0, path.dirname(__file__))
 
-from version import version, installpath
-__version__  = version
-__installpath__ = installpath
+from version import version as vi
+from version import installpath as ip
+__version__     = vi
+__installpath__ = ip
 
 from client import ClientConnection, failed
 from server import Server, ServerConnection

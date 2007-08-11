@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from tp.netlib import version
+from tp.netlib import __version__ as version
 version = "%s.%s.%s" % version[0:3]
 
 from setuptools import setup
