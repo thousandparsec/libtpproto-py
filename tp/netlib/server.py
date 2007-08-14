@@ -261,7 +261,7 @@ trYiuEhD5HiV/W6DM4WBMg+5
 		"""
 		pass
 
-	def serve_forever(self):
+	def serve_forever(self, timeout=None):
 		poller = select.poll()
 		for s in self.s:
 			poller.register(s, select.POLLIN)
@@ -274,7 +274,7 @@ trYiuEhD5HiV/W6DM4WBMg+5
 
 			# Check if there is any socket to accept or with data
 			try:
-				events = poller.poll()
+				events = poller.poll(timeout)
 			except select.error, e:
 				if e[0] == errno.EINTR:
 					continue
