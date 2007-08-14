@@ -78,6 +78,8 @@ def hexbyte(string):
 #		s += " "
 	return s
 
+
+noarg = "0123456789 !x"
 def pack(sstruct, *aargs):
 	"""\
 	Takes a structure string and the arguments to pack in the format
@@ -93,7 +95,7 @@ def pack(sstruct, *aargs):
 			char = struct[0]
 			struct = struct[1:]
 			
-			if len(args) == 0:
+			if (not char in noarg) and len(args) == 0:
 				raise TypeError('Ran out of arguments, still had %s%s left of the structure' % (char, struct))
 
 			if char == ' ' or char == '!':
