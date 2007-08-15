@@ -32,6 +32,7 @@ Includes support for:
 		'tp.netlib.objects',
 		'tp.netlib.objects.ObjectExtra',
 		'tp.netlib.objects.OrderExtra',
+		'tp.netlib.discover',
 		'tp.netlib.support',
 		],
 )
