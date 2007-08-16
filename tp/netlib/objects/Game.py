@@ -23,7 +23,7 @@ class Game(Processed):
 			* a String, String Value
 			* a UInt32, Int Value
 	"""
-	no = 63
+	no = 66
 	struct = "SS[S]SSSS[SSSI][ISI]"
 	options = {
 		1: ("plys", "players", "Number of Players in the game."),

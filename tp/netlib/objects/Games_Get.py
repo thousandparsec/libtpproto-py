@@ -7,7 +7,7 @@ class Games_Get(Processed):
 	"""\
 	The Games_Get packet has no data.
 	"""
-	no = 64
+	no = 65
 	struct = ""
 	
 	def __init__(self, sequence):
