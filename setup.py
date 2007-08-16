@@ -33,6 +33,7 @@ Includes support for:
 		'tp.netlib.objects.ObjectExtra',
 		'tp.netlib.objects.OrderExtra',
 		'tp.netlib.discover',
+		'tp.netlib.discover.pyZeroconf',
 		'tp.netlib.support',
 		],
 )
