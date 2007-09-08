@@ -16,6 +16,8 @@ service_seen = {}
 
 from browse import ZeroConfBrowser as ZeroConfBrowserBase
 
+import threading
+
 class ZeroConfBrowser(ZeroConfBrowserBase):
 	def check():
 		bus = dbus.SystemBus()
@@ -74,10 +76,17 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 	######################################
 	# Callback functions
 	######################################
+	def callback(self, function):
+		def wrapper(*args, **kw):
+			self.pending.append((function, args, kw))
+		return wrapper
+
 	def service_resolved(self, interface, protocol, name, stype, domain, host, aprotocol, address, port, txt, flags):
 		"""\
 		Called when all the information about a service is avaliable.
 		"""
+		assert threading.currentThread() == self.dbusthread
+
 		if len(txt) != 0:
 			details = self.pair_to_dict(avahi.txt_array_to_string_array(txt))
 		else:
@@ -89,20 +98,25 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 		"""\
 		Called when a new service is found.
 		"""
+		assert threading.currentThread() == self.dbusthread
+
 		self.server.ResolveService( interface, protocol, name, stype, domain, \
-			avahi.PROTO_UNSPEC, dbus.UInt32(0), reply_handler=self.service_resolved, error_handler=self.print_error)
+			avahi.PROTO_UNSPEC, dbus.UInt32(0), reply_handler=self.callback(self.service_resolved), error_handler=self.callback(self.print_error))
 
 	def remove_service(self, interface, protocol, name, stype, domain, flags):
 		"""\
 		Called when a service disappears.
 		"""
+		assert threading.currentThread() == self.dbusthread
+
 		self.ServiceGone(name, stype.split('.')[0][1:], None)
 
 	def new_domain(self, interface, protocol, domain, flags):
 		"""\
 		Called when a new domain appears.
 		"""
-		print self, interface, protocol, domain, flags
+		assert threading.currentThread() == self.dbusthread
+
 		ifn = self.get_interface_name(interface, protocol)
 		if domain != "local":
 			self.browse_domain(interface, protocol, domain)
@@ -111,6 +125,9 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 		"""
 		Register to browse a given domain.
 		"""
+		assert threading.currentThread() == self.dbusthread
+
+		# FIXME: This is probably quite bad!
 		global service_type_browsers
 
 		# Are we already browsing this domain?
@@ -132,18 +149,20 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 					self.bus.get_object(avahi.DBUS_NAME, \
 						self.server.ServiceBrowserNew(interface, protocol, stype, domain, dbus.UInt32(0))
 					), avahi.DBUS_INTERFACE_SERVICE_BROWSER)
-			b.connect_to_signal('ItemNew', self.new_service)
-			b.connect_to_signal('ItemRemove', self.remove_service)
 			service_browsers[(interface, protocol, stype, domain)] = b
+			b.connect_to_signal('ItemNew', self.callback(self.new_service))
+			b.connect_to_signal('ItemRemove', self.callback(self.remove_service))
 
 	def __init__(self):
 		ZeroConfBrowserBase.__init__(self)
 
-		self.bus = dbus.SystemBus()
-		self.server = dbus.Interface(self.bus.get_object(avahi.DBUS_NAME, avahi.DBUS_PATH_SERVER), avahi.DBUS_INTERFACE_SERVER)
+		self.pending = []
 
 	def run(self):
-		print "avahi_browse", self
+		self.dbusthread = threading.currentThread()
+
+		self.bus = dbus.SystemBus()
+		self.server = dbus.Interface(self.bus.get_object(avahi.DBUS_NAME, avahi.DBUS_PATH_SERVER), avahi.DBUS_INTERFACE_SERVER)
 
 		# Explicitly browse .local
 		self.browse_domain(avahi.IF_UNSPEC, avahi.PROTO_UNSPEC, "local")
@@ -155,11 +174,14 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 		self.mainloop = gobject.MainLoop()
 		gcontext = self.mainloop.get_context()
 		while not self.mainloop is None:
+			if len(self.pending) > 0:
+				command, args, kw = self.pending.pop(0)
+				command(*args, **kw)
+
 			if gcontext.pending():
 				gcontext.iteration()
 			else:
 				time.sleep(0.01)
-			
 
 	def exit(self):
 		self.mainloop.quit()
