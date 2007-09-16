@@ -6,8 +6,7 @@ import avahi, avahi.ServiceTypeDatabase
 
 import gobject 
 import dbus
-if getattr(dbus, 'version', (0,0,0)) >= (0,41,0):
-    import dbus.glib
+from dbus.mainloop.glib import DBusGMainLoop
 
 service_type_browsers = {}
 service_browsers = {}
@@ -20,7 +19,7 @@ import threading
 
 class ZeroConfBrowser(ZeroConfBrowserBase):
 	def check():
-		bus = dbus.SystemBus()
+		bus = dbus.SystemBus(mainloop=DBusGMainLoop(set_as_default=False))
 		try:
 			server = dbus.Interface(bus.get_object(avahi.DBUS_NAME, avahi.DBUS_PATH_SERVER), avahi.DBUS_INTERFACE_SERVER)
 			print "avahi version", server.GetVersionString()
@@ -161,8 +160,9 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 	def run(self):
 		self.dbusthread = threading.currentThread()
 
-		self.bus = dbus.SystemBus()
-		self.server = dbus.Interface(self.bus.get_object(avahi.DBUS_NAME, avahi.DBUS_PATH_SERVER), avahi.DBUS_INTERFACE_SERVER)
+		self.mainloop = gobject.MainLoop()
+		self.bus      = dbus.SystemBus(mainloop=self.mainloop)
+		self.server   = dbus.Interface(self.bus.get_object(avahi.DBUS_NAME, avahi.DBUS_PATH_SERVER), avahi.DBUS_INTERFACE_SERVER)
 
 		# Explicitly browse .local
 		self.browse_domain(avahi.IF_UNSPEC, avahi.PROTO_UNSPEC, "local")
@@ -171,7 +171,6 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 		db = dbus.Interface(self.bus.get_object(avahi.DBUS_NAME, self.server.DomainBrowserNew(avahi.IF_UNSPEC, avahi.PROTO_UNSPEC, "", avahi.DOMAIN_BROWSER_BROWSE, dbus.UInt32(0))), avahi.DBUS_INTERFACE_DOMAIN_BROWSER)
 		db.connect_to_signal('ItemNew', self.new_domain)
 
-		self.mainloop = gobject.MainLoop()
 		gcontext = self.mainloop.get_context()
 		while not self.mainloop is None:
 			if len(self.pending) > 0:
