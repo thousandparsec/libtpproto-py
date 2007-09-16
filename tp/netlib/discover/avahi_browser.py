@@ -155,13 +155,18 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 	def __init__(self):
 		ZeroConfBrowserBase.__init__(self)
 
+		import dbus.mainloop.glib
+		dbus.mainloop.glib.threads_init()
+
 		self.pending = []
 
 	def run(self):
 		self.dbusthread = threading.currentThread()
 
-		self.mainloop = gobject.MainLoop()
-		self.bus      = dbus.SystemBus(mainloop=self.mainloop)
+		from dbus.mainloop.glib import DBusGMainLoop
+		mainloop = DBusGMainLoop(set_as_default=True)
+		self.bus = dbus.SystemBus(mainloop=mainloop)
+
 		self.server   = dbus.Interface(self.bus.get_object(avahi.DBUS_NAME, avahi.DBUS_PATH_SERVER), avahi.DBUS_INTERFACE_SERVER)
 
 		# Explicitly browse .local
@@ -171,6 +176,7 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 		db = dbus.Interface(self.bus.get_object(avahi.DBUS_NAME, self.server.DomainBrowserNew(avahi.IF_UNSPEC, avahi.PROTO_UNSPEC, "", avahi.DOMAIN_BROWSER_BROWSE, dbus.UInt32(0))), avahi.DBUS_INTERFACE_DOMAIN_BROWSER)
 		db.connect_to_signal('ItemNew', self.new_domain)
 
+		self.mainloop = gobject.MainLoop()
 		gcontext = self.mainloop.get_context()
 		while not self.mainloop is None:
 			if len(self.pending) > 0:
@@ -183,8 +189,9 @@ class ZeroConfBrowser(ZeroConfBrowserBase):
 				time.sleep(0.01)
 
 	def exit(self):
-		self.mainloop.quit()
-		self.mainloop = None
+		if hasattr(self, 'mainloop'):
+			self.mainloop.quit()
+			self.mainloop = None
 
 def main():
 	a = ZeroConfBrowser()
