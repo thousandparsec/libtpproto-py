@@ -307,6 +307,8 @@ def pack_string(s):
 	temp = s
 	return pack("!I", len(temp)) + temp
 
+
+import encodings
 def unpack_string(s):
 	"""\
 	*Internal*
@@ -334,7 +336,11 @@ def unpack_string(s):
 		# Remove any extra null terminators.
 		if output[-1] == '\0':
 			output = output[:-1]
-		
+
+		# Make sure the string is a valid utf-8 string
+		# If the sender is well behaved this does nothing...
+		output = encodings.utf_8.decode(output, errors='ignore')[0]
+
 		return output, s
 	else:
 		return "", s
