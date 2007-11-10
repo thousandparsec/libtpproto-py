@@ -1,3 +1,6 @@
+
+import avahi_disabled
+
 import os, sys
 import traceback
 import time
