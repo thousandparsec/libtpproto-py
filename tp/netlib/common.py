@@ -211,12 +211,11 @@ class ConnectionCommon(object):
 
 		while len(buffer) > 0:
 			data = str(buffer[0])
+			buffer.pop(0)
 
 			amount = self._sendBytes(data)
-			if amount < len(data):
+			if amount < BUFFER_SIZE:
 				return
-
-			buffer.pop(0)
 		else:
 			self._sendBytes()
 
