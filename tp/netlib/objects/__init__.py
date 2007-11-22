@@ -151,6 +151,10 @@ from objects.TimeRemaining import TimeRemaining
 TimeRemaining = TimeRemaining
 mapping[TimeRemaining.no] = TimeRemaining
 
+from objects.TurnFinished import TurnFinished
+TurnFinished = TurnFinished
+mapping[TurnFinished.no] = TurnFinished
+
 # Messages
 
 from objects.Board_Get import Board_Get

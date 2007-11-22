@@ -1653,3 +1653,20 @@ class ClientConnection(Connection):
 		else:
 			return self._get_header(objects.Player, self.no, callback)
 
+	def turnfinished(self):
+		"""\
+		Tell the server that you have finished a turn.
+		"""
+		self._common()
+
+		# Send a connect packet
+		p = objects.TurnFinished(self.no)
+		self._send(p)
+
+		if self._noblock():
+			self._append(self._okfail, self.no)
+			return None
+
+		# and wait for a response
+		return self._okfail(self.no)
+
