@@ -44,12 +44,13 @@ class Order(Describable):
 			try:
 				if kw.has_key('force'):
 					cls = kw['force']
+					del kw['force']
 				else:
 					cls = descriptions()[subtype]
-				self.__class__ = cls
 
+				self.__class__ = cls
 				if len(args) > 0:
-					self.__init__(sequence, id,	slot, subtype, turns, resources, *args)
+					self.__init__(sequence, id,	slot, subtype, turns, resources, *args, **kw)
 			except KeyError, e:
 				raise DescriptionError(sequence, subtype)
 

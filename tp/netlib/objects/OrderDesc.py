@@ -43,7 +43,7 @@ ARG_STRUCTMAP = {
 
 class ClassNicePrint(type):
 	def __str__(self):
-		return "<dynamic-class '%s' at %s>" % (self._name, hex(id(self)))
+		return "<dynamic-class '%s' (%s) at %s>" % (self._name, self.subtype, hex(id(self)))
 	__repr__ = __str__
 
 from Header import Header
@@ -61,8 +61,10 @@ class DynamicBaseOrder(Order):
 	ARG_STRUCTMAP = ARG_STRUCTMAP
 	ARG_NAMEMAP   = ARG_NAMEMAP
 
-	def __init__(self, sequence, id, type, slot, turns, resources, *args, **kw):
-		Order.__init__(self, sequence, id, type, slot, turns, resources)
+	def __init__(self, sequence, id, slot, subtype, turns, resources, *args, **kw):
+		Order.__init__(self, sequence, id, slot, subtype, turns, resources)
+
+		assert subtype == self.subtype, "Type %s does not match this class %s" % (subtype, self.__class__)
 
 		# Figure out if we are in single or multiple mode
 		# Short mode:     NOp(*args, (0, 1))
