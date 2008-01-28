@@ -258,7 +258,7 @@ class DNSQuestion(DNSEntry):
 	
 	def __init__(self, name, type, clazz):
 		if not name.endswith(".local."):
-			raise NonLocalNameException
+			raise NonLocalNameException, "Name (%s) does not end with .local" % name
 		DNSEntry.__init__(self, name, type, clazz)
 
 	def answeredBy(self, rec):
@@ -324,7 +324,7 @@ class DNSRecord(DNSEntry):
 
 	def write(self, out):
 		"""Abstract method"""
-		raise AbstractMethodException
+		raise AbstractMethodException, "Abstract method."
 
 	def toString(self, other):
 		"""String representation with addtional information"""
@@ -496,7 +496,7 @@ class DNSIncoming(object):
 				question = DNSQuestion(name, info[0], info[1])
 				self.questions.append(question)
 			except NonLocalNameException, e:
-				print e
+				print "%s %s" % (type(e), e)
 
 	def readInt(self):
 		"""Reads an integer from the packet"""
@@ -687,7 +687,7 @@ class DNSOutgoing(object):
 		utfstr = s.encode('utf-8')
 		length = len(utfstr)
 		if length > 64:
-			raise NamePartTooLongException
+			raise NamePartTooLongException, "Name %s part is way too long (%s)!" % (utfstr, length)
 		self.writeByte(length)
 		self.writeString(utfstr, length)
 
@@ -857,9 +857,9 @@ class Engine(object):
 						try:
 							self.readers[sock].handle_read()
 						except (IOError, socket.error), e:
-							print e
+							print type(e), e
 			except (IOError, socket.error), e:
-				print e
+				print type(e), e
 		return 0
 
 	def getReaders(self):
@@ -961,7 +961,7 @@ class ServiceBrowser(object):
 					self.list.append(callback)
 					return
 			except KeyError, e:
-				print e
+				print type(e), e
 				if not expired:
 					self.services[record.alias.lower()] = record
 					callback = lambda x: self.listener.addService(x, record.name, record.alias)
@@ -1025,7 +1025,7 @@ class ServiceInfo(object):
 		server: fully qualified name for service host (defaults to name)"""
 
 		if not name.endswith(type):
-			raise BadTypeInNameException
+			raise BadTypeInNameException, "Name (%s) does not end in %s" % (name, type)
 		self.type = type
 		self.name = name
 		self.address = address
@@ -1394,7 +1394,7 @@ class Zeroconf(object):
 						info.name = info.name + ".[" + info.address + ":" + info.port + "]." + info.type
 						self.checkService(info)
 						return
-					raise NonUniqueNameException
+					raise NonUniqueNameException, "Name %s is not unquie" % info.name
 			if now < nextTime:
 				self.wait(nextTime - now)
 				now = currentTimeMillis()
