@@ -28,10 +28,10 @@ class ZeroConfServer(ZeroConfServerBase):
 	def ServiceRemove(self, name, type, addr):
 		print "ServiceRemove", name, type, addr
 		key = (name, type, addr)
-		if key in self.groups:
-			group = self.groups[key]
-			del self.groups[key]
-			group.Reset()
+		if key in self.services:
+			service = self.services[key]
+			del self.services[key]
+			self.server.unregisterService(service)
 
 	def ServiceAdd(self, name, type, addr, required, optional):
 		print "ServiceAdd", name, type, addr
