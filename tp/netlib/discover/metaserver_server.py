@@ -27,12 +27,7 @@ class MetaServerServer(Server):
 		if not self.games.has_key(game.name):
 			raise SyntaxException("Game with that name does not exist!")
 
-		oldgame = self.games[game.name]
-		for type in game.locations.keys():
-			for location in game.locations[type]:
-				self.ServiceRemove(game.name, type, location)
 		del self.games[game.name]
-		self.games.remove(game)
 
 	def exit(self):
 		self._exit = True
