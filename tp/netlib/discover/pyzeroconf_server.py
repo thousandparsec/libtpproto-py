@@ -15,11 +15,14 @@ class ZeroConfServer(ZeroConfServerBase):
 	def __init__(self):
 		ZeroConfServerBase.__init__(self)
 
+		self.tocall = []
 		self.services = {}
 		self.server = Zeroconf.Zeroconf("0.0.0.0")
 
 	def ServiceRemove(self, name, type, addr):
-		print "ServiceRemove", name, type, addr
+		self.post(self.__ServiceRemove, (name, type, addr), {})
+
+	def __ServiceRemove(self, name, type, addr):
 		key = (name, type, addr)
 		if key in self.services:
 			service = self.services[key]
@@ -27,8 +30,9 @@ class ZeroConfServer(ZeroConfServerBase):
 			self.server.unregisterService(service)
 
 	def ServiceAdd(self, name, type, addr, required, optional):
-		print "ServiceAdd", name, type, addr
+		self.post(self.__ServiceAdd, (name, type, addr, required, optional), {})
 
+	def __ServiceAdd(self, name, type, addr, required, optional):
 		prop =  {}
 		prop.update(optional)
 		prop.update(required)
@@ -44,9 +48,16 @@ class ZeroConfServer(ZeroConfServerBase):
 	# Callback functions
 	######################################
 
+	def post(self, method, args, kw):
+		self.tocall.append((method, args, kw))
+
 	def run(self):
 		while not globals()['_GLOBAL_DONE']:
 			try:
+				if len(self.tocall) > 0:
+					method, args, kw = self.tocall.pop(0)
+					method(*args, **kw)
+
 				self.server.run()
 			except Exception, e:
 				print e
