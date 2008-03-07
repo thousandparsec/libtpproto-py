@@ -25,7 +25,7 @@ class ZeroConfServer(ZeroConfServerBase):
 		except dbus.DBusException, e:
 			print e
 			return False
-		return True
+		return False
 	check = staticmethod(check)
 
 	def __init__(self):
