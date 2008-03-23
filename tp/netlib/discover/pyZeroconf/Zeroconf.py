@@ -1005,6 +1005,8 @@ class ServiceBrowser(object):
 			#print self.nextTime, self.engineTime, now
 			#print self.nextTime-now, self.engineTime-now
 			try:
+				if self.nextTime is None or self.engineTime is None:
+					break
 				time.sleep((min(self.nextTime, self.engineTime)-now))
 			except IOError, e:
 				pass
