@@ -28,6 +28,12 @@ class References(dict):
 				value = globals()[Types[type].replace(" ","")][value]
 				s += "\t%s: '%s'\n" % (Types[type], value)
 		return s[:-1]+">"
+	
+	def GetReferenceValue(self, type, value):
+		if type <= 0:
+			return globals()[Types[type].replace(" ","")][value]
+		else:
+			return value
 
 class ReferenceDict(dict):
 	def __init__(self, dict):
