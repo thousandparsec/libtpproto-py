@@ -125,7 +125,7 @@ class Processed(Header):
 	def __process__(self, data):
 		args, leftover = unpack(self.struct, data)
 		if len(leftover) > 0:
-			raise ValueError("Extra Data found:" + extra)
+			raise ValueError("Left over data found: '%r'" % leftover)
 
 		self.__init__(self.sequence, *args)
 
