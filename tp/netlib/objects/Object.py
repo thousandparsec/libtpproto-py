@@ -2,7 +2,6 @@
 from xstruct import pack, unpack
 
 from Description import Describable
-from ObjectDesc import descriptions
 
 class Object(Describable):
 	"""\
@@ -10,29 +9,23 @@ class Object(Describable):
 		* a UInt32, object ID
 		* a UInt32, object type
 		* a String, name of object
-		* a UInt64, size of object (diameter)
-		* 3 by Int64, position of object
-		* 3 by Int64, velocity of object
+		* a String, description of the object
+		* a UInt32, parent ID
 		* a list of UInt32, object IDs of objects contained in the current object
-		* a list of UInt32, order types that the player can send to this object
-		* a UInt32, number of orders currently on this object
 		* a UInt64, the last modified time
-		* 2 by UInt32 of padding, for future expansion of common attributes
+		* 16 bytes of padding, for future expansion of common attributes
 		* extra data, as defined by each object type
 	"""
 	no = 7
-	struct = "IIS Q 3q 3q [I] [I] I T 8x"
+	struct = "IISS I [I] T 16x"
 
 	_name = "Unknown Object"
 
 	def __init__(self, sequence, \
 			id, subtype, name, \
-			size, \
-			posx, posy, posz, \
-			velx, vely, velz, \
+			desc, \
+			parent, \
 			contains, \
-			order_types, \
-			order_number, \
 			modify_time, \
 			*args, **kw):
 		Describable.__init__(self, sequence)
@@ -40,40 +33,38 @@ class Object(Describable):
 		self.length = \
 			4 + 4 + \
 			4 + len(name) + \
-			8 + 3*8 + 3*8 + \
+			4 + len(desc) + \
+			4 + \
 			4 + len(contains)*4 + \
-			4 + len(order_types)*4 + \
-			4 + 8 + 8
+			8 + 16
 
 		self.id           = id
 		self._subtype     = subtype
 		self.name         = name
-		self.size         = size
-		self.pos          = (posx, posy, posz)
-		self.vel          = (velx, vely, velz)
+		self.desc         = desc
+		self.parent       = parent
 		self.contains     = contains
-		self.order_types  = order_types
-		self.order_number = order_number
 		self.modify_time  = modify_time
 
 		if self.__class__ == Object:
 			try:
 				if kw.has_key('force'):
 					cls = kw['force']
+					del kw['force']
 				else:
+					from ObjectDesc import descriptions
 					cls = descriptions()[subtype]
-				self.__class__ = cls
 
+				self.__class__ = cls
 				if len(args) > 0:
 					self.__init__(sequence, \
 									id, subtype, name, \
-									size, \
-									posx, posy, posz, \
-									velx, vely, velz, \
+									desc, \
+									parent, \
 									contains, \
-									order_types, \
-									order_number, \
-									modify_time, *args)
+									modify_time, \
+									*args)
+
 			except KeyError, e:
 				raise DescriptionError(sequence, subtype)
 
@@ -83,16 +74,9 @@ class Object(Describable):
 				self.id, \
 				self._subtype, \
 				self.name, \
-				self.size, \
-				self.pos[0], \
-				self.pos[1], \
-				self.pos[2], \
-				self.vel[0], \
-				self.vel[1], \
-				self.vel[2], \
+				self.desc, \
+				self.parent, \
 				self.contains, \
-				self.order_types, \
-				self.order_number, \
 				self.modify_time)
 		return output
 

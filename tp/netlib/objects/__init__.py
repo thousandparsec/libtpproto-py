@@ -6,13 +6,11 @@ import constants
 constants = constants
 
 # Header
-from objects.Header import Header, Processed, SetVersion, GetVersion
+from objects.Header import Header, Processed
 Header = Header
 Header.mapping = mapping
 
 Processed = Processed
-SetVersion = SetVersion
-GetVersion = GetVersion
 
 from objects.Redirect import Redirect
 Redirect = Redirect

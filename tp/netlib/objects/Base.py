@@ -67,6 +67,7 @@ class GetIDSequence(Processed):
 		* a SInt32, the sequence key
 		* a UInt32, the starting number in the sequence
 		* a SInt32, the number of IDs to get
+		* a timestamp, only IDs which have a modification time greater then this time
 
 	Requirements:
 		* To start a sequence, the key of -1 should be sent in the first
@@ -79,20 +80,21 @@ class GetIDSequence(Processed):
 		* Key persist for only as long as the connection remains and there
 		  are IDs left in the sequence
 	"""
-	struct = "jIj"
+	struct = "jIjT"
 
-	def __init__(self, sequence, key, start, amount):
+	def __init__(self, sequence, key, start, amount, since=0):
 		Processed.__init__(self, sequence)
 
 		self.length = 4 + 4 + 4
 	
-		self.key = key
-		self.start = start
+		self.key    = key
+		self.start  = start
 		self.amount = amount
+		self.since  = since
 	
 	def __str__(self):
 		output = Processed.__str__(self)
-		output += pack(self.struct, self.key, self.start, self.amount)
+		output += pack(self.struct, self.key, self.start, self.amount, self.since)
 
 		return output
 

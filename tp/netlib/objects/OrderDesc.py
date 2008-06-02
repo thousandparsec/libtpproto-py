@@ -5,7 +5,7 @@ from Description import Description
 from constants import *
 
 # Import prebuild orders
-from ObjectDesc import *
+from ObjectDesc import splitall, edir, import_subtype, ClassNicePrint
 _descriptions = None
 def descriptions(added=None):
 	global _descriptions
@@ -40,11 +40,6 @@ ARG_STRUCTMAP = {
 	ARG_LIST:		("[ISj][II]", 	2),
 	ARG_STRING:		("IS",		 	2),
 }
-
-class ClassNicePrint(type):
-	def __str__(self):
-		return "<dynamic-class '%s' (%s) at %s>" % (self._name, self.subtype, hex(id(self)))
-	__repr__ = __str__
 
 from Header import Header
 from Order import Order

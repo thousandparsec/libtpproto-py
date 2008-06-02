@@ -4,22 +4,6 @@ from xstruct import pack, unpack, hexbyte
 # Squash warnings about hex/oct
 import warnings
 
-versions = ["TP03"]
-version = "TP03"
-
-def SetVersion(i):
-	global version
-
-	if i in versions:
-		version = i
-		return True
-	else:
-		return False
-		
-def GetVersion():
-	global version
-	return version
-
 _marker = []
 
 class FrameError(Exception):
@@ -37,24 +21,26 @@ class Header(object):
 
 	Example:
 
-		p = Header(data)
+		p = Header.new(data)
 		str(p)
 		'<Object instance at 0x401ee50c>'
 	"""
 
 	size=4+4+4+4
-	struct="4sIII"
+	struct="2sBBIII"
 
 	class VersionError(Exception):
 		pass
 
-	def __init__(self, protocol, sequence, type, length):
+	def __init__(self, protocol, majorv, minorv, sequence, type, length):
 		"""\
 		Create a new header object.
 
 		It takes a string which contains the "header" data.
 		"""
 		self.protocol = protocol
+		self.majorv   = majorv
+		self.minorv   = minorv
 		self.sequence = sequence
 		self._type    = type
 		self.length   = length
@@ -89,7 +75,7 @@ class Header(object):
 		"""\
 		Produce a string suitable to be send over the wire.
 		"""
-		output = pack(Header.struct, self.protocol, self.sequence, self._type, self.length)
+		output = pack(Header.struct, self.protocol, self.majorv, self.minorv, self.sequence, self._type, self.length)
 		return output
 
 	def fromstr(cls, data):
@@ -120,7 +106,7 @@ class Processed(Header):
 	"""
 
 	def __init__(self, sequence):
-		Header.__init__(self, version, sequence, self.no, -1)
+		Header.__init__(self, "TP", 4, 0, sequence, self.no, -1)
 		
 	def __process__(self, data):
 		args, leftover = unpack(self.struct, data)

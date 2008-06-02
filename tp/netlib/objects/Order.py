@@ -2,7 +2,6 @@
 from xstruct import pack, unpack
 
 from Description import Describable, DescriptionError
-from OrderDesc import descriptions
 
 class Order(Describable):
 	"""\
@@ -46,6 +45,7 @@ class Order(Describable):
 					cls = kw['force']
 					del kw['force']
 				else:
+					from OrderDesc import descriptions
 					cls = descriptions()[subtype]
 
 				self.__class__ = cls
