@@ -78,6 +78,18 @@ def hexbyte(string):
 #		s += " "
 	return s
 
+def smartsplit(struct, openbrace, closebrace):
+	pos = 0
+	open = 1
+	while open > 0:
+		if struct[pos] == openbrace:
+			open += 1
+		if struct[pos] == closebrace:
+			open -= 1
+
+		pos += 1
+
+	return struct[:pos-1], struct[pos:]
 
 noarg = "0123456789 !x"
 def pack(sstruct, *aargs):
@@ -101,12 +113,14 @@ def pack(sstruct, *aargs):
 			if char == ' ' or char == '!':
 				continue
 			elif char == '{':
+
 				# Find the closing brace
 				substruct, struct = string.split(struct, '}', maxsplit=1)
 				output += pack_list('L', substruct, args.pop(0))
 			elif char == '[':
+				substruct, struct = smartsplit(struct, '[', ']')
+
 				# Find the closing brace
-				substruct, struct = string.split(struct, ']', maxsplit=1)
 				output += pack_list('I', substruct, args.pop(0))
 			elif char in 'Tt':
 				output += pack_time(args.pop(0), times[char])
@@ -196,7 +210,7 @@ def unpack(struct, s):
 			output.append(data)
 		elif char == '[':
 			# Find the closing brace
-			substruct, struct = string.split(struct, ']', maxsplit=1)
+			substruct, struct = smartsplit(struct, '[', ']')
 			data, s = unpack_list("I", substruct, s)
 			
 			output.append(data)
