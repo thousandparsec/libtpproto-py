@@ -240,7 +240,11 @@ class ClientConnection(Connection):
 		# Need to figure out how to do non-blocking properly...
 		#Send a request for the description
 		if not self.__desc:
-			q = objects.OrderDesc_Get(p.sequence-1, [p._subtype])
+			if isinstance(p, objects.Object):
+				q = objects.ObjectDesc_Get(p.sequence-1, [p._subtype])
+
+			if isinstance(p, objects.Order):
+				q = objects.OrderDesc_Get(p.sequence-1, [p._subtype])
 			self._send(q)
 
 			self.__desc = True

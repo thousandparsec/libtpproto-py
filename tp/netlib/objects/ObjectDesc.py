@@ -5,6 +5,8 @@ import string
 import os
 from os import path
 
+from xstruct import pack, unpack
+
 def splitall(p, extra = []):
 	bits = []
 	while not p in ['', '..', '.'] \
@@ -102,17 +104,6 @@ def descriptions(added=None):
 	
 	return _descriptions
 
-ARG_STRUCTMAP = {
-	ARG_ABS_COORD:	("qqq",			3),
-	ARG_TIME: 		("Ij",			2),
-	ARG_OBJECT:		("I",			1),
-	ARG_PLAYER:		("II",			2),
-	ARG_REL_COORD:	("Iqqq",		3),
-	ARG_RANGE:		("iiii",		4),
-	ARG_LIST:		("[ISj][II]", 	2),
-	ARG_STRING:		("IS",		 	2),
-}
-
 class ClassNicePrint(type):
 	def __str__(self):
 		return "<dynamic-class '%s' (%s) at %s>" % (self._name, self.subtype, hex(id(self)))
@@ -120,6 +111,8 @@ class ClassNicePrint(type):
 
 from Header import Header
 from Object import Object
+
+from parameters import ObjectParamsStructUse, ObjectParamsName
 class DynamicBaseObject(Object):
 	"""\
 	An Object Type built by a ObjectDesc.
@@ -130,79 +123,76 @@ class DynamicBaseObject(Object):
 
 	__metaclass__ = ClassNicePrint
 
-	ARG_STRUCTMAP = ARG_STRUCTMAP
-	ARG_NAMEMAP   = ARG_NAMEMAP
+	ARG_STRUCTMAP = ObjectParamsStructUse
+	ARG_NAMEMAP   = ObjectParamsName
 
-	def __init__(self, sequence, id, slot, subtype, turns, resources, *args, **kw):
-		Object.__init__(self, sequence, id, slot, subtype, turns, resources)
+	def __init__(self, sequence, \
+			id, subtype, name, \
+			desc, \
+			parent, \
+			contains, \
+			modify_time, \
+			*args, **kw):
+		Object.__init__(self, sequence, id, subtype, name, desc, parent, contains, modify_time)
 
 		assert subtype == self.subtype, "Type %s does not match this class %s" % (subtype, self.__class__)
 
-		# Figure out if we are in single or multiple mode
-		# Short mode:     NOp(*args, (0, 1))
-		# Multiple Mode:  NOp(*args, 0, 1)
-		short = (len(args) == len(self.names))
-
+		args = list(args)
 		for name, type in self.names:
-			struct, size = ARG_STRUCTMAP[type]
-
-			if short:
-				size = 1
-
-			if size == 1:
-				setattr(self, name, args[0])
-			else:
-				if len(args) < size:
-					raise ValueError("Incorrect number of arguments, the arguments required for %s (of type %s) are %s" % (name, type, struct))
-				setattr(self, name, args[:size])
-
-			args = args[size:]
+			setattr(self, name, args[0])
+			args.pop(0)
 	
 		# FIXME: Need to figure out the length a better way
 		self.length = len(self.__str__()) - Header.size
 
 	def __str__(self):
-		args = []
+		output = [Object.__str__(self)]
 		for name, type in self.names:
-			struct, size = ARG_STRUCTMAP[type]
+			args = getattr(self, name)
+
+			for struct, typename, typedesc in self.ARG_STRUCTMAP[type]:
+				structargs = args[0]
+				output.append(pack(struct, *structargs))
+				args.pop(0)
 			
-			attr = getattr(self, name)
-			if size == 1:
-				args.append(attr)
-			else:
-				args += list(attr)
-
-		output = Order.__str__(self)
-		try:
-			output += pack(self.substruct, *args)
-			return output
-		except TypeError, e:
-			s = str(e)
-
-			causedby = '%s %s' % self.names[int(s[:s.find(' ')])]
-			being    = getattr(self, name)
-
-			traceback = sys.exc_info()[2]
-			while not traceback.tb_next is None:
-				traceback = traceback.tb_next
-
-			raise TypeError, '%s was %s\n%s' % (causedby, being, e), traceback
-
+		return "".join(output)
 
 	def __repr__(self):
-		return "<netlib.objects.OrderExtra.DynamicOrder - %s @ %s>" % (self._name, hex(id(self)))
+		return "<netlib.objects.ObjectExtra.DynamicObject - %s @ %s>" % (self._name, hex(id(self)))
 
-class OrderDesc(Description):
+	def __process__(self, leftover, **kw):
+		moreargs = []
+		# Unpack the described data
+		for name, type in self.names:
+			
+			moreargs.append([])
+			for struct, typename, typedesc in self.ARG_STRUCTMAP[type]:
+				structargs, leftover = unpack(struct, leftover)
+				moreargs[-1].append(structargs)
+
+		if len(leftover) > 0:
+			raise ValueError("\nError when processing %s.\nExtra data found: %r " % (self.__class__, leftover))
+
+		args = [self.id, self.subtype, self.name, self.desc, self.parent, self.contains, self.modify_time]
+		self.__init__(self.sequence, *(args + moreargs))
+
+class Group(object):
+	"""\
+	Base class for a group of Properties
+	"""
+	pass
+
+class ObjectDesc(Description):
 	"""\
 	The OrderDesc packet consists of:
 		* a UInt32, order type
 		* a String, name
 		* a String, description
-		* a list of
-			* a String, argument name
-			* a UInt32, argument type
-			* a String, description
 		* a UInt64, the last time the description was modified
+		* a list of
+			* a UInt32, argument type
+			* a String, argument name
+			* a String, description
 
 	IE
 	ID: 1001
@@ -225,12 +215,12 @@ class OrderDesc(Description):
 		Type: ARG_INT
 		Description: How much beer to drink.
 	"""
-	no = 9
-	struct="I SS [SIS] T"
+	no = 68
+	struct="I SS T [ISS[SIS]]"
 
 	def __init__(self, sequence, \
-			id, name, description, \
-			arguments, modify_time):
+			id, name, description, modify_time, \
+			arguments):
 		Description.__init__(self, sequence, id)
 
 		self._name = name
@@ -245,8 +235,8 @@ class OrderDesc(Description):
 
 		for argument in arguments:
 			self.length += \
-				4 + len(argument[0]) + \
 				4 + \
+				4 + len(argument[1]) + \
 				4 + len(argument[2])
 
 	def __str__(self):
@@ -255,8 +245,8 @@ class OrderDesc(Description):
 				self.id, \
 				self._name, \
 				self.description, \
-				self.arguments, \
-				self.modify_time)
+				self.modify_time, \
+				self.arguments)
 
 		return output
 
@@ -266,28 +256,28 @@ class OrderDesc(Description):
 
 		Builds a class from this description.
 		"""
-		class DynamicOrder(DynamicBaseOrder):
+		class DynamicObject(DynamicBaseObject):
 			pass
 
-		DynamicOrder._name = self._name
-		DynamicOrder.doc = self.description
+		DynamicObject._name = self._name
+		DynamicObject.doc = self.description
 
 		# Arguments
-		DynamicOrder.names = []
-		DynamicOrder.subtype = self.id
+		DynamicObject.names = []
+		DynamicObject.subtype = self.id
 	
-		DynamicOrder.substruct = ""
-		for name, type, desc in self.arguments:
-			struct, size = ARG_STRUCTMAP[type]
+		DynamicObject.substruct = ""
+		for groupip, groupname, groupdesc, parts in self.arguments:
+			for name, type, desc in parts:
+				fullname = "%s%s" % (groupname, name)
 
- 			DynamicOrder.names.append((name, type))
-			DynamicOrder.substruct += struct
-			setattr(DynamicOrder, name + "__doc__", desc)
+	 			DynamicObject.names.append((fullname, type))
+				setattr(DynamicObject, fullname + "__doc__", desc)
 
-		DynamicOrder.modify_time = self.modify_time
-		DynamicOrder.packet = self
+		DynamicObject.modify_time = self.modify_time
+		DynamicObject.packet = self
 
-		return DynamicOrder
+		return DynamicObject
 
 	def register(self):
 		descriptions(self.build())

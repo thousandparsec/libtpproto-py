@@ -21,6 +21,9 @@ class Describable(Processed):
 		args, leftover = unpack(self.struct, data)
 		self.__init__(self.sequence, *args, **kw)
 
+		if hasattr(self.__class__, "__process__"):
+			return self.__class__.__process__(self, leftover, **kw)
+
 		# Unpack the second lot of data
 		try:
 			moreargs, leftover2 = unpack(self.substruct, leftover)

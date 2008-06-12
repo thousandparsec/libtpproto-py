@@ -1,7 +1,7 @@
 
 from xstruct import pack, unpack
 
-from Description import Describable
+from Description import DescriptionError, Describable, Description
 
 class Object(Describable):
 	"""\

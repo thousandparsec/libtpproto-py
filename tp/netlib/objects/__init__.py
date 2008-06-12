@@ -98,8 +98,15 @@ from objects.Object_IDSequence import Object_IDSequence
 Object_IDSequence = Object_IDSequence
 mapping[Object_IDSequence.no] = Object_IDSequence
 
-from objects.ObjectDesc import descriptions
+from objects.ObjectDesc_Get import ObjectDesc_Get
+ObjectDesc_Get = ObjectDesc_Get
+mapping[ObjectDesc_Get.no] = ObjectDesc_Get
+
+from objects.ObjectDesc import ObjectDesc, DynamicBaseObject, descriptions
+ObjectDesc = ObjectDesc
+DynamicBaseObject = DynamicBaseObject
 ObjectDescs = descriptions
+mapping[ObjectDesc.no] = ObjectDesc
 
 # Orders
 from objects.OrderDesc_Get import OrderDesc_Get

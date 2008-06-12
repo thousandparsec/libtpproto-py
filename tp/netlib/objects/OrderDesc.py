@@ -30,6 +30,16 @@ def descriptions(added=None):
 	
 	return _descriptions
 
+# Constants for Description
+ARG_ABS_COORD = 0
+ARG_TIME = 1
+ARG_OBJECT = 2
+ARG_PLAYER = 3  
+ARG_REL_COORD = 4
+ARG_RANGE = 5
+ARG_LIST = 6
+ARG_STRING = 7
+
 ARG_STRUCTMAP = {
 	ARG_ABS_COORD:	("qqq",			3),
 	ARG_TIME: 		("Ij",			2),
@@ -54,7 +64,6 @@ class DynamicBaseOrder(Order):
 	__metaclass__ = ClassNicePrint
 
 	ARG_STRUCTMAP = ARG_STRUCTMAP
-	ARG_NAMEMAP   = ARG_NAMEMAP
 
 	def __init__(self, sequence, id, slot, subtype, turns, resources, *args, **kw):
 		Order.__init__(self, sequence, id, slot, subtype, turns, resources)

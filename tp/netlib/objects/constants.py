@@ -1,24 +1,4 @@
 
-# Constants for Description
-ARG_ABS_COORD = 0
-ARG_TIME = 1
-ARG_OBJECT = 2
-ARG_PLAYER = 3  
-ARG_REL_COORD = 4
-ARG_RANGE = 5
-ARG_LIST = 6
-ARG_STRING = 7
-
-ARG_NAMEMAP = {
-	0: 'ARG_ABS_COORD',
-	1: 'ARG_TIME',
-	2: 'ARG_OBJECT',
-	3: 'ARG_PLAYER',
-	4: 'ARG_REL_COORD',
-	5: 'ARG_RANGE',
-	6: 'ARG_LIST',
-	7: 'ARG_STRING'}
-
 # Constants for Fail
 FAIL_PROTOCOL = 0
 FAIL_FRAME = 1
