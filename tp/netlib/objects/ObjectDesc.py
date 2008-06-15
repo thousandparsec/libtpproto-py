@@ -141,14 +141,14 @@ class DynamicBaseObject(Object):
 		for name, type in self.names:
 			setattr(self, name, args[0])
 			args.pop(0)
-	
+
 		# FIXME: Need to figure out the length a better way
 		self.length = len(self.__str__()) - Header.size
 
 	def __str__(self):
 		output = [Object.__str__(self)]
 		for name, type in self.names:
-			args = getattr(self, name)
+			args = list(getattr(self, name))
 
 			for struct, typename, typedesc in self.ARG_STRUCTMAP[type]:
 				structargs = args[0]
