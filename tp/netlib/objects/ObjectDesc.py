@@ -112,7 +112,7 @@ class ClassNicePrint(type):
 from Header import Header
 from Object import Object
 
-from parameters import ObjectParamsStructUse, ObjectParamsName
+from parameters import ObjectParamsStructUse, ObjectParamsStructDesc, ObjectParamsName
 class DynamicBaseObject(Object):
 	"""\
 	An Object Type built by a ObjectDesc.
@@ -216,7 +216,36 @@ class ObjectDesc(Description):
 		Description: How much beer to drink.
 	"""
 	no = 68
-	struct="I SS T [ISS[SIS]]"
+	struct="I SS T [ISS[x]]"
+
+	@staticmethod
+	def struct_callback(s):
+		(name, id, description), s = unpack('SIS', s)
+
+		if ObjectParamsStructDesc.has_key(id):
+			output_extra = []
+			for substruct, name, description in ObjectParamsStructDesc[id]:
+				o, s = unpack(substruct, s)
+				output_extra.append(o)
+			output = [name, id, description, output_extra]
+		else:
+			output = [name, id, description, []]
+
+		return output, s
+
+	@staticmethod
+	def pack_callback(arg):
+		output = ""
+		for name, id, description, extra in arg:
+			print name, id, description, extra
+			output += pack('SIS', name, id, description)
+			if ObjectParamsStructDesc.has_key(id):
+				for substruct, name, description in ObjectParamsStructDesc[id]:
+					output += pack(substruct, extra.pop(0))
+
+			if len(extra) > 0:
+				raise TypeError("There was left over extra stuff...")
+		return output
 
 	def __init__(self, sequence, \
 			id, name, description, modify_time, \
@@ -241,12 +270,14 @@ class ObjectDesc(Description):
 
 	def __str__(self):
 		output = Description.__str__(self)
+		print self.struct
 		output += pack(self.struct, \
 				self.id, \
 				self._name, \
 				self.description, \
 				self.modify_time, \
-				self.arguments)
+				self.arguments,
+				callback=self.pack_callback)
 
 		return output
 
@@ -268,7 +299,7 @@ class ObjectDesc(Description):
 	
 		DynamicObject.substruct = ""
 		for groupip, groupname, groupdesc, parts in self.arguments:
-			for name, type, desc in parts:
+			for name, type, desc, extra in parts:
 				fullname = "%s%s" % (groupname, name)
 
 	 			DynamicObject.names.append((fullname, type))
@@ -281,5 +312,5 @@ class ObjectDesc(Description):
 
 	def register(self):
 		descriptions(self.build())
-		
+
 __all__ = ["descriptions", "ObjectDesc"]

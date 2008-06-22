@@ -22,7 +22,8 @@ class Describable(Processed):
 		self.__init__(self.sequence, *args, **kw)
 
 		if hasattr(self.__class__, "__process__"):
-			return self.__class__.__process__(self, leftover, **kw)
+			self.__class__.__process__(self, leftover, **kw)
+			return
 
 		# Unpack the second lot of data
 		try:
