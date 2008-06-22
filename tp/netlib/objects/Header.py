@@ -104,12 +104,13 @@ class Processed(Header):
 	"""\
 	Base class for packets.
 	"""
+	struct_callback = None
 
 	def __init__(self, sequence):
 		Header.__init__(self, "TP", 4, 0, sequence, self.no, -1)
 		
 	def __process__(self, data):
-		args, leftover = unpack(self.struct, data)
+		args, leftover = unpack(self.struct, data, callback=self.struct_callback)
 		if len(leftover) > 0:
 			raise ValueError("Left over data found: '%r'" % leftover)
 
