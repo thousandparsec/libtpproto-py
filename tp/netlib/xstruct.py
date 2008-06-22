@@ -31,6 +31,7 @@ Extra stuff defined by this module:
  p	SInt64			(64 bit semi-signed integer)
  t	timestamp		(32 bit unsigned integer)
  T	timestamp		(64 bit unsigned integer)
+ x  callback 		call a function back to decode section
  
 The structure of the data in the list is described by the data inside the
 brackets.
@@ -92,11 +93,16 @@ def smartsplit(struct, openbrace, closebrace):
 	return struct[:pos-1], struct[pos:]
 
 noarg = "0123456789 !x"
-def pack(sstruct, *aargs):
+def pack(sstruct, *aargs, **kkw):
 	"""\
 	Takes a structure string and the arguments to pack in the format
 	specified by string.
 	"""
+	try:
+		callback = kkw['callback']
+	except KeyError:
+		callback = None
+
 	struct  = sstruct
 	args    = list(aargs)
 	args_no = len(aargs)
@@ -128,6 +134,8 @@ def pack(sstruct, *aargs):
 				if not isinstance(args[0], (str, unicode, buffer)):
 					raise TypeError("Argument should be an string (to pack to %s), not a %s" % (char, type(args[0])))
 				output += pack_string(args.pop(0))
+			elif char == 'x':
+				output += callback(args.pop(0))
 			elif char in string.digits:
 				# Get all the numbers
 				substruct = char
@@ -187,7 +195,7 @@ def pack(sstruct, *aargs):
 	return output
 
 
-def unpack(struct, s):
+def unpack(struct, s, callback=None):
 	"""\
 	Takes a structure string and a data string.
 
@@ -205,13 +213,13 @@ def unpack(struct, s):
 		elif char == '{':
 			# Find the closing brace
 			substruct, struct = string.split(struct, '}', maxsplit=1)
-			data, s = unpack_list("L", substruct, s)
+			data, s = unpack_list("L", substruct, s, callback)
 			
 			output.append(data)
 		elif char == '[':
 			# Find the closing brace
 			substruct, struct = smartsplit(struct, '[', ']')
-			data, s = unpack_list("I", substruct, s)
+			data, s = unpack_list("I", substruct, s, callback)
 			
 			output.append(data)
 		elif char in 'Tt':
@@ -241,6 +249,9 @@ def unpack(struct, s):
 			s = s[size:]
 
 			output += data
+		elif char == 'x':
+			o, s = callback(s)
+			output += o
 		else:
 			if char in semi.keys():
 				substruct = "!"+semi[char][1]
@@ -284,19 +295,19 @@ def pack_list(length_struct, struct, args):
 		
 	return output
 
-def unpack_list(length_struct, struct, s):
+def unpack_list(length_struct, struct, s, callback=None):
 	"""\
 	*Internal*
 
 	Returns the first string from the input data and any remaining data.
 	"""
-	output, s = unpack(length_struct, s)
+	output, s = unpack(length_struct, s, callback)
 	length, = output
 
 	list = []
 	for i in range(0, length):
 		try:
-			output, s = unpack(struct, s)
+			output, s = unpack(struct, s, callback)
 		except TypeError, e:
 			raise TypeError("Problem unpacking list item (index %s): %s" % (i, e))
 
