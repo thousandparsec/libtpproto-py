@@ -10,7 +10,7 @@ class Fail(Processed):
 		* A String, may contain useful information for debugging purposes
 	"""
 	no = 1
-	struct = "IS"
+	struct = "IS[II]"
 	
 	reasons = {
 		0 : "Protocol Error",
@@ -21,7 +21,7 @@ class Fail(Processed):
 		5 : "Permission Denied",
 	}
 	
-	def __init__(self, sequence, errno, s=""):
+	def __init__(self, sequence, errno, s="", references=[]):
 		if errno != 0 and sequence < 1:
 			raise ValueError("Fail is a reply packet so needs a valid sequence number (%i)" % sequence)
 		Processed.__init__(self, sequence)
@@ -32,14 +32,15 @@ class Fail(Processed):
 		#  * the string
 		#  * null terminator
 		#
-		self.length = 4 + 4 + len(s)
+		self.length = 4 + 4 + len(s) + 8*len(references)
 
 		self.errno = errno
 		self.s = s
+		self.references = references
 	
 	def __str__(self):
 		output = Processed.__str__(self)
-		output += pack(self.struct, self.errno, self.s)
+		output += pack(self.struct, self.errno, self.s, self.references)
 
 		return output
 
