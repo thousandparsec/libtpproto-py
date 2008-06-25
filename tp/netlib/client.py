@@ -482,7 +482,7 @@ class ClientConnection(Connection):
 					return (None, None)
 				# Check for an error
 				elif failed(p):
-					raise IOError("Failed to get remaining IDs")
+					raise IOError("Failed to get remaining IDs (%s)" % (p[1]))
 
 				if self.total == None:
 					self.total = p.left
