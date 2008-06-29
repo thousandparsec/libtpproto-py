@@ -85,7 +85,7 @@ class GetIDSequence(Processed):
 	def __init__(self, sequence, key, start, amount, since=0):
 		Processed.__init__(self, sequence)
 
-		self.length = 4 + 4 + 4
+		self.length = 4 + 4 + 4 + 8
 	
 		self.key    = key
 		self.start  = start
@@ -111,20 +111,21 @@ class IDSequence(Processed):
 
 	These IDs are not guaranteed to be in any order. 	
 	"""
-	struct = "jj[IT]"
+	struct = "jj[IT]T"
 
-	def __init__(self, sequence, key, left, ids):
+	def __init__(self, sequence, key, left, ids, since=0):
 		Processed.__init__(self, sequence)
 
-		self.length = 4 + 4 + 4 + (4+8) * len(ids)
+		self.length = 4 + 4 + 4 + (4+8) * len(ids) + 8
 	
-		self.key = key
-		self.left = left
-		self.ids = ids
+		self.key   = key
+		self.left  = left
+		self.ids   = ids
+		self.since = since
 	
 	def __str__(self):
 		output = Processed.__str__(self)
-		output += pack(self.struct, self.key, self.left, self.ids)
+		output += pack(self.struct, self.key, self.left, self.ids, self.since)
 
 		return output
 
