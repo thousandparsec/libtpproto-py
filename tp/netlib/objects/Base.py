@@ -1,7 +1,7 @@
 
 from xstruct import pack
 
-from Header import Processed
+from Header import Header, Processed
 
 class GetWithID(Processed):
 	"""\
@@ -95,6 +95,8 @@ class GetIDSequence(Processed):
 	def __str__(self):
 		output = Processed.__str__(self)
 		output += pack(self.struct, self.key, self.start, self.amount, self.since)
+
+		assert len(output) == Header.size+self.length, "Output length (%s) did not match out length! (%s)" % (len(output, self.length))
 
 		return output
 
