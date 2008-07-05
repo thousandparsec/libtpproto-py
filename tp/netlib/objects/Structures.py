@@ -1,6 +1,22 @@
 from types import *
 
 class Structure(object):
+	"""\
+	This is the base class for all structures. Structures are a special type of
+python property which is designed to be serialised into a binary value by the
+xstruct library.
+
+	The property protects itself from being assigned values which can not be
+serialised properly (for example a string in an integer structure). This means
+errors are caught at the time the assignment occurs rather then when
+serialisation actually occurs (which could be in a totally different section of
+code).  
+
+	Structures also have things like a name, description and other properties
+which making them even more self documenting (over normal Python code).
+
+	"""
+
 	def __init__(self, name=None, longname="", description="", example="", **kw):
 		if name is None:
 			raise ValueError("Name did not exist!")
@@ -55,6 +71,13 @@ class Structure(object):
 		delattr(obj, "__"+self.name)
 
 class StringStructure(Structure):
+	"""\
+	String structures can contain any arbitrary length UTF-8 string. 
+
+	They are encoded in the form of <integer><bytes> where integer indicates
+	the number of bytes the string takes up.
+	"""
+	
 	def check(self, value):
 		if not isinstance(value, StringTypes):
 			raise ValueError("Value must be a string type")
@@ -64,35 +87,16 @@ class StringStructure(Structure):
 
 	xstruct = 'S'
 
-class StringStructureTest(object):
-	def test(self):
-		class StringObject(object):
-			s = StringStructure('s')
-		
-		str = StringObject()
-		# Check that the default value is empty
-		try:
-			str.s
-			assert False
-		except AttributeError, e:
-			pass
-
-		# Check assignment is a value
-		str.s = "test"
-		assert str.s == "test"
-
-		# Check the length
-		assert StringObject.s.length(str.s) == 8
-
-		# Check that you can't assign crap values
-		for crap in [1, 6L, [], (), str]:
-			try:
-				str.s = crap
-				assert False, "Was able to assign %r to a string attribute!" % crap
-			except TypeError, e:
-				pass
-
 class CharacterStructure(StringStructure):
+	"""\
+	Character structures are kind of like string structures but they are a
+	constant length.
+
+	As they are always of a known length, there is no need for a length
+	indicated.
+
+	"""
+
 	def __init__(self, *args, **kw):
 		Structure.__init__(self, *args, **kw)
 
@@ -116,6 +120,18 @@ class CharacterStructure(StringStructure):
 	xstruct = property(xstruct)
 
 class IntegerStructure(Structure):
+	"""\
+	Integer structure store a binary number. These numbers have various lengths
+	and can be of three types.  
+
+		* An unsigned number can only store positive values.
+		* A signed number can store negative and positive values.
+		* A semisigned number can store positive values and negative one.
+	
+	How big or small the integer can store depends on both the type and the
+	number of bits being used.  
+	"""
+
 	sizes = {
 		8: ('b', 'B', None), 
 		16: ('h', 'H', 'n'),
@@ -216,6 +232,12 @@ class DateTimeStructure(Structure):
 	xstruct = property(xstruct)
 
 class EnumerationStructure(IntegerStructure):
+	"""\
+	Enumeration structures are exactly like integer structures but each
+	value has an associated "name". This is an efficient way to encode a list
+	of known values.
+	"""
+
 	def __init__(self, *args, **kw):
 		IntegerStructure.__init__(self, *args, **kw)
 
@@ -242,7 +264,6 @@ class EnumerationStructure(IntegerStructure):
 
 		raise ValueError("Value must be a number")
 
-			
 	def length(self, value):
 		return self.size / 8
 
@@ -257,7 +278,26 @@ class EnumerationStructure(IntegerStructure):
 	xstruct = property(xstruct)
 
 class GroupStructure(Structure):
+	"""\
+	A group structure is a fixed length structure which contains a bunch of
+	other structures. 
+	
+	The group structure has no actual space or encoding, it is just a container
+	which allows logical grouping of other structures for access.
+
+	It is also the convenient base for the ListStructure.
+	"""
+
 	class GroupProxy(list):
+		"""\
+		The group proxy is a little helper class which makes does a number of
+		things. The most important being checking assignments to the group
+		items.
+
+		It also maps attributes names to the list indexes so that the groups
+		elements can be accessed by their names.
+		"""
+
 		__sentinal = []
 		__slots__ = ["structures"]
 
@@ -365,7 +405,19 @@ class GroupStructure(Structure):
 		Structure.__set__(self, obj, GroupStructure.GroupProxy(self.structures, value))
 
 class ListStructure(GroupStructure):
+	"""\
+	The list structure is a Group Structure which can be repeated a number of
+	times. 
+	"""
+
 	class ListProxy(list):
+		"""\
+		ListProxy is a little helper class which makes allows the multiple
+		items to be assigned to the structure.
+
+		It uses the GroupProxy to protect each individual item.
+		"""
+
 		def __init__(self, structures, listbase):
 			list.__init__(self, listbase)
 			self.structures = structures
@@ -424,14 +476,6 @@ class ListStructure(GroupStructure):
 			xstruct += struct.xstruct
 		return xstruct+"]"
 	xstruct = property(xstruct)
-
-String 		= StringStructure
-Character	= CharacterStructure
-Integer		= IntegerStructure
-DateTime	= DateTimeStructure
-Enumeration	= EnumerationStructure
-Group		= GroupStructure
-List		= ListStructure
 
 __all__ = ["StringStructure", "CharacterStructure", "IntegerStructure", "DateTimeStructure", "GroupStructure", "ListStructure"]
 
