@@ -30,29 +30,11 @@ def descriptions(added=None):
 	
 	return _descriptions
 
-# Constants for Description
-ARG_ABS_COORD = 0
-ARG_TIME = 1
-ARG_OBJECT = 2
-ARG_PLAYER = 3  
-ARG_REL_COORD = 4
-ARG_RANGE = 5
-ARG_LIST = 6
-ARG_STRING = 7
-
-ARG_STRUCTMAP = {
-	ARG_ABS_COORD:	("qqq",			3),
-	ARG_TIME: 		("Ij",			2),
-	ARG_OBJECT:		("I",			1),
-	ARG_PLAYER:		("II",			2),
-	ARG_REL_COORD:	("Iqqq",		3),
-	ARG_RANGE:		("iiii",		4),
-	ARG_LIST:		("[ISj][II]", 	2),
-	ARG_STRING:		("IS",		 	2),
-}
 
 from Header import Header
 from Order import Order
+
+from parameters import *
 class DynamicBaseOrder(Order):
 	"""\
 	An Order Type built by a OrderDesc.
@@ -63,66 +45,43 @@ class DynamicBaseOrder(Order):
 
 	__metaclass__ = ClassNicePrint
 
-	ARG_STRUCTMAP = ARG_STRUCTMAP
-
 	def __init__(self, sequence, id, slot, subtype, turns, resources, *args, **kw):
 		Order.__init__(self, sequence, id, slot, subtype, turns, resources)
 
 		assert subtype == self.subtype, "Type %s does not match this class %s" % (subtype, self.__class__)
 
-		# Figure out if we are in single or multiple mode
-		# Short mode:     NOp(*args, (0, 1))
-		# Multiple Mode:  NOp(*args, 0, 1)
-		short = (len(args) == len(self.names))
+		if len(self.properties) != len(args):
+			raise TypeError("The args where not correct, they should be of length %s" % len(self.properties))
 
-		for name, type in self.names:
-			struct, size = ARG_STRUCTMAP[type]
-
-			if short:
-				size = 1
-
-			if size == 1:
-				setattr(self, name, args[0])
-			else:
-				if len(args) < size:
-					raise ValueError("Incorrect number of arguments, the arguments required for %s (of type %s) are %s" % (name, type, struct))
-				setattr(self, name, args[:size])
-
-			args = args[size:]
-	
-		# FIXME: Need to figure out the length a better way
-		self.length = len(self.__str__()) - Header.size
+		for property, arg in zip(self.properties, args):
+			print property, arg, self.__class__.__dict__[property.name]
+			self.length += property.length(arg)
+			setattr(self, property.name, arg)
 
 	def __str__(self):
-		args = []
-		for name, type in self.names:
-			struct, size = ARG_STRUCTMAP[type]
+		output = [Order.__str__(self)]
+		for property in self.properties:
+			arg = list(getattr(self, property.name))
+			output.append(property.pack(arg))
 			
-			attr = getattr(self, name)
-			if size == 1:
-				args.append(attr)
-			else:
-				args += list(attr)
-
-		output = Order.__str__(self)
-		try:
-			output += pack(self.substruct, *args)
-			return output
-		except TypeError, e:
-			s = str(e)
-
-			causedby = '%s %s' % self.names[int(s[:s.find(' ')])]
-			being    = getattr(self, name)
-
-			traceback = sys.exc_info()[2]
-			while not traceback.tb_next is None:
-				traceback = traceback.tb_next
-
-			raise TypeError, '%s was %s\n%s' % (causedby, being, e), traceback
-
+		return "".join(output)
 
 	def __repr__(self):
 		return "<netlib.objects.OrderExtra.DynamicOrder - %s @ %s>" % (self._name, hex(id(self)))
+
+	def __process__(self, leftover, **kw):
+		moreargs = []
+
+		# Unpack the described data
+		for property in self.properties:
+			args, leftover = property.unpack(leftover)
+			moreargs.append(args)
+
+		if len(leftover) > 0:
+			raise ValueError("\nError when processing %s.\nExtra data found: %r " % (self.__class__, leftover))
+
+		args = [self.id, self.subtype, self.name, self.desc, self.parent, self.contains, self.modify_time]
+		self.__init__(self.sequence, *(args + moreargs))
 
 class OrderDesc(Description):
 	"""\
@@ -135,30 +94,10 @@ class OrderDesc(Description):
 			* a UInt32, argument type
 			* a String, description
 		* a UInt64, the last time the description was modified
-
-	IE
-	ID: 1001
-	Name: Drink With Friends
-	Description: Go to the pub and drink with friends.
-	Arguments:
-		Name: How Long
-		Type: ARG_TIME
-		Description: How many turns to drink for.
-
-		Name: Who With
-		Type: ARG_PLAYER
-		Description: Which player to drink with.
-
-		Name: Where
-		Type: ARG_COORD
-		Description: Where to go drinking.
-
-		Name: Cargo
-		Type: ARG_INT
-		Description: How much beer to drink.
 	"""
 	no = 9
 	struct="I SS [SIS] T"
+
 
 	def __init__(self, sequence, \
 			id, name, description, \
@@ -205,16 +144,16 @@ class OrderDesc(Description):
 		DynamicOrder.doc = self.description
 
 		# Arguments
-		DynamicOrder.names = []
 		DynamicOrder.subtype = self.id
-	
 		DynamicOrder.substruct = ""
-		for name, type, desc in self.arguments:
-			struct, size = ARG_STRUCTMAP[type]
 
- 			DynamicOrder.names.append((name, type))
-			DynamicOrder.substruct += struct
-			setattr(DynamicOrder, name + "__doc__", desc)
+		DynamicOrder.properties = []
+		for name, type, desc in self.arguments:
+
+			property = OrderParamsMapping[type](name=name, desc=desc)
+
+			DynamicOrder.properties.append(property)
+			setattr(DynamicOrder, name, property)
 
 		DynamicOrder.modify_time = self.modify_time
 		DynamicOrder.packet = self
@@ -223,5 +162,5 @@ class OrderDesc(Description):
 
 	def register(self):
 		descriptions(self.build())
-		
+
 __all__ = ["descriptions", "OrderDesc"]
