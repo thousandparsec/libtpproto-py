@@ -112,7 +112,7 @@ class ClassNicePrint(type):
 from Header import Header
 from Object import Object
 
-from parameters import ObjectParamsStructUse, ObjectParamsStructDesc, ObjectParamsName
+from parameters import *
 class DynamicBaseObject(Object):
 	"""\
 	An Object Type built by a ObjectDesc.
@@ -122,9 +122,6 @@ class DynamicBaseObject(Object):
 	name = "Base"
 
 	__metaclass__ = ClassNicePrint
-
-	ARG_STRUCTMAP = ObjectParamsStructUse
-	ARG_NAMEMAP   = ObjectParamsName
 
 	def __init__(self, sequence, \
 			id, subtype, name, \
@@ -137,23 +134,19 @@ class DynamicBaseObject(Object):
 
 		assert subtype == self.subtype, "Type %s does not match this class %s" % (subtype, self.__class__)
 
-		args = list(args)
-		for name, type in self.names:
-			setattr(self, name, args[0])
-			args.pop(0)
+		if len(self.properties) != len(args):
+			raise TypeError("The args where not correct, they should be of length %s" % len(self.properties))
 
-		# FIXME: Need to figure out the length a better way
-		self.length = len(self.__str__()) - Header.size
+		for property, arg in zip(self.properties, args):
+			print property, arg, self.__class__.__dict__[property.name]
+			self.length += property.length(arg)
+			setattr(self, property.name, arg)
 
 	def __str__(self):
 		output = [Object.__str__(self)]
-		for name, type in self.names:
-			args = list(getattr(self, name))
-
-			for struct, typename, typedesc in self.ARG_STRUCTMAP[type]:
-				structargs = args[0]
-				output.append(pack(struct, *structargs))
-				args.pop(0)
+		for property in self.properties:
+			arg = list(getattr(self, property.name))
+			output.append(property.pack(arg))
 			
 		return "".join(output)
 
@@ -162,13 +155,11 @@ class DynamicBaseObject(Object):
 
 	def __process__(self, leftover, **kw):
 		moreargs = []
+
 		# Unpack the described data
-		for name, type in self.names:
-			
-			moreargs.append([])
-			for struct, typename, typedesc in self.ARG_STRUCTMAP[type]:
-				structargs, leftover = unpack(struct, leftover)
-				moreargs[-1].append(structargs)
+		for property in self.properties:
+			args, leftover = property.unpack(leftover)
+			moreargs.append(args)
 
 		if len(leftover) > 0:
 			raise ValueError("\nError when processing %s.\nExtra data found: %r " % (self.__class__, leftover))
@@ -190,30 +181,9 @@ class ObjectDesc(Description):
 		* a String, description
 		* a UInt64, the last time the description was modified
 		* a list of
-			* a UInt32, argument type
+			* a UInt32, argument id?!?
 			* a String, argument name
 			* a String, description
-
-	IE
-	ID: 1001
-	Name: Drink With Friends
-	Description: Go to the pub and drink with friends.
-	Arguments:
-		Name: How Long
-		Type: ARG_TIME
-		Description: How many turns to drink for.
-
-		Name: Who With
-		Type: ARG_PLAYER
-		Description: Which player to drink with.
-
-		Name: Where
-		Type: ARG_COORD
-		Description: Where to go drinking.
-
-		Name: Cargo
-		Type: ARG_INT
-		Description: How much beer to drink.
 	"""
 	no = 68
 	struct="I SS T [ISS[x]]"
@@ -237,7 +207,6 @@ class ObjectDesc(Description):
 	def pack_callback(arg):
 		output = ""
 		for name, id, description, extra in arg:
-			print name, id, description, extra
 			output += pack('SIS', name, id, description)
 			if ObjectParamsStructDesc.has_key(id):
 				for substruct, name, description in ObjectParamsStructDesc[id]:
@@ -270,7 +239,6 @@ class ObjectDesc(Description):
 
 	def __str__(self):
 		output = Description.__str__(self)
-		print self.struct
 		output += pack(self.struct, \
 				self.id, \
 				self._name, \
@@ -294,16 +262,23 @@ class ObjectDesc(Description):
 		DynamicObject.doc = self.description
 
 		# Arguments
-		DynamicObject.names = []
 		DynamicObject.subtype = self.id
-	
 		DynamicObject.substruct = ""
-		for groupip, groupname, groupdesc, parts in self.arguments:
-			for name, type, desc, extra in parts:
-				fullname = "%s%s" % (groupname, name)
 
-	 			DynamicObject.names.append((fullname, type))
-				setattr(DynamicObject, fullname + "__doc__", desc)
+		DynamicObject.properties = []
+		for grouptype, groupname, groupdesc, groupparts in self.arguments:
+
+			structures = []
+			for name, type, desc, extra in groupparts:			
+				structures.append(ObjectParamsMapping[type](name=name, desc=desc))
+
+#			if len(structures) == 1:
+#				property = ObjectParamsMapping[type](name=groupname, desc=groupdesc)
+#			else:
+			property = GroupStructure(groupname, groupdesc, structures=structures)				
+
+			DynamicObject.properties.append(property)
+			setattr(DynamicObject, groupname, property)
 
 		DynamicObject.modify_time = self.modify_time
 		DynamicObject.packet = self

@@ -1,5 +1,7 @@
 from types import *
 
+import xstruct
+
 class Structure(object):
 	"""\
 	This is the base class for all structures. Structures are a special type of
@@ -33,7 +35,7 @@ which making them even more self documenting (over normal Python code).
 		This function will check if an argument is valid for this structure.
 		If the argument is not valid it should throw a ValueError exception.
 		"""
-		raise SyntaxError("Not Implimented")
+		raise SyntaxError("Not Implemented")
 
 	def length(self, value):
 		"""\
@@ -42,16 +44,35 @@ which making them even more self documenting (over normal Python code).
 		This function will return the length (number of bytes) of the encoded
 		version of the value.
 		"""
-		raise SyntaxError("Not Implimented")
+		raise SyntaxError("Not Implemented")
 
+	@property
 	def xstruct(self):
 		"""\
 		xstruct() -> string
 
 		Returns the xstruct value for this structure.
 		"""
-		raise SyntaxError("Not Implimented")
-	xstruct = property(xstruct)
+		raise SyntaxError("Not Implemented")
+
+	def pack(self, values):
+		"""\
+		pack() -> bytes
+
+		Returns a packed version of values.
+		"""
+		return xstruct.pack(self.xstruct, values)		
+
+	def unpack(self, s):
+		"""
+		unpack() -> values, leftover
+		
+		Returns the unpacked values and any data that is left over.
+		"""
+		a, s = xstruct.unpack(self.xstruct, s)
+		if len(a) != 1:
+			raise TypeError("WTF?")
+		return a[0], s
 
 	def __str__(self):
 		return "<%s %s %s>" % (self.__class__.__name__.split('.')[-1], hex(id(self)), self.name)
@@ -70,6 +91,9 @@ which making them even more self documenting (over normal Python code).
 	def __delete__(self, obj):
 		delattr(obj, "__"+self.name)
 
+	def protect(self, value):
+		return value
+
 class StringStructure(Structure):
 	"""\
 	String structures can contain any arbitrary length UTF-8 string. 
@@ -77,7 +101,6 @@ class StringStructure(Structure):
 	They are encoded in the form of <integer><bytes> where integer indicates
 	the number of bytes the string takes up.
 	"""
-	
 	def check(self, value):
 		if not isinstance(value, StringTypes):
 			raise ValueError("Value must be a string type")
@@ -96,7 +119,6 @@ class CharacterStructure(StringStructure):
 	indicated.
 
 	"""
-
 	def __init__(self, *args, **kw):
 		Structure.__init__(self, *args, **kw)
 
@@ -112,12 +134,12 @@ class CharacterStructure(StringStructure):
 			
 	def length(self, value):
 		return self.size
-	
+
+	@property	
 	def xstruct(self):
 		if self.size == 1:
 			return 'c'
 		return str(self.size)+'s'
-	xstruct = property(xstruct)
 
 class IntegerStructure(Structure):
 	"""\
@@ -162,7 +184,7 @@ class IntegerStructure(Structure):
 
 	def check(self, value):
 		if not isinstance(value, (IntType, LongType)):
-			raise ValueError("Value %s must be a number" % repr(value))
+			raise ValueError("Value must be a number, not %s" % repr(value))
 
 		# Do a bounds check now
 		if self.type == "signed":
@@ -183,7 +205,8 @@ class IntegerStructure(Structure):
 			
 	def length(self, value):
 		return self.size / 8
-
+	
+	@property
 	def xstruct(self):
 		if self.type == "signed":
 			xstruct = self.sizes[self.size][0]
@@ -192,7 +215,6 @@ class IntegerStructure(Structure):
 		elif type == "semesigned":
 			xstruct = self.sizes[self.size][2]
 		return xstruct
-	xstruct = property(xstruct)
 
 import time
 from datetime import datetime
@@ -227,9 +249,9 @@ class DateTimeStructure(Structure):
 	def length(self, value):
 		return self.size / 8
 	
+	@property
 	def xstruct(self):
 		xstruct = self.sizes[self.size][0]
-	xstruct = property(xstruct)
 
 class EnumerationStructure(IntegerStructure):
 	"""\
@@ -267,6 +289,7 @@ class EnumerationStructure(IntegerStructure):
 	def length(self, value):
 		return self.size / 8
 
+	@property
 	def xstruct(self):
 		if self.type == "signed":
 			xstruct = self.sizes[self.size][0]
@@ -275,7 +298,6 @@ class EnumerationStructure(IntegerStructure):
 		elif type == "semesigned":
 			xstruct = self.sizes[self.size][2]
 		return xstruct
-	xstruct = property(xstruct)
 
 class GroupStructure(Structure):
 	"""\
@@ -303,7 +325,9 @@ class GroupStructure(Structure):
 
 		def __init__(self, structures, items):
 			self.structures = structures
-			list.__init__(self, items)
+			list.__init__(self, [self.__sentinal]*len(self.structures))
+			for i, item in enumerate(items):
+				self[i] = item
 
 		def __getitem__(self, x):
 			v = list.__getitem__(self, x)
@@ -316,7 +340,7 @@ class GroupStructure(Structure):
 				raise ValueError("%s is too big!" % key)
 
 			self.structures[key].check(item)
-			list.__setitem__(self, key, item)
+			list.__setitem__(self, key, self.structures[key].protect(item))
 
 		def __setslice__(self, i, j, y):
 			for x, v in zip(range(i, j), y):
@@ -360,6 +384,18 @@ class GroupStructure(Structure):
 			raise AttributeError("Can not change the size of this structure")
 		def sort(self, *args):
 			raise AttributeError("Can not change the order of this structure")
+
+		def __repr__(self):
+			s = []
+			for structure, i in zip(self.structures, self):
+				if len(structure.xstruct) > 0:
+					x = "(%s)" % structure.xstruct
+				else:
+					x = ""
+				s.append('%s%s: %r' % (structure.name, x, i))
+			s = "[" + ", ".join(s) + "]"
+			return s
+		__str__ = __repr__
 	
 	def __init__(self, *args, **kw):
 		Structure.__init__(self, *args, **kw)
@@ -378,31 +414,45 @@ class GroupStructure(Structure):
 				raise ValueError("All values in the list must be structures!")
 			self.structures.append(structure)
 
-	def check(self, values, checkall=True):
+	def check(self, values):
 		if not isinstance(values, (TupleType, ListType)):
 			raise ValueError("Value must be a list or tuple")
-		
-		if len(values) != len(self.structures):
-			raise ValueError("Value is not the correct size, was %i must be %i" % (len(list), len(self.structures)))
-
-		if checkall:
-			for i in xrange(0, len(self.structures)):
-				self.structures[i].check(values[i])
-
-	def length(self, list):
-		length = 0
-		for i in xrange(0, len(self.structures)):
-			length += self.structures[i].length(item[i])
-		return length
 	
-	def xstruct(self):
-		for struct in self.structures:
-			xstruct += struct.xstruct
-	xstruct = property(xstruct)
+		if len(values) != len(self.structures):
+			raise ValueError("Value is not the correct size, was %i must be %i" % (len(values), len(self.structures)))
 
-	def __set__(self, obj, value):
-		self.check(value)
-		Structure.__set__(self, obj, GroupStructure.GroupProxy(self.structures, value))
+		for value, structure in zip(values, self.structures):
+			structure.check(value)
+
+	def length(self, values):
+		length = 0
+		for value, structure in zip(values, self.structures):
+			length += structure.length(value)
+		return length
+
+	@property
+	def xstruct(self):
+		return ''
+
+	def pack(self, values):
+		s = []
+		for value, structure in zip(values, self.structures):
+			s.append(structure.pack(value))
+		return "".join(s)
+
+	def unpack(self, leftover):
+		v = []
+		for structure in self.structures:
+			r, leftover = structure.unpack(leftover)
+			v.append(r)
+		return v, leftover
+
+	def __set__(self, obj, values):
+		self.check(values)
+		Structure.__set__(self, obj, self.protect(values))
+
+	def protect(self, value):
+		return GroupStructure.GroupProxy(self.structures, value)
 
 class ListStructure(GroupStructure):
 	"""\
@@ -456,9 +506,8 @@ class ListStructure(GroupStructure):
 			else:
 				self.structures[0].check(item)
 	
-	def __set__(self, obj, value):
-		self.check(value)
-		Structure.__set__(self, obj, self.ListProxy(self.structures, value))
+	def protect(self, value):
+		return ListStructure.ListProxy(self.structures, value)
 
 	def length(self, list):
 		length = 4
@@ -470,12 +519,19 @@ class ListStructure(GroupStructure):
 				length += self.structures[0].length(item)
 		return length
 
+	@property
 	def xstruct(self):
 		xstruct = "["
 		for struct in self.structures:
 			xstruct += struct.xstruct
 		return xstruct+"]"
-	xstruct = property(xstruct)
+
+	def pack(self, values):
+		return xstruct.pack(self.xstruct, values)
+
+	def unpack(self, s):
+		return xstruct.unpack(self.xstruct, s)
+
 
 __all__ = ["StringStructure", "CharacterStructure", "IntegerStructure", "DateTimeStructure", "GroupStructure", "ListStructure"]
 
