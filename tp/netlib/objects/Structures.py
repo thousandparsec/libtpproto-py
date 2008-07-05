@@ -258,11 +258,18 @@ class EnumerationStructure(IntegerStructure):
 
 class GroupStructure(Structure):
 	class GroupProxy(list):
+		__sentinal = []
 		__slots__ = ["structures"]
 
 		def __init__(self, structures, items):
 			self.structures = structures
 			list.__init__(self, items)
+
+		def __getitem__(self, x):
+			v = list.__getitem__(self, x)
+			if v is self.__sentinal:
+				raise ValueError("The value is currently unset.")
+			return v
 
 		def __setitem__(self, key, item):
 			if key > len(self.structures):
@@ -270,6 +277,17 @@ class GroupStructure(Structure):
 
 			self.structures[key].check(item)
 			list.__setitem__(self, key, item)
+
+		def __setslice__(self, i, j, y):
+			for x, v in zip(range(i, j), y):
+				self[x] = v
+
+		def __delitem__(self, i):
+			self[i] = self.__sentinal
+
+		def __delslice__(self, i, j):
+			for x in range(i, j):
+				del self[x]	
 
 		def indexof(self, name):
 			for i, structure in enumerate(self.structures):
@@ -289,6 +307,19 @@ class GroupStructure(Structure):
 
 		def __delattr__(self, name):
 			del self[self.indexof(name)]
+
+		def append(self, *args):
+			raise AttributeError("Can not change the size of this structure")
+		def pop(self, *args):
+			raise AttributeError("Can not change the size of this structure")
+		def extend(self, *args):
+			raise AttributeError("Can not change the size of this structure")
+		def insert(self, *args):
+			raise AttributeError("Can not change the size of this structure")
+		def remove(self, *args):	
+			raise AttributeError("Can not change the size of this structure")
+		def sort(self, *args):
+			raise AttributeError("Can not change the order of this structure")
 	
 	def __init__(self, *args, **kw):
 		Structure.__init__(self, *args, **kw)
