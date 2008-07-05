@@ -79,7 +79,6 @@ from Description import Description
 from constants import *
 
 # Import prebuild orders
-from ObjectDesc import *
 _descriptions = None
 def descriptions(added=None):
 	global _descriptions
@@ -138,7 +137,6 @@ class DynamicBaseObject(Object):
 			raise TypeError("The args where not correct, they should be of length %s" % len(self.properties))
 
 		for property, arg in zip(self.properties, args):
-			print property, arg, self.__class__.__dict__[property.name]
 			self.length += property.length(arg)
 			setattr(self, property.name, arg)
 
@@ -167,12 +165,6 @@ class DynamicBaseObject(Object):
 		args = [self.id, self.subtype, self.name, self.desc, self.parent, self.contains, self.modify_time]
 		self.__init__(self.sequence, *(args + moreargs))
 
-class Group(object):
-	"""\
-	Base class for a group of Properties
-	"""
-	pass
-
 class ObjectDesc(Description):
 	"""\
 	The OrderDesc packet consists of:
@@ -194,7 +186,7 @@ class ObjectDesc(Description):
 
 		if ObjectParamsStructDesc.has_key(id):
 			output_extra = []
-			for substruct, name, description in ObjectParamsStructDesc[id]:
+			for substruct, ename, edescription in ObjectParamsStructDesc[id]:
 				o, s = unpack(substruct, s)
 				output_extra.append(o)
 			output = [name, id, description, output_extra]
@@ -269,12 +261,9 @@ class ObjectDesc(Description):
 		for grouptype, groupname, groupdesc, groupparts in self.arguments:
 
 			structures = []
-			for name, type, desc, extra in groupparts:			
+			for name, type, desc, extra in groupparts:
 				structures.append(ObjectParamsMapping[type](name=name, desc=desc))
 
-#			if len(structures) == 1:
-#				property = ObjectParamsMapping[type](name=groupname, desc=groupdesc)
-#			else:
 			property = GroupStructure(groupname, groupdesc, structures=structures)				
 
 			DynamicObject.properties.append(property)
