@@ -492,7 +492,7 @@ class ListStructure(GroupStructure):
 	def check(self, list):
 		if not isinstance(list, (TupleType, ListType)):
 			raise ValueError("Value must be a list or tuple")
-		
+	
 		for item in list:
 			if len(self.structures) != 1:
 				if not isinstance(item, (TupleType, ListType)):
@@ -530,8 +530,10 @@ class ListStructure(GroupStructure):
 		return xstruct.pack(self.xstruct, values)
 
 	def unpack(self, s):
-		return xstruct.unpack(self.xstruct, s)
-
+		a, s = xstruct.unpack(self.xstruct, s)
+		if len(a) != 1:
+			raise TypeError("WTF?")
+		return a[0], s
 
 __all__ = ["StringStructure", "CharacterStructure", "IntegerStructure", "DateTimeStructure", "GroupStructure", "ListStructure"]
 
