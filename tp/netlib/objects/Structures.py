@@ -257,48 +257,38 @@ class EnumerationStructure(IntegerStructure):
 	xstruct = property(xstruct)
 
 class GroupStructure(Structure):
-	class GroupProxy(object):
-		def __init__(self, group, obj, objcls):
-			self.group  = group
-			self.obj    = obj
-			self.objcls = objcls
+	class GroupProxy(list):
+		__slots__ = ["structures"]
 
-		def __eq__(self, other):
-			l = []
-			for i, structure in enumerate(self.group.structures):
-				l.append(self[i])
-			return l == other
+		def __init__(self, structures, items):
+			self.structures = structures
+			list.__init__(self, items)
 
-		def __getitem__(self, position):
-			return self.group.structures[position].__get__(self.obj, self.objcls)
+		def __setitem__(self, key, item):
+			if key > len(self.structures):
+				raise ValueError("%s is too big!" % key)
 
-		def __setitem__(self, position, value):
-			return self.group.structures[position].__set__(self.obj, value)
-	
-		def __delitem__(self, position):
-			return self.group.structures[position].__delete__(self.obj)
+			self.structures[key].check(item)
+			list.__setitem__(self, key, item)
+
+		def indexof(self, name):
+			for i, structure in enumerate(self.structures):
+				if structure.name.split('_')[-1] == name:
+					return i
+			raise AttributeError("No such attribute!")
 
 		def __getattr__(self, name):
-			for i, structure in enumerate(self.group.structures):
-				if structure.name == "__%s_%s" % (self.group.name, name):
-					return self[i]
-			raise AttributeError("No such attribute %s" % name)
+			if name in ("structures",):
+				return object.__getattr__(self, name)
+			return self[self.indexof(name)]
 
 		def __setattr__(self, name, value):
-			if name in ("group", "obj", "objcls"):
-				object.__setattr__(self, name, value)
-			else:
-				for i, structure in enumerate(self.group.structures):
-					if structure.name == "__%s_%s" % (self.group.name, name):
-						self[i] = value
-						return
-				raise AttributeError("No such attribute %s" % name)
+			if name in ("structures",):
+				return object.__setattr__(self, name, value)
+			self[self.indexof(name)] = value
+
 		def __delattr__(self, name):
-			for i, structure in enumerate(self.group.structures):
-				if structure.name == name:
-					del self[i]
-					return
-			raise AttributeError("No such attribute %s" % name)
+			del self[self.indexof(name)]
 	
 	def __init__(self, *args, **kw):
 		Structure.__init__(self, *args, **kw)
@@ -313,16 +303,9 @@ class GroupStructure(Structure):
 
 		self.structures = []
 		for structure in structures:
-			self.addstructure(structure)
-
-	def addstructure(self, structure):
-		if not isinstance(structure, Structure):
-			raise ValueError("All values in the list must be structures!")
-
-		# Rewrite the names so they don't clash
-		structure.name = "__%s_%s" % (self.name, structure.name)
-	
-		self.structures.append(structure)	
+			if not isinstance(structure, Structure):
+				raise ValueError("All values in the list must be structures!")
+			self.structures.append(structure)
 
 	def check(self, values, checkall=True):
 		if not isinstance(values, (TupleType, ListType)):
@@ -347,17 +330,8 @@ class GroupStructure(Structure):
 	xstruct = property(xstruct)
 
 	def __set__(self, obj, value):
-		self.check(value, False)
-		value = list(value)
-		for structure in self.structures:
-			structure.__set__(obj, value.pop(0))
-
-	def __get__(self, obj, objcls):
-		return self.GroupProxy(self, obj, objcls)
-
-	def __del__(self, obj):
-		for structure in self.structures:
-			structures.__del__(obj)
+		self.check(value)
+		Structure.__set__(self, obj, GroupStructure.GroupProxy(self.structures, value))
 
 class ListStructure(GroupStructure):
 	class ListProxy(list):
@@ -380,25 +354,7 @@ class ListStructure(GroupStructure):
 			list.__setitem__(self, key, item)
 
 		def __getitem__(self, key):
-			return ListStructure.ItemProxy(self.structures, list.__getitem__(self, key))
-
-	class ItemProxy(list):
-		def __init__(self, structures, itembase):
-			list.__init__(self, itembase)
-			self.structures = structures
-
-		def __setitem__(self, key, item):
-			if key > len(self.structures):
-				raise ValueError("Not a valid item..")
-
-			self.structures[key].check(item)
-			list.__setitem__(self, key, item)
-
-		def __getattr__(self, name):
-			for i, structure in enumerate(self.structures):
-				if structure.name.split('_')[-1] == name:
-					return self[i]
-			raise AttributeError("No such attribute %s" % name)
+			return GroupStructure.GroupProxy(self.structures, list.__getitem__(self, key))
 
 	def check(self, list):
 		if not isinstance(list, (TupleType, ListType)):
@@ -418,15 +374,8 @@ class ListStructure(GroupStructure):
 				self.structures[0].check(item)
 	
 	def __set__(self, obj, value):
-		print self, obj, value
 		self.check(value)
-		setattr(obj, "__" + self.name, self.ListProxy(self.structures, value))
-
-	def __get__(self, obj, objcls):
-		return getattr(obj, "__" + self.name)
-
-	def __del__(self, obj):
-		pass
+		Structure.__set__(self, obj, self.ListProxy(self.structures, value))
 
 	def length(self, list):
 		length = 4
