@@ -34,7 +34,7 @@ def descriptions(added=None):
 from Header import Header
 from Order import Order
 
-from parameters import *
+from tp.netlib.objects.parameters import OrderParamsMapping
 class DynamicBaseOrder(Order):
 	"""\
 	An Order Type built by a OrderDesc.

@@ -111,7 +111,7 @@ class ClassNicePrint(type):
 from Header import Header
 from Object import Object
 
-from parameters import *
+from tp.netlib.objects.parameters import ObjectParamsMapping, ObjectParamsStructDesc, GroupStructure
 class DynamicBaseObject(Object):
 	"""\
 	An Object Type built by a ObjectDesc.
