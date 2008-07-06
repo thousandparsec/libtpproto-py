@@ -110,7 +110,11 @@ class Processed(Header):
 		Header.__init__(self, "TP", 4, 0, sequence, self.no, -1)
 		
 	def __process__(self, data):
-		args, leftover = unpack(self.struct, data, callback=self.struct_callback)
+		try:
+			args, leftover = unpack(self.struct, data, callback=self.struct_callback)
+		except TypeError, e:
+			raise TypeError("Problem when trying to unpack %s (%s) %s" % (self.__class__, self.struct, e))
+
 		if len(leftover) > 0:
 			raise ValueError("Left over data found for %r: '%r'" % (self.__class__.__name__, leftover))
 
