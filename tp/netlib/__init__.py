@@ -9,8 +9,10 @@ __version__     = vi
 __installpath__ = ip
 
 from client import ClientConnection, failed
+from adminclient import AdminClientConnection
 from server import Server, ServerConnection
 Connection = ClientConnection
+AdminConnection = AdminClientConnection
 
 Server = Server
 ServerConnection = ServerConnection
