@@ -98,7 +98,7 @@ class AdminClientConnection(Connection):
 			print "Creating SSL wrapper...."
 			s = SSLWrapper(s)
 
-	    self.hoststring = hoststring
+		self.hoststring = hoststring
 		self.host = host
 		self.port = port
 
