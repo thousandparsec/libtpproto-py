@@ -315,3 +315,26 @@ mapping[Game.no] = Game
 from objects.Games_Get import Games_Get
 Games_Get = Games_Get
 mapping[Games_Get.no] = Games_Get
+
+# Commands
+from objects.CommandDesc_Get import CommandDesc_Get
+CommandDesc_Get = CommandDesc_Get
+mapping[CommandDesc_Get.no] = CommandDesc_Get
+
+from objects.CommandDesc import CommandDesc, DynamicBaseCommand, descriptions
+CommandDesc = CommandDesc
+DynamicBaseCommand = DynamicBaseCommand
+CommandDescs = descriptions
+mapping[CommandDesc.no] = CommandDesc
+
+from objects.CommandDesc_GetID import CommandDesc_GetID
+CommandDesc_GetID = CommandDesc_GetID
+mapping[CommandDesc_GetID.no] = CommandDesc_GetID
+
+from objects.CommandDesc_IDSequence import CommandDesc_IDSequence
+CommandDesc_IDSequence = CommandDesc_IDSequence
+mapping[CommandDesc_IDSequence.no] = CommandDesc_IDSequence
+
+from objects.Command import Command
+Command = Command
+mapping[Command.no] = Command

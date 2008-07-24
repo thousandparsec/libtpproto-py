@@ -8,6 +8,7 @@ ARG_REL_COORD = 4
 ARG_RANGE = 5
 ARG_LIST = 6
 ARG_STRING = 7
+ARG_INT = 8
 
 ARG_NAMEMAP = {
 	0: 'ARG_ABS_COORD',
@@ -17,7 +18,8 @@ ARG_NAMEMAP = {
 	4: 'ARG_REL_COORD',
 	5: 'ARG_RANGE',
 	6: 'ARG_LIST',
-	7: 'ARG_STRING'}
+	7: 'ARG_STRING',
+	8: 'ARG_INT'}
 
 # Constants for Fail
 FAIL_PROTOCOL = 0
