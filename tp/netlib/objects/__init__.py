@@ -316,6 +316,11 @@ from objects.Games_Get import Games_Get
 Games_Get = Games_Get
 mapping[Games_Get.no] = Games_Get
 
+# Log Message
+from objects.LogMessage import LogMessage
+LogMessage = LogMessage
+mapping[LogMessage.no] = LogMessage
+
 # Commands
 from objects.CommandDesc_Get import CommandDesc_Get
 CommandDesc_Get = CommandDesc_Get
