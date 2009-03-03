@@ -1,7 +1,7 @@
 
 from xstruct import pack, unpack
 
-from Description import Describable
+from Description import Describable, DescriptionError
 from ObjectDesc import descriptions
 
 class Object(Describable):
