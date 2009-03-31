@@ -1,7 +1,7 @@
 
 release:
 	rm -rf dist
-	python setup.py sdist --formats=gztar
+	python setup.py sdist --formats=bztar
 	python setup.py bdist --formats=rpm,egg
 	cp dist/* ../web/downloads/libtpproto-py
 
