@@ -334,6 +334,7 @@ def pack_string(s):
 
 
 import encodings
+import encodings.utf_8
 def unpack_string(s):
 	"""\
 	*Internal*
