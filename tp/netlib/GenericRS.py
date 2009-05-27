@@ -85,6 +85,8 @@ Types = ReferenceDict({
 	5:	("Message", ""),
 	6:	("Resource Description", ""),
 	7:	("Player", ""),
+	8:	("Category", ""),
+	9:	("Design", ""),
 })
 
 Misc = ReferenceDict({
