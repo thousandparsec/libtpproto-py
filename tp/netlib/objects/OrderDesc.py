@@ -80,7 +80,7 @@ class DynamicBaseOrder(Order):
 		if len(leftover) > 0:
 			raise ValueError("\nError when processing %s.\nExtra data found: %r " % (self.__class__, leftover))
 
-		args = [self.id, self.subtype, self.name, self.desc, self.parent, self.contains, self.modify_time]
+		args = [self.id, self.slot, self.subtype, self.turns, self.resources]
 		self.__init__(self.sequence, *(args + moreargs))
 
 class OrderDesc(Description):
