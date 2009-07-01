@@ -176,6 +176,7 @@ class ObjectDesc(Description):
 			* a UInt32, argument id?!?
 			* a String, argument name
 			* a String, description
+			* extra data....... (described by argument id)
 	"""
 	no = 68
 	struct="I SS T [ISS[x]]"
@@ -185,13 +186,13 @@ class ObjectDesc(Description):
 		(name, id, description), s = unpack('SIS', s)
 
 		if ObjectParamsStructDesc.has_key(id):
-			output_extra = []
+			output_extra = {}
 			for substruct, ename, edescription in ObjectParamsStructDesc[id]:
 				o, s = unpack(substruct, s)
-				output_extra.append(o)
+				output_extra[ename] = o
 			output = [name, id, description, output_extra]
 		else:
-			output = [name, id, description, []]
+			output = [name, id, description, {}]
 
 		return output, s
 
@@ -199,10 +200,11 @@ class ObjectDesc(Description):
 	def pack_callback(arg):
 		output = ""
 		for name, id, description, extra in arg:
+			extra = dict(extra)
 			output += pack('SIS', name, id, description)
 			if ObjectParamsStructDesc.has_key(id):
 				for substruct, name, description in ObjectParamsStructDesc[id]:
-					output += pack(substruct, extra.pop(0))
+					output += pack(substruct, extra.pop(name))
 
 			if len(extra) > 0:
 				raise TypeError("There was left over extra stuff...")
@@ -223,6 +225,7 @@ class ObjectDesc(Description):
 			4 + len(description) + \
 			4 + 8 
 
+		# FIXME: This ignores the extradata stuff
 		for argument in arguments:
 			self.length += \
 				4 + \
@@ -264,10 +267,14 @@ class ObjectDesc(Description):
 			for name, type, desc, extra in groupparts:
 				structures.append(ObjectParamsMapping[type](name=name, desc=desc))
 
-			property = GroupStructure(groupname, groupdesc, structures=structures)				
+				for ename, evalue in extra.items():
+					setattr(structures[-1], ename, evalue)
+
+			property = GroupStructure(groupname, groupdesc, structures=structures)
 
 			DynamicObject.properties.append(property)
 			setattr(DynamicObject, groupname, property)
+
 
 		DynamicObject.modify_time = self.modify_time
 		DynamicObject.packet = self
