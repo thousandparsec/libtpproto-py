@@ -884,13 +884,18 @@ class ClientConnection(Connection):
 			o = objects.Order_Insert(self.no, oid, slot, otype, 0, [], *args)
 
 		self._send(o)
+		
+		if kw.has_key('callback'):
+			callback = kw['callback']
+		else:
+			callback = None
 
 		if self._noblock():
 			self._append(self._okfail, self.no)
 			return None
 
 		# and wait for a response
-		return self._okfail(self.no)
+		return self._get_header(objects.Order, self.no, callback)
 
 	def remove_orders(self, oid, *args, **kw):
 		"""\
