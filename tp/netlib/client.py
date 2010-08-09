@@ -1679,3 +1679,67 @@ class ClientConnection(Connection):
 		# and wait for a response
 		return self._okfail(self.no)
 
+	def get_orderqueue_ids(self, iter=False):
+		"""\
+		Get orderqueue ids from the server,
+
+		# Get all orderqueue ids (plus modification times)
+		[(25, 10029436), ...] = get_orderqueue_ids()
+
+		# Get all order orderqueue ids (plus modification times) via an Iterator
+		<Iter> = get_orderqueue_ids(iter=True)
+		"""
+		self._common()
+
+		if iter:
+			return self.IDIter(self, objects.OrderQueue_GetID)
+
+		p = objects.OrderQueue_GetID(self.no, -1, 0, -1)
+
+		self._send(p)
+		if self._noblock():
+			self._append(self._get_idsequence, self.no, iter)
+			return None
+		else:
+			return self._get_idsequence(self.no, iter)
+
+	def get_orderqueues(self, *args, **kw):
+		"""\
+		Get orderqueues descriptions,
+
+		# Get the description for orderqueues 5
+		[<com id=5>] = get_orderqueues(5)
+		[<com id=5>] = get_orderqueues(id=5)
+		[<com id=5>] = get_orderqueues(ids=[5])
+		[(False, "No such 5")] = get_orderqueues([5])
+
+		# Get the descriptions for orderqueues 5 and 10
+		[<com id=5>, (False, "No such 10")] = get_orderqueues([5, 10])
+		[<com id=5>, (False, "No such 10")] = get_orderqueues(ids=[5, 10])
+		"""
+		self._common()
+
+		if kw.has_key('ids'):
+			ids = kw['ids']
+		elif kw.has_key('id'):
+			ids = [kw['id']]
+		elif len(args) == 1 and hasattr(args[0], '__getitem__'):
+			ids = args[0]
+		else:
+			ids = args
+
+		if kw.has_key('callback'):
+			callback = kw['callback']
+		else:
+			callback = None
+
+		p = objects.OrderQueue_Get(self.no, ids)
+
+		self._send(p)
+
+		if self._noblock():
+			self._append(self._get_header, objects.OrderQueue, self.no, callback)
+			return None
+		else:
+			return self._get_header(objects.OrderQueue, self.no, callback)
+

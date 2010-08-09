@@ -272,10 +272,6 @@ class ObjectParamOrderQueue(GroupStructure):
 	def __init__(self, *args, **kw):
 		kw['structures'] = [
 			IntegerStructure('queueid', 'The ID number of the queue.', size=32, type='unsigned'),
-			IntegerStructure('numorders', 'The number of orders in the queue.', size=32, type='unsigned'),
-			ListStructure('ordertypes', 'A list of order types that can be put in this queue.', structures=[
-					IntegerStructure('ordertype', 'The number of the order type.', size=32, type='unsigned'),
-				]),
 		]
 		GroupStructure.__init__(self, *args, **kw)
 
@@ -350,11 +346,7 @@ class ObjectParamMedia(GroupStructure):
 		GroupStructure.__init__(self, *args, **kw)
 
 
-ObjectParamsStructDesc = \
-		{4: [('I',
-		      'maxslots',
-		      'The maximum number of slots that can be used in this queue.')]}
-
+ObjectParamsStructDesc = {}
 ObjectParamsMapping = {
 		0: ObjectParamPosition3d,
 		1: ObjectParamVelocity3d,
@@ -368,5 +360,3 @@ ObjectParamsMapping = {
 		9: ObjectParamSize,
 		10: ObjectParamMedia,
 	}
-
-

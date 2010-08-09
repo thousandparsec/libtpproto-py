@@ -320,3 +320,21 @@ mapping[Game.no] = Game
 from objects.Games_Get import Games_Get
 Games_Get = Games_Get
 mapping[Games_Get.no] = Games_Get
+
+# Design Categories
+from objects.OrderQueue_Get import OrderQueue_Get
+OrderQueue_Get = OrderQueue_Get
+mapping[OrderQueue_Get.no] = OrderQueue_Get
+
+from objects.OrderQueue import OrderQueue
+OrderQueue = OrderQueue
+mapping[OrderQueue.no] = OrderQueue
+Orderqueue = OrderQueue
+
+from objects.OrderQueue_GetID import OrderQueue_GetID
+OrderQueue_GetID = OrderQueue_GetID
+mapping[OrderQueue_GetID.no] = OrderQueue_GetID
+
+from objects.OrderQueue_IDSequence import OrderQueue_IDSequence
+OrderQueue_IDSequence = OrderQueue_IDSequence
+mapping[OrderQueue_IDSequence.no] = OrderQueue_IDSequence

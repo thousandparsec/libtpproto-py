@@ -357,7 +357,7 @@ class GroupStructure(Structure):
 			for i, structure in enumerate(self.structures):
 				if structure.name.split('_')[-1] == name:
 					return i
-			raise AttributeError("No such attribute!")
+			raise AttributeError("No such attribute - %r" % name)
 
 		def __getattr__(self, name):
 			if name in ("structures",):
