@@ -12,12 +12,3 @@ class Games_Get(Processed):
 	
 	def __init__(self, sequence):
 		Processed.__init__(self, sequence)
-
-		# Length is:
-		#  * 4 bytes (uint32 - error code
-		#  * 4 bytes (uint32 - string length)
-		#  * the string
-		#  * null terminator
-		#
-		self.length = 0
-

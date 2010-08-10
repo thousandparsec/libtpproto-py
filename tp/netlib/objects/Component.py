@@ -23,17 +23,6 @@ class Component(Processed):
 	def __init__(self, sequence, id, modify_time, categories, name, description, requirements, properties):
 		Processed.__init__(self, sequence)
 
-		# Length is:
-		#
-		self.length = 4 + 4 + 8 + \
-				4 + len(categories)*4 + \
-				4 + len(name) + \
-				4 + len(description) + \
-				4 + len(requirements) 
-
-		for x, value in properties:
-			self.length += 4 + 4 + len(value)
-
 		self.id = id
 		self.modify_time = modify_time
 		self.categories = categories
@@ -42,8 +31,8 @@ class Component(Processed):
 		self.requirements = requirements
 		self.properties = properties
 	
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		output += pack(self.struct, self.id, self.modify_time, self.categories, self.name, self.description, self.requirements, self.properties)
 
 		return output

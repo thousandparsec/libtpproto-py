@@ -23,23 +23,13 @@ class TimeRemaining(Processed):
 	def __init__(self, sequence, time, reason, turn_num, turn_name):
 		Processed.__init__(self, sequence)
 
-		# Length is:
-		#  * 4 bytes UInt32
-		#  * 4 bytes UInt32
-		#  * 4 bytes UInt32
-		#  * length of string
-		#  
-		self.length = 4 + \
-						4 + \
-						4 + \
-						4 + len(turn_name)
 		self.time = time
 		self.reason = reason	
-		self.turn_num = turn_num;
-		self.turn_name = turn_name;
+		self.turn_num = turn_num
+		self.turn_name = turn_name
 
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		output += pack(self.struct, self.time, self.reason, self.turn_num, self.turn_name)
 
 		return output

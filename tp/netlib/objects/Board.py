@@ -18,21 +18,14 @@ class Board(Processed):
 	def __init__(self, sequence, id, name, description, number, modify_time):
 		Processed.__init__(self, sequence)
 
-		# Length is:
-		#
-		self.length = 4 + \
-				4 + len(name) + \
-				4 + len(description) + \
-				4 + 8
-
 		self.id = id
 		self.name = name
 		self.description = description
 		self.number = number
 		self.modify_time = modify_time
 	
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		output += pack(self.struct, self.id, self.name, self.description, self.number, self.modify_time)
 
 		return output

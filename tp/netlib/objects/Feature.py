@@ -31,11 +31,10 @@ class Feature(Processed):
 	def __init__(self, sequence, features):
 		Processed.__init__(self, sequence)
 
-		self.length = 4 + len(features) * 4
 		self.features = features
 	
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		output += pack(self.struct, self.features)
 
 		return output

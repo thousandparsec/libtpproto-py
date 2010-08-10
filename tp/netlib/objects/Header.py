@@ -29,6 +29,7 @@ class Header(object):
 	size=4+4+4+4
 	struct="2sBBIII"
 
+
 	class VersionError(Exception):
 		pass
 
@@ -43,7 +44,7 @@ class Header(object):
 		self.minorv   = minorv
 		self.sequence = sequence
 		self._type    = type
-		self.length   = length
+		self._length  = length
 
 		# Upgrade the class to the real type
 		if self.__class__ == Header:
@@ -67,16 +68,20 @@ class Header(object):
 		"""\
 		Return a reconisable string.
 		"""
-		return "<%s - %s @ %s (seq: %i length: %i)>" % \
+		return "<%s - %s @ %s (seq: %i)>" % \
 			(self.__class__.__module__, self.__class__.__name__, hex(id(self)),
-				self.sequence, self.length)
+				self.sequence)
 
-	def __str__(self):
+	def pack(self):
 		"""\
 		Produce a string suitable to be send over the wire.
 		"""
-		output = pack(Header.struct, self.protocol, self.majorv, self.minorv, self.sequence, self._type, self.length)
-		return output
+		return pack(Header.struct, self.protocol, self.majorv, self.minorv, self.sequence, self._type, 0)
+
+	def __str__(self):
+		output = self.pack()
+		length = len(output) - Header.size
+		return output[:Header.size-4] + pack(Header.struct[-1], length) + output[Header.size:]
 
 	def fromstr(cls, data):
 		"""\
@@ -95,9 +100,9 @@ class Header(object):
 		Processes the data of the packet.
 		"""
 		if self.data == None:
-			self.length = 0
+			self._length = 0
 		else:
-			self.length = len(data)
+			self._length = len(data)
 
 
 class Processed(Header):

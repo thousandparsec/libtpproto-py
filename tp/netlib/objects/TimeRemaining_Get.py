@@ -13,5 +13,3 @@ class TimeRemaining_Get(Processed):
 	def __init__(self, sequence):
 		Processed.__init__(self, sequence)
 
-		self.length = 0
-

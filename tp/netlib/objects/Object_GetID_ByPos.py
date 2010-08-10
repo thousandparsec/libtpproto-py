@@ -18,16 +18,11 @@ class Object_GetID_ByPos(Processed):
 			raise ValueError("Object_Get is a normal packet so needs a zero sequence number (%i)" % sequence)
 		Processed.__init__(self, sequence)
 
-		# Length is:
-		#  * 24 bytes (position)
-		#  * 8 bytes (radius)
-		self.length = 32
-
 		self.pos = [posx, posy, posz]
 		self.size = size
 	
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		output += pack(self.struct, \
 			self.pos[0], self.pos[1], self.pos[2], self.size)
 

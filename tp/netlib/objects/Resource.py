@@ -25,16 +25,6 @@ class Resource(Processed):
 			description, weight, size, modify_time):
 		Processed.__init__(self, sequence)
 
-		# Length is:
-		#
-		self.length = 4 + \
-				4 + len(name_singular) + \
-				4 + len(name_plural) + \
-				4 + len(unit_singular) + \
-				4 + len(unit_plural) + \
-				4 + len(description) + \
-				4 + 4 + 8
-
 		self.id = id
 		self.name_singular, self.name_plural = name_singular, name_plural
 		self.unit_singular, self.unit_plural = unit_singular, unit_plural
@@ -44,8 +34,8 @@ class Resource(Processed):
 		return self.name_singular
 	name = property(name)
 	
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		output += pack(self.struct, self.id, \
 			self.name_singular, self.name_plural, \
 			self.unit_singular, self.unit_plural, \

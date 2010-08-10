@@ -230,13 +230,13 @@ class ConnectionCommon(object):
 		q = objects.Header.fromstr(data)
 
 		# Get the body
-		data = self._recvBytes(size+q.length, peek=True)
-		if len(data) < size+q.length:
+		data = self._recvBytes(size+q._length, peek=True)
+		if len(data) < size+q._length:
 			return
 		q._data = data[size:]
 
 		# Remove all the extra bytes...
-		self._recvBytes(size+q.length)
+		self._recvBytes(size+q._length)
 
 		# Store the frames
 		if not frames.has_key(q.sequence):

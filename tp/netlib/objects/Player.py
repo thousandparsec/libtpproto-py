@@ -16,18 +16,12 @@ class Player(Processed):
 	def __init__(self, sequence, id, name, race_name):
 		Processed.__init__(self, sequence)
 
-		# Length is:
-		#
-		self.length = 4 + \
-			4 + len(name) + \
-			4 + len(race_name)
-			
 		self.id = id
 		self.name = name
 		self.race_name = race_name
 
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		output += pack(self.struct, self.id, self.name, self.race_name)
 
 		return output

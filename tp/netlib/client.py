@@ -551,10 +551,6 @@ class ClientConnection(Connection):
 		if isinstance(p, objects.OK):
 			return True, p.s
 		elif isinstance(p, objects.Fail):
-			if p.protocol != objects.GetVersion():
-				print "Changing version."
-				if objects.SetVersion(p.protocol):
-					return self.connect()
 			return False, p.s
 		elif isinstance(p, objects.Redirect):
 			self.setup(p.s, nb=self._noblock(), debug=self.debug, proxy=self.proxy)

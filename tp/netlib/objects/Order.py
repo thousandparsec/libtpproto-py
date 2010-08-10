@@ -27,10 +27,6 @@ class Order(Describable):
 			id,	slot, subtype, turns, resources, *args, **kw):
 		Describable.__init__(self, sequence)
 
-		self.length = \
-			4 + 4 + 4 + 4 + \
-			4 + len(resources)*(4+4)
-
 		self.id        = id
 		self.slot      = slot
 		self._subtype  = subtype
@@ -54,8 +50,8 @@ class Order(Describable):
 			except KeyError, e:
 				raise DescriptionError(sequence, subtype)
 
-	def __str__(self):
-		output = Describable.__str__(self)
+	def pack(self):
+		output = Describable.pack(self)
 		output += pack(self.struct, self.id, self.slot, self._subtype, self.turns, self.resources)
 		return output
 

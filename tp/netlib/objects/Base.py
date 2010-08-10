@@ -16,15 +16,10 @@ class GetWithID(Processed):
 	def __init__(self, sequence, ids):
 		Processed.__init__(self, sequence)
 
-		# Length is:
-		#  * 4 bytes (uint32 - id)
-		#
-		self.length = 4 + 4 * len(ids)
-
 		self.ids = ids
 	
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		output += pack(self.struct, self.ids)
 
 		return output
@@ -47,16 +42,11 @@ class GetWithIDandSlot(Processed):
 	def __init__(self, sequence, id, slots):
 		Processed.__init__(self, sequence)
 
-		# Length is:
-		#  * 4 bytes (uint32 - id)
-		#
-		self.length = 4 + 4 + 4 * len(slots)
-	
 		self.id = id
 		self.slots = slots
 	
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		output += pack(self.struct, self.id, self.slots)
 
 		return output
@@ -85,18 +75,16 @@ class GetIDSequence(Processed):
 	def __init__(self, sequence, key, start, amount, since=-1):
 		Processed.__init__(self, sequence)
 
-		self.length = 4 + 4 + 4 + 8
-	
 		self.key    = key
 		self.start  = start
 		self.amount = amount
 		self.since  = since
 	
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		output += pack(self.struct, self.key, self.start, self.amount, self.since)
 
-		assert len(output) == Header.size+self.length, "Output length (%s) did not match out length! (%s)" % (len(output, self.length))
+		#assert len(output) == Header.size+self.length, "Output length (%s) did not match out length! (%s)" % (len(output, self.length))
 
 		return output
 
@@ -116,15 +104,13 @@ class IDSequence(Processed):
 	def __init__(self, sequence, key, left, ids, since=0):
 		Processed.__init__(self, sequence)
 
-		self.length = 4 + 4 + 4 + (4+8) * len(ids) + 8
-	
 		self.key   = key
 		self.left  = left
 		self.ids   = ids
 		self.since = since
 	
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		output += pack(self.struct, self.key, self.left, self.ids, self.since)
 
 		return output

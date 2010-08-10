@@ -40,41 +40,6 @@ class Game(Processed):
 			locations, optional, media, ctime):
 		Processed.__init__(self, sequence)
 
-		# Length is:
-		#
-		self.length = \
-				4 + len(name) + \
-				4 + len(key) + \
-				4 + len(server) + \
-				4 + len(sertype) + \
-				4 + len(rule) + \
-				4 + len(rulever) 
-
-		self.length += 4
-		for version in tp:
-			self.length += 4 + len(version)
-
-		self.length += 4
-		for location in locations:
-			self.length += \
-				4 + len(location[0]) + \
-				4 + len(location[1]) + \
-				4 + len(location[2]) + \
-				4
-
-		self.length += 4
-		if isinstance(optional, list):
-			for option in optional:
-				self.length += 4 + 4 + len(option[1]) + 4
-		else:
-			for option in optional.values():
-				if isinstance(option, (str, unicode)):
-					self.length += 4 + 4 + len(option) + 4
-				else:
-					self.length += 4 + 4 + 0 + 4
-		self.length += 4 + len(media)
-		self.length += 8
-
 		self.name    = name
 		self.key     = key
 		self.tp      = tp
@@ -122,8 +87,8 @@ class Game(Processed):
 		return required
 	required = property(required_get)
 
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		output += pack(self.struct, 
 			self.name, \
 			self.key,

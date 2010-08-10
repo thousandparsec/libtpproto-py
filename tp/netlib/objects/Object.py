@@ -30,14 +30,6 @@ class Object(Describable):
 			*args, **kw):
 		Describable.__init__(self, sequence)
 
-		self.length = \
-			4 + 4 + \
-			4 + len(name) + \
-			4 + len(desc) + \
-			4 + \
-			4 + len(contains)*4 + \
-			8 + 16
-
 		self.id           = id
 		self._subtype     = subtype
 		self.name         = name
@@ -68,8 +60,8 @@ class Object(Describable):
 			except KeyError, e:
 				raise DescriptionError(sequence, subtype)
 
-	def __str__(self):
-		output = Describable.__str__(self)
+	def pack(self):
+		output = Describable.pack(self)
 		output += pack(self.struct, \
 				self.id, \
 				self._subtype, \

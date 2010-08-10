@@ -19,16 +19,10 @@ class OK(Processed):
 			raise ValueError("OK is a reply packet so needs a valid sequence number (%i)" % sequence)
 		Processed.__init__(self, sequence)
 
-		# Length is:
-		#  * 4 bytes (32 bit integer)
-		#  * the string
-		#  * null terminator
-		#
-		self.length = 4 + len(s) 
 		self.s = s
 	
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		output += pack(self.struct, self.s)
 
 		return output

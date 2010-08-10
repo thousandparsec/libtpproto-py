@@ -330,7 +330,8 @@ def pack_string(s):
 	It appends the string length to the beginning and adds a 
 	null terminator.
 	"""
-	s = unicode(s).encode('utf-8')
+	if type(s) == unicode:
+		s = s.encode('utf-8')
 	
 	temp = s
 	return pack("!I", len(temp)) + temp

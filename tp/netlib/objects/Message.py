@@ -26,15 +26,6 @@ class Message(Processed):
 		if not isinstance(references, GenericRS.References):
 			references = GenericRS.References(references)
 
-		# Length is:
-		#
-		self.length = 4 + 4 + \
-				4 + len(types)*4 + \
-				4 + len(subject) + \
-				4 + len(body) + \
-				4 + \
-				4 + len(references)*(4*4)
-
 		self.id = id
 		self.slot = slot
 		self.types = types
@@ -52,8 +43,8 @@ class Message(Processed):
 			warn("Messages.types is deperciated use the Message.references instead.", DeprecationWarning, stacklevel=2)
 	types = property(get_types, set_types)
 
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		output += pack(self.struct, self.id, self.slot, [], self.subject, self.body, self.turn, self.references.references)
 
 		return output

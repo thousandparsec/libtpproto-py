@@ -13,8 +13,7 @@ class Feature_Get(Processed):
 
 	def __init__(self, sequence):
 		Processed.__init__(self, sequence)
-		self.length = 0
 	
-	def __str__(self):
-		output = Processed.__str__(self)
+	def pack(self):
+		output = Processed.pack(self)
 		return output
