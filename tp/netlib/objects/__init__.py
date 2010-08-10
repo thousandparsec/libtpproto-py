@@ -312,6 +312,14 @@ from objects.Player import Player
 Player = Player
 mapping[Player.no] = Player
 
+from objects.Player_GetID import Player_GetID
+Player_GetID = Player_GetID
+mapping[Player_GetID.no] = Player_GetID
+
+from objects.Player_IDSequence import Player_IDSequence
+Player_IDSequence = Player_IDSequence
+mapping[Player_IDSequence.no] = Player_IDSequence
+
 # Game frames
 from objects.Game import Game
 Game = Game
