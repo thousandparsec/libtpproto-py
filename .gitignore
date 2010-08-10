@@ -6,4 +6,4 @@ MANIFEST
 libtpproto_py.egg-info
 build-stamp
 html
-*.swp
+*.sw[po]
