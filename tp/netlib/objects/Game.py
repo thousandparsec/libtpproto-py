@@ -25,7 +25,7 @@ class Game(Processed):
         * Media base URI
 	"""
 	no = 66
-	struct = "SS[S]SSSS[SSSI][ISI]S"
+	struct = "SS[S]SSSS[SSSI][ISI]ST"
 	options = {
 		1: ("plys", "players", "Number of Players in the game."),
 		2: ("cons",	"connected", "Number of Clients currently connected."),
@@ -37,7 +37,7 @@ class Game(Processed):
 
 	def __init__(self, sequence, name, key, \
 			tp, server, sertype, rule, rulever, \
-			locations, optional, media):
+			locations, optional, media, ctime):
 		Processed.__init__(self, sequence)
 
 		# Length is:
@@ -73,6 +73,7 @@ class Game(Processed):
 				else:
 					self.length += 4 + 4 + 0 + 4
 		self.length += 4 + len(media)
+		self.length += 8
 
 		self.name    = name
 		self.key     = key
@@ -84,6 +85,7 @@ class Game(Processed):
 		self.locations = locations
 		self._optional = optional
 		self.media   = media
+		self.ctime   = ctime
 
 	def _optional_set(self, optional):
 		for option in optional:
@@ -130,5 +132,6 @@ class Game(Processed):
 			self.rule, self.rulever, \
 			self.locations, \
 			self._optional, \
-			self.media)
+			self.media, \
+			self.ctime)
 		return output
