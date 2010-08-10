@@ -80,9 +80,9 @@ class GetIDSequence(Processed):
 		* Key persist for only as long as the connection remains and there
 		  are IDs left in the sequence
 	"""
-	struct = "jIjT"
+	struct = "jIjp"
 
-	def __init__(self, sequence, key, start, amount, since=0):
+	def __init__(self, sequence, key, start, amount, since=-1):
 		Processed.__init__(self, sequence)
 
 		self.length = 4 + 4 + 4 + 8
@@ -111,7 +111,7 @@ class IDSequence(Processed):
 
 	These IDs are not guaranteed to be in any order. 	
 	"""
-	struct = "jj[IT]T"
+	struct = "jj[IT]p"
 
 	def __init__(self, sequence, key, left, ids, since=0):
 		Processed.__init__(self, sequence)
