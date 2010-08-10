@@ -321,7 +321,7 @@ class GroupStructure(Structure):
 		"""
 
 		__sentinal = []
-		__slots__ = ["structures"]
+		#__slots__ = ["structures"]
 
 		def __init__(self, structures, items):
 			self.structures = structures
@@ -454,6 +454,8 @@ class GroupStructure(Structure):
 	def protect(self, value):
 		return GroupStructure.GroupProxy(self.structures, value)
 
+GroupProxy = GroupStructure.GroupProxy
+
 class ListStructure(GroupStructure):
 	"""\
 	The list structure is a Group Structure which can be repeated a number of
@@ -534,6 +536,8 @@ class ListStructure(GroupStructure):
 		if len(a) != 1:
 			raise TypeError("WTF?")
 		return a[0], s
+
+ListProxy = ListStructure.ListProxy
 
 __all__ = ["StringStructure", "CharacterStructure", "IntegerStructure", "DateTimeStructure", "GroupStructure", "ListStructure"]
 

@@ -122,12 +122,12 @@ def pack(sstruct, *aargs, **kkw):
 
 				# Find the closing brace
 				substruct, struct = string.split(struct, '}', maxsplit=1)
-				output += pack_list('L', substruct, args.pop(0))
+				output += pack_list('L', substruct, args.pop(0), callback=callback)
 			elif char == '[':
 				substruct, struct = smartsplit(struct, '[', ']')
 
 				# Find the closing brace
-				output += pack_list('I', substruct, args.pop(0))
+				output += pack_list('I', substruct, args.pop(0), callback=callback)
 			elif char in 'Tt':
 				output += pack_time(args.pop(0), times[char])
 			elif char == 'S':
@@ -135,7 +135,9 @@ def pack(sstruct, *aargs, **kkw):
 					raise TypeError("Argument should be an string (to pack to %s), not a %s" % (char, type(args[0])))
 				output += pack_string(args.pop(0))
 			elif char == 'x':
-				output += callback(args.pop(0))
+				if callback == None:
+					raise TypeError("Found an x, but was not given a callback!")
+				output += callback(args)
 			elif char in string.digits:
 				# Get all the numbers
 				substruct = char
@@ -276,7 +278,7 @@ def unpack(struct, s, callback=None):
 
 	return tuple(output), s
 
-def pack_list(length_struct, struct, args):
+def pack_list(length_struct, struct, args, callback=None):
 	"""\
 	*Internal*
 
@@ -289,7 +291,7 @@ def pack_list(length_struct, struct, args):
 	for id in args:
 		if type(id) == ListType or type(id) == TupleType:
 			args = [struct] + list(id)
-			output += apply(pack, args)
+			output += pack(*args, callback=callback)
 		else:
 			output += pack(struct, id)
 		

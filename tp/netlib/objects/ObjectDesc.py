@@ -199,15 +199,20 @@ class ObjectDesc(Description):
 	@staticmethod
 	def pack_callback(arg):
 		output = ""
-		for name, id, description, extra in arg:
-			extra = dict(extra)
-			output += pack('SIS', name, id, description)
-			if ObjectParamsStructDesc.has_key(id):
-				for substruct, name, description in ObjectParamsStructDesc[id]:
-					output += pack(substruct, extra.pop(name))
+		name, id, description, extra = arg
+		extra = dict(extra)
+		output += pack('SIS', name, id, description)
 
-			if len(extra) > 0:
-				raise TypeError("There was left over extra stuff...")
+		if ObjectParamsStructDesc.has_key(id):
+			for substruct, ename, edescription in ObjectParamsStructDesc[id]:
+				output += pack(substruct, extra.pop(ename))
+
+		if len(extra) > 0:
+			raise TypeError("There was left over extra stuff...")
+
+		while len(arg) > 0:
+			arg.pop(0)
+
 		return output
 
 	def __init__(self, sequence, \
@@ -220,17 +225,8 @@ class ObjectDesc(Description):
 		self.arguments = arguments
 		self.modify_time = modify_time
 
-		self.length = 4 + \
-			4 + len(name) + \
-			4 + len(description) + \
-			4 + 8 
-
-		# FIXME: This ignores the extradata stuff
-		for argument in arguments:
-			self.length += \
-				4 + \
-				4 + len(argument[1]) + \
-				4 + len(argument[2])
+		self.length = 0
+		self.length = len(self.__str__()) - Header.size
 
 	def __str__(self):
 		output = Description.__str__(self)

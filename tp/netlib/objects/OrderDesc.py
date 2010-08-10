@@ -54,7 +54,6 @@ class DynamicBaseOrder(Order):
 			raise TypeError("The args where not correct, they should be of length %s" % len(self.properties))
 
 		for property, arg in zip(self.properties, args):
-			print property, arg, self.__class__.__dict__[property.name]
 			self.length += property.length(arg)
 			setattr(self, property.name, arg)
 
@@ -109,16 +108,8 @@ class OrderDesc(Description):
 		self.arguments = arguments
 		self.modify_time = modify_time
 
-		self.length = 4 + \
-			4 + len(name) + \
-			4 + len(description) + \
-			4 + 8 
-
-		for argument in arguments:
-			self.length += \
-				4 + len(argument[0]) + \
-				4 + \
-				4 + len(argument[2])
+		self.length = 0
+		self.length = len(self.__str__()) - Header.size
 
 	def __str__(self):
 		output = Description.__str__(self)
