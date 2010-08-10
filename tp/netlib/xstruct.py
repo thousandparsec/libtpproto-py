@@ -291,7 +291,8 @@ def pack_list(length_struct, struct, args, callback=None):
 	for id in args:
 		if type(id) == ListType or type(id) == TupleType:
 			args = [struct] + list(id)
-			output += pack(*args, callback=callback)
+			kw = {'callback': callback}
+			output += pack(*args, **kw)
 		else:
 			output += pack(struct, id)
 		
