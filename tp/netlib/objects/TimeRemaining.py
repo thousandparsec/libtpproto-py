@@ -16,20 +16,23 @@ class TimeRemaining(Processed):
 		    * 0x5 - End of turn started.
 		* UInt32, Current turn.
 		* string, Turn name (may be empty).
+		* a list of,
+		    * UInt32, Player IDs who have yet to finish their turns.
 	"""
 	no = 15
-	struct = "jIIS"
+	struct = "jIIS[I]"
 
-	def __init__(self, sequence, time, reason, turn_num, turn_name):
+	def __init__(self, sequence, time, reason, turn_num, turn_name, waiting):
 		Processed.__init__(self, sequence)
 
 		self.time = time
 		self.reason = reason	
 		self.turn_num = turn_num
 		self.turn_name = turn_name
+		self.waiting = waiting
 
 	def pack(self):
 		output = Processed.pack(self)
-		output += pack(self.struct, self.time, self.reason, self.turn_num, self.turn_name)
+		output += pack(self.struct, self.time, self.reason, self.turn_num, self.turn_name, self.waiting)
 
 		return output
