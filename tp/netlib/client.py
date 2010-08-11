@@ -707,8 +707,7 @@ class ClientConnection(Connection):
 
 		# Check it's the reply we are after
 		if isinstance(p, objects.TimeRemaining):
-			# FIXME: This will cause any truth check to fail if p.time is zero!
-			return p.time
+			return p
 		elif isinstance(p, objects.Fail):
 			return False, p.s
 		else:
