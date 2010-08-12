@@ -335,6 +335,16 @@ class ObjectParamSize(GroupStructure):
 		]
 		GroupStructure.__init__(self, *args, **kw)
 
+class ObjectParamInfluence(GroupStructure):
+	"""\
+	Represents a sphere of something.
+	"""
+	def __init__(self, *args, **kw):
+		kw['structures'] = [
+			IntegerStructure('diameter', 'The diameter of the sphere.', size=64, type='unsigned'),
+		]
+		GroupStructure.__init__(self, *args, **kw)
+
 class ObjectParamMedia(GroupStructure):
 	"""\
 	The url for the media for this object, either relative to the base url given in the Game frame, of absolute.
@@ -359,4 +369,5 @@ ObjectParamsMapping = {
 		8: ObjectParamInteger,
 		9: ObjectParamSize,
 		10: ObjectParamMedia,
+		11: ObjectParamInfluence,
 	}
