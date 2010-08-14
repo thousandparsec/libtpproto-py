@@ -20,7 +20,7 @@ class References(dict):
 		return self.references.__iter__()
 
 	def __str__(self):
-		s = "<References\n"
+		s = "<References(%s)\n" % hex(id(self))
 		for type, value in self.references:
 			if type > 0:
 				s += "\t%s: %s\n" % (Types[type], value)
